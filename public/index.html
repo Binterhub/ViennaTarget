@@ -32,6 +32,17 @@
 
     <main class="container">
       <div id="banner" class="banner" hidden></div>
+      <div id="loading-panel" class="loading-panel" hidden>
+        <div class="loading-card" role="status" aria-live="polite">
+          <div class="loading-spinner" aria-hidden="true"></div>
+          <p class="loading-title" id="loading-title">Ärztedaten werden geladen…</p>
+          <p class="loading-copy">
+            Der Austria-weite Abruf über DataMatcherAPI kann 30–60&nbsp;Sekunden dauern.
+            Bitte warten — das ist kein Fehler.
+          </p>
+          <p class="loading-elapsed" id="loading-elapsed">Laufzeit: 0&nbsp;s</p>
+        </div>
+      </div>
 
       <section class="stats" aria-label="Statistiken">
         <div class="stat-grid">

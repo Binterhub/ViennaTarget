@@ -22,6 +22,8 @@ const cache = new MemoryCache(config.cacheTtlMs);
 let refreshPromise = null;
 
 app.disable('x-powered-by');
+// Required behind cloudflared/ngrok so express-rate-limit accepts X-Forwarded-For
+app.set('trust proxy', 1);
 app.use(express.json({ limit: '32kb' }));
 
 const apiLimiter = rateLimit({

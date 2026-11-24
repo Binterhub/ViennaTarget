@@ -52,7 +52,48 @@ const el = {
   pagePrev: document.getElementById('page-prev'),
   pageNext: document.getElementById('page-next'),
   pageInfo: document.getElementById('page-info'),
+  loadingPanel: document.getElementById('loading-panel'),
+  loadingTitle: document.getElementById('loading-title'),
+  loadingElapsed: document.getElementById('loading-elapsed'),
 };
+
+let loadingTimer = null;
+let loadingStartedAt = 0;
+
+function setLoading(active, { refresh = false } = {}) {
+  if (!el.loadingPanel) return;
+  if (loadingTimer) {
+    clearInterval(loadingTimer);
+    loadingTimer = null;
+  }
+  if (!active) {
+    el.loadingPanel.hidden = true;
+    if (el.btnRefresh) el.btnRefresh.disabled = false;
+    if (el.btnExportXlsx) el.btnExportXlsx.disabled = state.filtered.length === 0;
+    return;
+  }
+
+  loadingStartedAt = Date.now();
+  el.loadingPanel.hidden = false;
+  if (el.loadingTitle) {
+    el.loadingTitle.textContent = refresh
+      ? 'Ärztedaten werden aktualisiert…'
+      : 'Ärztedaten werden geladen…';
+  }
+  if (el.loadingElapsed) el.loadingElapsed.textContent = 'Laufzeit: 0 s';
+  if (el.btnRefresh) el.btnRefresh.disabled = true;
+  if (el.btnExportXlsx) el.btnExportXlsx.disabled = true;
+
+  loadingTimer = setInterval(() => {
+    const secs = Math.floor((Date.now() - loadingStartedAt) / 1000);
+    if (el.loadingElapsed) {
+      el.loadingElapsed.textContent =
+        secs < 25
+          ? `Laufzeit: ${secs} s`
+          : `Laufzeit: ${secs} s — großer Abruf, bitte weiter warten`;
+    }
+  }, 1000);
+}
 
 function showBanner(message, type = 'warn') {
   if (!message) {
@@ -63,7 +104,9 @@ function showBanner(message, type = 'warn') {
   }
   el.banner.hidden = false;
   el.banner.textContent = message;
-  el.banner.className = `banner ${type === 'error' ? 'error' : type === 'info' ? 'info' : ''}`;
+  const typeClass =
+    type === 'error' ? 'error' : type === 'info' ? 'info' : type === 'loading' ? 'loading' : '';
+  el.banner.className = `banner ${typeClass}`.trim();
 }
 
 function text(value) {
@@ -573,14 +616,24 @@ async function logout() {
 }
 
 async function loadDoctors({ refresh = false } = {}) {
-  showBanner(refresh ? 'Daten werden aktualisiert…' : 'Daten werden geladen…');
-  el.tbody.innerHTML = `<tr><td colspan="7" class="empty">Daten werden geladen…</td></tr>`;
+  setLoading(true, { refresh });
+  showBanner(
+    refresh
+      ? 'Daten werden aktualisiert (Austria-weiter Abruf, bitte warten)…'
+      : 'Daten werden geladen (Austria-weiter Abruf kann 30–60 s dauern)…',
+    'loading'
+  );
+  el.tbody.innerHTML = `<tr><td colspan="7" class="empty">Daten werden geladen — bitte warten…</td></tr>`;
+  if (el.resultsSummary) {
+    el.resultsSummary.textContent = 'Lade Ärztedaten von DataMatcherAPI…';
+  }
 
   try {
     const url = refresh ? '/api/doctors?refresh=1' : '/api/doctors';
     const res = await fetch(url, { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
 
     if (res.status === 401) {
+      setLoading(false);
       window.location.href = '/login';
       return;
     }
@@ -631,6 +684,8 @@ async function loadDoctors({ refresh = false } = {}) {
   } catch {
     showBanner('Netzwerkfehler beim Laden der Daten.', 'error');
     el.tbody.innerHTML = `<tr><td colspan="7" class="empty">Netzwerkfehler</td></tr>`;
+  } finally {
+    setLoading(false);
   }
 }
 

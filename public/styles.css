@@ -126,6 +126,74 @@ body {
   color: var(--ok);
 }
 
+.banner.loading {
+  background: #e7f2f1;
+  color: var(--accent-deep);
+  border-color: #9fc4c1;
+}
+
+.loading-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: rgba(21, 36, 40, 0.28);
+  backdrop-filter: blur(2px);
+}
+
+.loading-panel[hidden] {
+  display: none !important;
+}
+
+.loading-card {
+  width: min(28rem, 100%);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(6, 61, 60, 0.18);
+  padding: 1.15rem 1.2rem 1.05rem;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 1.55rem;
+  height: 1.55rem;
+  margin: 0 auto 0.75rem;
+  border: 2.5px solid #c9dedc;
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.loading-title {
+  margin: 0;
+  font-weight: 700;
+  color: var(--accent-deep);
+  font-size: 1.02rem;
+}
+
+.loading-copy {
+  margin: 0.45rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.loading-elapsed {
+  margin: 0.65rem 0 0;
+  font-size: 0.82rem;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .section-title {
   margin: 0 0 0.75rem;
   font-size: 1.05rem;
