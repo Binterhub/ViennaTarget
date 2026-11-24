@@ -21,6 +21,7 @@ const state = {
   chart: null,
   fetchedAt: null,
   focus: FOCUS_ZUSATZFACH,
+  focusOnly: true,
 };
 
 const el = {
@@ -35,8 +36,6 @@ const el = {
   filterPostal: document.getElementById('filter-postal'),
   filterGender: document.getElementById('filter-gender'),
   filterCity: document.getElementById('filter-city'),
-  filterSpec: document.getElementById('filter-spec'),
-  filterAddSpec: document.getElementById('filter-addspec'),
   fieldPostal: document.getElementById('field-postal'),
   fieldGender: document.getElementById('field-gender'),
   thPostal: document.getElementById('th-postal'),
@@ -174,52 +173,26 @@ function applyOptionalFields() {
 }
 
 function populateFilterOptions({ applyFocusDefault = false } = {}) {
-  fillSelect(el.filterSpec, uniqueSorted(state.doctors.map((d) => d.specialization)));
-
-  const addSpecs = uniqueSorted(state.doctors.map((d) => d.additionalspecialization));
-  // Ensure focus label is present even if spelling variants differ in data
-  if (!addSpecs.includes(FOCUS_ZUSATZFACH)) {
-    // Prefer exact match variants already in data; otherwise inject focus string for UX
-    const focusNorm = normalize(FOCUS_ZUSATZFACH);
-    const existing = addSpecs.find((s) => normalize(s) === focusNorm || normalize(s).includes(focusNorm));
-    if (!existing) addSpecs.unshift(FOCUS_ZUSATZFACH);
-  }
-
-  const prefer = applyFocusDefault ? [FOCUS_ZUSATZFACH] : undefined;
-  fillSelect(el.filterAddSpec, addSpecs, {
-    keepSelection: !applyFocusDefault,
-    preferSelected: prefer || [],
-  });
-
-  // If focus string was injected but data uses a close variant, select that variant too
-  if (applyFocusDefault) {
-    selectFocusZusatzfach();
-  }
-
+  if (applyFocusDefault) state.focusOnly = true;
+  updateFocusButtons();
   applyOptionalFields();
 }
 
+function updateFocusButtons() {
+  if (el.btnFocus) el.btnFocus.classList.toggle('btn-primary', state.focusOnly);
+  if (el.btnFocus) el.btnFocus.classList.toggle('btn-secondary', !state.focusOnly);
+  if (el.btnAllSpecs) el.btnAllSpecs.classList.toggle('btn-primary', !state.focusOnly);
+  if (el.btnAllSpecs) el.btnAllSpecs.classList.toggle('btn-secondary', state.focusOnly);
+}
+
 function selectFocusZusatzfach() {
-  const aliases = focusAliasNorms();
-  let matched = false;
-  Array.from(el.filterAddSpec.options).forEach((o) => {
-    const n = normalize(o.value);
-    // Prefer exact / contains-focus match; never select short unrelated values.
-    const isFocus = aliases.some((focus) => n === focus || n.includes(focus));
-    o.selected = isFocus;
-    if (isFocus) matched = true;
-  });
-  if (!matched) {
-    Array.from(el.filterAddSpec.options).forEach((o) => {
-      o.selected = o.value === FOCUS_ZUSATZFACH;
-    });
-  }
+  state.focusOnly = true;
+  updateFocusButtons();
 }
 
 function clearAddSpecSelection() {
-  Array.from(el.filterAddSpec.options).forEach((o) => {
-    o.selected = false;
-  });
+  state.focusOnly = false;
+  updateFocusButtons();
 }
 
 function matchesFilters(doc) {
@@ -263,20 +236,54 @@ function matchesFilters(doc) {
     }
   }
 
-  const specs = selectedValues(el.filterSpec);
-  if (specs.length && !specs.includes(text(doc.specialization).trim())) return false;
-
-  const addSpecs = selectedValues(el.filterAddSpec);
-  if (addSpecs.length) {
-    const docAdd = text(doc.additionalspecialization).trim();
-    const parts = docAdd
-      ? docAdd.split(',').map((p) => p.trim())
-      : [docAdd];
-    const hit = addSpecs.some((sel) => parts.includes(sel) || docAdd === sel);
-    if (!hit) return false;
-  }
+  if (state.focusOnly && !hasFocusZusatzfach(doc)) return false;
 
   return true;
+}
+
+/** Title “power” ranks — lower number = higher power (Prim. first). */
+const TITLE_POWER_RANKS = [
+  { rank: 1, re: /\bprim\.?\b/ },
+  { rank: 2, re: /\buniv\.?\s*-?\s*prof\.?\b/ },
+  { rank: 3, re: /\bassoz\.?\s*-?\s*prof\.?\b/ },
+  { rank: 4, re: /\buniv\.?\s*-?\s*doz\.?\b/ },
+  { rank: 5, re: /\boa\b/ },
+  { rank: 6, re: /\boä\b|\boae\b/ },
+  { rank: 7, re: /\bpriv\.?\s*-?\s*doz\.?\b/ },
+  { rank: 8, re: /\bass\.?\s*-?\s*prof\.?\b/ },
+  { rank: 9, re: /\bprof\.?\b/ },
+  { rank: 10, re: /\bfa\b/ },
+  { rank: 11, re: /\bfä\b|\bfae\b/ },
+  { rank: 12, re: /\buniv\.?\s*-?\s*ass\.?\b/ },
+  { rank: 13, re: /\bddr\.?\b/ },
+  { rank: 14, re: /\bdr\.?\b/ },
+  { rank: 15, re: /\bmudr\.?\b/ },
+  { rank: 16, re: /\bmag\.?\b/ },
+];
+
+function normalizeTitleForRank(value) {
+  return text(value)
+    .toLocaleLowerCase('de-AT')
+    .normalize('NFKC')
+    .replace(/ä/g, 'ae')
+    .replace(/ö/g, 'oe')
+    .replace(/ü/g, 'ue')
+    .replace(/ß/g, 'ss')
+    .replace(/[–—−]/g, '-')
+    .replace(/[._/]+/g, '.')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function titlePowerRank(title) {
+  const normalized = normalizeTitleForRank(title);
+  if (!normalized) return 999;
+  let best = 999;
+  for (const { rank, re } of TITLE_POWER_RANKS) {
+    if (rank >= best) continue;
+    if (re.test(normalized)) best = rank;
+  }
+  return best;
 }
 
 function sortValue(doc, key) {
@@ -288,9 +295,19 @@ function sortDoctors(list) {
   const { sortKey, sortDir } = state;
   const dir = sortDir === 'asc' ? 1 : -1;
   return list.slice().sort((a, b) => {
-    let cmp = compareDe(sortValue(a, sortKey), sortValue(b, sortKey));
+    let cmp;
+    if (sortKey === 'title') {
+      // asc = highest power first (Prim. → … → Mag.)
+      cmp = titlePowerRank(a.title) - titlePowerRank(b.title);
+      if (cmp === 0) cmp = compareDe(a.title, b.title);
+    } else {
+      cmp = compareDe(sortValue(a, sortKey), sortValue(b, sortKey));
+    }
     if (cmp === 0 && sortKey === 'lastname') {
       cmp = compareDe(a.firstname, b.firstname);
+    }
+    if (cmp === 0) {
+      cmp = compareDe(a.lastname, b.lastname);
     }
     if (cmp === 0) {
       cmp = compareDe(a.evoid, b.evoid);
@@ -624,9 +641,6 @@ function resetFiltersToFocus() {
   el.filterGender.value = '';
   el.filterCity.value = '';
   el.filterCity.dataset.exact = '';
-  Array.from(el.filterSpec.options).forEach((o) => {
-    o.selected = false;
-  });
   selectFocusZusatzfach();
   state.sortKey = 'lastname';
   state.sortDir = 'asc';
@@ -651,8 +665,6 @@ function bindEvents() {
       el.filterCity.dataset.exact = '';
       onFilterChange();
     });
-    el.filterSpec.addEventListener(evt, onFilterChange);
-    el.filterAddSpec.addEventListener(evt, onFilterChange);
   });
 
   el.btnFocus.addEventListener('click', () => {
