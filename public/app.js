@@ -237,8 +237,12 @@ function matchesFilters(doc) {
     if (genderQ && text(getGender(doc)) !== genderQ) return false;
   }
 
-  const cities = selectedValues(el.filterCity);
-  if (cities.length && !cities.includes(text(doc.city).trim())) return false;
+  if (el.filterCity.dataset.emptyOnly === '1') {
+    if (text(doc.city).trim()) return false;
+  } else {
+    const cities = selectedValues(el.filterCity);
+    if (cities.length && !cities.includes(text(doc.city).trim())) return false;
+  }
 
   const specs = selectedValues(el.filterSpec);
   if (specs.length && !specs.includes(text(doc.specialization).trim())) return false;
@@ -292,6 +296,51 @@ function topCities(list, n = 10) {
     .slice(0, n);
 }
 
+function selectOnlyCity(cityLabel) {
+  const isEmptyLabel = cityLabel === '(ohne Angabe)';
+  Array.from(el.filterCity.options).forEach((o) => {
+    if (isEmptyLabel) {
+      o.selected = false;
+    } else {
+      o.selected = o.value === cityLabel;
+    }
+  });
+
+  // Ensure the clicked city exists as an option (e.g. after other filters narrowed the chart)
+  if (!isEmptyLabel) {
+    const exists = Array.from(el.filterCity.options).some((o) => o.value === cityLabel);
+    if (!exists) {
+      const option = document.createElement('option');
+      option.value = cityLabel;
+      option.textContent = cityLabel;
+      option.selected = true;
+      el.filterCity.appendChild(option);
+    }
+  }
+
+  // Empty-city filter is handled via a sentinel on the select dataset
+  el.filterCity.dataset.emptyOnly = isEmptyLabel ? '1' : '';
+}
+
+function filterByCityFromChart(cityLabel) {
+  if (!cityLabel) return;
+  selectOnlyCity(cityLabel);
+  state.sortKey = 'lastname';
+  state.sortDir = 'asc';
+  state.page = 1;
+  updateSortHeaders();
+  refreshView();
+  showBanner(
+    cityLabel === '(ohne Angabe)'
+      ? 'Gefiltert: Ort ohne Angabe · sortiert nach Nachname.'
+      : `Gefiltert: Ort „${cityLabel}“ · sortiert nach Nachname.`,
+    'info'
+  );
+  setTimeout(() => showBanner(''), 2800);
+  const results = document.querySelector('.results');
+  if (results) results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 function renderChart(list) {
   const top = topCities(list, 10);
   const labels = top.map(([name]) => name);
@@ -326,12 +375,27 @@ function renderChart(list) {
       indexAxis: 'y',
       responsive: true,
       maintainAspectRatio: true,
+      onHover(event, elements) {
+        const canvas = event?.native?.target || el.chart;
+        if (canvas && canvas.style) {
+          canvas.style.cursor = elements && elements.length ? 'pointer' : 'default';
+        }
+      },
+      onClick(_event, elements, chart) {
+        if (!elements || !elements.length) return;
+        const index = elements[0].index;
+        const label = chart.data.labels[index];
+        filterByCityFromChart(label);
+      },
       plugins: {
         legend: { display: false },
         tooltip: {
           callbacks: {
             title(items) {
               return items[0]?.label || '';
+            },
+            afterBody() {
+              return 'Klicken zum Filtern nach Ort';
             },
           },
         },
@@ -510,6 +574,7 @@ function resetFiltersToFocus() {
   el.filterEvoid.value = '';
   el.filterPostal.value = '';
   el.filterGender.value = '';
+  el.filterCity.dataset.emptyOnly = '';
   Array.from(el.filterCity.options).forEach((o) => {
     o.selected = false;
   });
@@ -517,7 +582,10 @@ function resetFiltersToFocus() {
     o.selected = false;
   });
   selectFocusZusatzfach();
+  state.sortKey = 'lastname';
+  state.sortDir = 'asc';
   state.page = 1;
+  updateSortHeaders();
   refreshView();
 }
 
@@ -532,7 +600,10 @@ function bindEvents() {
     el.filterEvoid.addEventListener(evt, onFilterChange);
     el.filterPostal.addEventListener(evt, onFilterChange);
     el.filterGender.addEventListener(evt, onFilterChange);
-    el.filterCity.addEventListener(evt, onFilterChange);
+    el.filterCity.addEventListener(evt, () => {
+      el.filterCity.dataset.emptyOnly = '';
+      onFilterChange();
+    });
     el.filterSpec.addEventListener(evt, onFilterChange);
     el.filterAddSpec.addEventListener(evt, onFilterChange);
   });

@@ -207,6 +207,10 @@ body {
   max-width: 100%;
 }
 
+.chart-wrap canvas {
+  cursor: pointer;
+}
+
 .filter-form {
   display: grid;
   gap: 0.85rem;
