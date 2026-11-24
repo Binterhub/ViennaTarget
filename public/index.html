@@ -79,37 +79,35 @@
           <button type="button" id="btn-all-specs" class="btn btn-secondary">Alle Zusatzfächer</button>
         </div>
         <form id="filter-form" class="filter-form" autocomplete="off">
-          <div class="filter-row">
+          <div class="filter-row filter-row-compact">
             <label class="field">
-              <span>Name (Vor- / Nachname)</span>
-              <input type="search" id="filter-name" name="name" placeholder="z. B. Huber" />
+              <span>Name</span>
+              <input type="search" id="filter-name" name="name" placeholder="Vor- / Nachname" />
+            </label>
+            <label class="field field-evoid">
+              <span>EVOID</span>
+              <input type="search" id="filter-evoid" name="evoid" placeholder="ID" />
             </label>
             <label class="field">
-              <span>Evolantis-ID (EVOID)</span>
-              <input type="search" id="filter-evoid" name="evoid" placeholder="z. B. 1962009" />
+              <span>Ort</span>
+              <input type="search" id="filter-city" name="city" placeholder="z. B. Wien" />
             </label>
-            <label class="field" id="field-postal" hidden>
-              <span>Postleitzahl</span>
-              <input type="search" id="filter-postal" name="postal" placeholder="PLZ" />
+            <label class="field field-compact" id="field-postal">
+              <span>PLZ</span>
+              <input type="search" id="filter-postal" name="postal" placeholder="PLZ" disabled title="Nicht in den aktuellen Daten verfügbar" />
             </label>
-            <label class="field" id="field-gender" hidden>
+            <label class="field field-compact" id="field-gender">
               <span>Geschlecht</span>
-              <select id="filter-gender" name="gender">
-                <option value="">Alle</option>
+              <select id="filter-gender" name="gender" disabled title="Nicht in den aktuellen Daten verfügbar">
+                <option value="">–</option>
               </select>
             </label>
           </div>
           <div class="filter-row">
             <label class="field field-wide">
-              <span>Ort (Mehrfachauswahl)</span>
-              <select id="filter-city" name="city" multiple size="5"></select>
-            </label>
-            <label class="field field-wide">
               <span>Hauptfachgebiet (Mehrfachauswahl)</span>
               <select id="filter-spec" name="specialization" multiple size="5"></select>
             </label>
-          </div>
-          <div class="filter-row">
             <label class="field field-wide">
               <span>Zusatzfachgebiet (Mehrfachauswahl)</span>
               <select id="filter-addspec" name="additionalspecialization" multiple size="6"></select>
@@ -139,7 +137,7 @@
           <table id="doctors-table">
             <thead>
               <tr>
-                <th data-sort="evoid">Evolantis-ID</th>
+                <th data-sort="evoid">EVO-ID</th>
                 <th data-sort="title">Titel</th>
                 <th data-sort="firstname">Vorname</th>
                 <th data-sort="lastname" class="sorted asc">Nachname</th>

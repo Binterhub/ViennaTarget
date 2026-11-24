@@ -141,9 +141,20 @@ function countFocusDoctors() {
 function applyOptionalFields() {
   const showPostal = Boolean(state.fields.postalCode);
   const showGender = Boolean(state.fields.gender);
-  el.fieldPostal.hidden = !showPostal;
   el.thPostal.hidden = !showPostal;
-  el.fieldGender.hidden = !showGender;
+
+  el.filterPostal.disabled = !showPostal;
+  el.filterPostal.title = showPostal
+    ? ''
+    : 'Nicht in den aktuellen Daten verfügbar';
+  el.fieldPostal.classList.toggle('field-disabled', !showPostal);
+  if (!showPostal) el.filterPostal.value = '';
+
+  el.filterGender.disabled = !showGender;
+  el.filterGender.title = showGender
+    ? ''
+    : 'Nicht in den aktuellen Daten verfügbar';
+  el.fieldGender.classList.toggle('field-disabled', !showGender);
 
   if (showGender) {
     const genders = uniqueSorted(state.doctors.map(getGender));
@@ -156,11 +167,12 @@ function applyOptionalFields() {
       el.filterGender.appendChild(option);
     }
     if (genders.includes(current)) el.filterGender.value = current;
+  } else {
+    el.filterGender.innerHTML = '<option value="">–</option>';
   }
 }
 
 function populateFilterOptions({ applyFocusDefault = false } = {}) {
-  fillSelect(el.filterCity, uniqueSorted(state.doctors.map((d) => d.city)));
   fillSelect(el.filterSpec, uniqueSorted(state.doctors.map((d) => d.specialization)));
 
   const addSpecs = uniqueSorted(state.doctors.map((d) => d.additionalspecialization));
@@ -237,11 +249,14 @@ function matchesFilters(doc) {
     if (genderQ && text(getGender(doc)) !== genderQ) return false;
   }
 
-  if (el.filterCity.dataset.emptyOnly === '1') {
-    if (text(doc.city).trim()) return false;
-  } else {
-    const cities = selectedValues(el.filterCity);
-    if (cities.length && !cities.includes(text(doc.city).trim())) return false;
+  const cityQ = normalize(el.filterCity.value);
+  if (cityQ) {
+    const city = normalize(doc.city);
+    if (cityQ === normalize('(ohne Angabe)')) {
+      if (city) return false;
+    } else if (!city.includes(cityQ)) {
+      return false;
+    }
   }
 
   const specs = selectedValues(el.filterSpec);
@@ -297,29 +312,7 @@ function topCities(list, n = 10) {
 }
 
 function selectOnlyCity(cityLabel) {
-  const isEmptyLabel = cityLabel === '(ohne Angabe)';
-  Array.from(el.filterCity.options).forEach((o) => {
-    if (isEmptyLabel) {
-      o.selected = false;
-    } else {
-      o.selected = o.value === cityLabel;
-    }
-  });
-
-  // Ensure the clicked city exists as an option (e.g. after other filters narrowed the chart)
-  if (!isEmptyLabel) {
-    const exists = Array.from(el.filterCity.options).some((o) => o.value === cityLabel);
-    if (!exists) {
-      const option = document.createElement('option');
-      option.value = cityLabel;
-      option.textContent = cityLabel;
-      option.selected = true;
-      el.filterCity.appendChild(option);
-    }
-  }
-
-  // Empty-city filter is handled via a sentinel on the select dataset
-  el.filterCity.dataset.emptyOnly = isEmptyLabel ? '1' : '';
+  el.filterCity.value = cityLabel || '';
 }
 
 function filterByCityFromChart(cityLabel) {
@@ -460,16 +453,18 @@ function renderTable() {
   const html = pageRows
     .map((d) => {
       const cells = [
-        text(d.evoid),
-        text(d.title),
-        text(d.firstname),
-        text(d.lastname),
-        text(d.specialization),
-        text(d.additionalspecialization),
-        text(d.city),
+        `<td class="cell-evoid">${escapeHtml(text(d.evoid))}</td>`,
+        `<td>${escapeHtml(text(d.title))}</td>`,
+        `<td>${escapeHtml(text(d.firstname))}</td>`,
+        `<td class="cell-lastname">${escapeHtml(text(d.lastname))}</td>`,
+        `<td>${escapeHtml(text(d.specialization))}</td>`,
+        `<td>${escapeHtml(text(d.additionalspecialization))}</td>`,
+        `<td>${escapeHtml(text(d.city))}</td>`,
       ];
-      if (state.fields.postalCode) cells.push(text(getPostal(d)));
-      return `<tr>${cells.map((c) => `<td>${escapeHtml(c)}</td>`).join('')}</tr>`;
+      if (state.fields.postalCode) {
+        cells.push(`<td>${escapeHtml(text(getPostal(d)))}</td>`);
+      }
+      return `<tr>${cells.join('')}</tr>`;
     })
     .join('');
   el.tbody.innerHTML = html;
@@ -574,10 +569,7 @@ function resetFiltersToFocus() {
   el.filterEvoid.value = '';
   el.filterPostal.value = '';
   el.filterGender.value = '';
-  el.filterCity.dataset.emptyOnly = '';
-  Array.from(el.filterCity.options).forEach((o) => {
-    o.selected = false;
-  });
+  el.filterCity.value = '';
   Array.from(el.filterSpec.options).forEach((o) => {
     o.selected = false;
   });
@@ -600,10 +592,7 @@ function bindEvents() {
     el.filterEvoid.addEventListener(evt, onFilterChange);
     el.filterPostal.addEventListener(evt, onFilterChange);
     el.filterGender.addEventListener(evt, onFilterChange);
-    el.filterCity.addEventListener(evt, () => {
-      el.filterCity.dataset.emptyOnly = '';
-      onFilterChange();
-    });
+    el.filterCity.addEventListener(evt, onFilterChange);
     el.filterSpec.addEventListener(evt, onFilterChange);
     el.filterAddSpec.addEventListener(evt, onFilterChange);
   });
