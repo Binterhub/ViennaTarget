@@ -45,6 +45,7 @@ const el = {
   btnReset: document.getElementById('btn-reset'),
   btnRefresh: document.getElementById('btn-refresh'),
   btnLogout: document.getElementById('btn-logout'),
+  btnExportXlsx: document.getElementById('btn-export-xlsx'),
   lastUpdated: document.getElementById('last-updated'),
   resultsSummary: document.getElementById('results-summary'),
   pageSize: document.getElementById('page-size'),
@@ -428,6 +429,50 @@ function formatUpdated(iso) {
   }
 }
 
+function stampExportFilename() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  return `neotarget-aerzte-${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}.xlsx`;
+}
+
+function exportFilteredXlsx() {
+  if (!state.filtered.length) {
+    showBanner('Keine Treffer zum Exportieren.', 'warn');
+    return;
+  }
+  if (typeof XLSX === 'undefined') {
+    showBanner('XLSX-Bibliothek nicht geladen. Bitte Seite neu laden.', 'error');
+    return;
+  }
+
+  const rows = state.filtered.map((d) => {
+    const row = {
+      'EVO-ID': text(d.evoid),
+      Titel: text(d.title),
+      Vorname: text(d.firstname),
+      Nachname: text(d.lastname),
+      Hauptfachgebiet: text(d.specialization),
+      Zusatzfach: text(d.additionalspecialization),
+      Ort: text(d.city),
+      Land: text(d.country),
+    };
+    if (state.fields.postalCode) {
+      row.Postleitzahl = text(getPostal(d));
+    }
+    if (state.fields.gender) {
+      row.Geschlecht = text(getGender(d));
+    }
+    return row;
+  });
+
+  const sheet = XLSX.utils.json_to_sheet(rows);
+  const book = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(book, sheet, 'Aerzte');
+  XLSX.writeFile(book, stampExportFilename());
+  showBanner(`${rows.length} Treffer als XLSX exportiert.`, 'info');
+  setTimeout(() => showBanner(''), 2500);
+}
+
 function renderTable() {
   const total = state.filtered.length;
   const pages = Math.max(1, Math.ceil(total / state.pageSize));
@@ -442,6 +487,10 @@ function renderTable() {
     total === 0
       ? 'Keine Treffer für die aktuellen Filter.'
       : `Zeige ${start + 1}–${start + pageRows.length} von ${total} Treffern`;
+
+  if (el.btnExportXlsx) {
+    el.btnExportXlsx.disabled = total === 0;
+  }
 
   el.pageInfo.textContent = `Seite ${state.page} von ${pages}`;
   el.pagePrev.disabled = state.page <= 1;
@@ -621,6 +670,9 @@ function bindEvents() {
   el.btnReset.addEventListener('click', resetFiltersToFocus);
   el.btnRefresh.addEventListener('click', () => loadDoctors({ refresh: true }));
   el.btnLogout.addEventListener('click', logout);
+  if (el.btnExportXlsx) {
+    el.btnExportXlsx.addEventListener('click', exportFilteredXlsx);
+  }
 
   el.pageSize.addEventListener('change', () => {
     state.pageSize = Number(el.pageSize.value) || 50;

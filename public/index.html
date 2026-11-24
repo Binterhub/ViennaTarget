@@ -12,18 +12,10 @@
     />
     <link rel="stylesheet" href="/styles.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
     <script src="/app.js" defer></script>
   </head>
   <body>
-    <div class="app-hero" aria-hidden="true">
-      <img
-        src="/assets/datadominance-app-hero.jpg"
-        alt=""
-        width="1600"
-        height="180"
-      />
-    </div>
-
     <header class="site-header">
       <div class="header-inner">
         <div class="header-top">
@@ -124,14 +116,31 @@
       <section class="results" aria-label="Ergebnistabelle">
         <div class="results-toolbar">
           <p id="results-summary">Keine Daten geladen.</p>
-          <label class="page-size">
-            <span>Zeilen pro Seite</span>
-            <select id="page-size">
-              <option value="25">25</option>
-              <option value="50" selected>50</option>
-              <option value="100">100</option>
-            </select>
-          </label>
+          <div class="results-toolbar-actions">
+            <button type="button" id="btn-export-xlsx" class="btn btn-export" title="Aktuelle Trefferliste als XLSX exportieren">
+              <span class="export-icons" aria-hidden="true">
+                <svg class="icon-xlsx" viewBox="0 0 24 24" width="18" height="18" focusable="false">
+                  <rect x="3" y="2" width="18" height="20" rx="2" fill="#1d6f42"></rect>
+                  <path d="M7 7h10M7 11h10M7 15h6" stroke="#fff" stroke-width="1.6" stroke-linecap="round"></path>
+                  <text x="12" y="20" text-anchor="middle" fill="#fff" font-size="5.5" font-family="Arial,sans-serif" font-weight="700">XLS</text>
+                </svg>
+                <svg class="icon-export" viewBox="0 0 24 24" width="18" height="18" focusable="false">
+                  <path d="M12 3v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                  <path d="M8 7l4-4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                  <path d="M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                </svg>
+              </span>
+              <span>Export XLSX</span>
+            </button>
+            <label class="page-size">
+              <span>Zeilen pro Seite</span>
+              <select id="page-size">
+                <option value="25">25</option>
+                <option value="50" selected>50</option>
+                <option value="100">100</option>
+              </select>
+            </label>
+          </div>
         </div>
         <div class="table-scroll">
           <table id="doctors-table">
