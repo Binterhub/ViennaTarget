@@ -254,6 +254,9 @@ function matchesFilters(doc) {
     const city = normalize(doc.city);
     if (cityQ === normalize('(ohne Angabe)')) {
       if (city) return false;
+    } else if (el.filterCity.dataset.exact === '1') {
+      // Chart-bar clicks use exact Ort match (avoid Wien → Wiener Neustadt).
+      if (city !== cityQ) return false;
     } else if (!city.includes(cityQ)) {
       return false;
     }
@@ -313,6 +316,7 @@ function topCities(list, n = 10) {
 
 function selectOnlyCity(cityLabel) {
   el.filterCity.value = cityLabel || '';
+  el.filterCity.dataset.exact = cityLabel ? '1' : '';
 }
 
 function filterByCityFromChart(cityLabel) {
@@ -570,6 +574,7 @@ function resetFiltersToFocus() {
   el.filterPostal.value = '';
   el.filterGender.value = '';
   el.filterCity.value = '';
+  el.filterCity.dataset.exact = '';
   Array.from(el.filterSpec.options).forEach((o) => {
     o.selected = false;
   });
@@ -592,7 +597,11 @@ function bindEvents() {
     el.filterEvoid.addEventListener(evt, onFilterChange);
     el.filterPostal.addEventListener(evt, onFilterChange);
     el.filterGender.addEventListener(evt, onFilterChange);
-    el.filterCity.addEventListener(evt, onFilterChange);
+    el.filterCity.addEventListener(evt, () => {
+      // Typing switches back to contains-match; chart click sets exact=1.
+      el.filterCity.dataset.exact = '';
+      onFilterChange();
+    });
     el.filterSpec.addEventListener(evt, onFilterChange);
     el.filterAddSpec.addEventListener(evt, onFilterChange);
   });
