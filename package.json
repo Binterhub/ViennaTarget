@@ -1,12 +1,13 @@
 {
-  "name": "vienna-doctor-explorer",
+  "name": "neotarget",
   "version": "1.0.0",
-  "description": "Vienna Doctor Explorer – demonstrator for Evolantis DataMatcherAPI",
+  "description": "NeoTarget – explorer for Zusatzfach Neonatologie und pädriatrische Intensivmedizin via Evolantis DataMatcherAPI",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "test:api": "node scripts/test-api.js"
+    "test:api": "node scripts/test-api.js",
+    "test:smoke": "node scripts/smoke-local.js"
   },
   "engines": {
     "node": ">=18"

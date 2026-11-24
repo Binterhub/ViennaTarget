@@ -1,29 +1,36 @@
-# Vienna Doctor Explorer
+# NeoTarget
 
-Simple demonstrator web app for browsing and filtering doctors in **Wien** via the Evolantis **DataMatcherAPI**.
+Doctor-targeting web app focused on Zusatzfach **Neonatologie und pädriatrische Intensivmedizin**, adapted from the Vienna Target / Vienna Doctor Explorer approach.
 
-- Backend: Node.js + Express (JWT auth, in-memory cache, pagination)
+- Backend: Node.js + Express (password gate, DataMatcherAPI JWT auth, in-memory cache, pagination)
 - Frontend: HTML / CSS / Vanilla JS + Chart.js
-- No database, no end-user login
+- Login: simple shared password (`APP_PASSWORD`) with HttpOnly session cookie
+- No database
+
+## Product focus
+
+- **Default UX:** Zusatzfach `Neonatologie und pädriatrische Intensivmedizin` is pre-selected
+- **Not exclusive:** Server loads doctors for `SEARCH_COUNTRY` (default `Austria`); users can clear/expand Zusatzfach and browse other specializations
+- **Geography:** City is a client-side multi-select filter (not locked to Wien)
+- **Login hero:** Full DataDominance “Know Your Client” artwork
+- **Post-login hero:** Shorter simplified banner derived from the same source
 
 ## Features
 
-- Server-side API authentication (`X-API-Key` → JWT, auto-refresh)
-- Loads **all** Vienna doctors with pagination (`take` ≤ 500)
-- In-memory cache (default **15 minutes**)
-- Stats: total doctors, distinct main specializations, additional specializations, filtered hit count
-- Horizontal bar chart of the top 10 main specializations
-- Filters: name free-text, main/additional specialization (multi-select), EVOID
-- Postleitzahl / Geschlecht filters appear **only** if those fields exist in real API responses
-- Sortable table with page sizes 25 / 50 / 100
-- Health check at `/health`
-- Rate limiting on `/api/doctors`
+- Server-side login password check (password never shipped to the client bundle as a constant for comparison)
+- DataMatcherAPI: `X-API-Key` → JWT, auto-refresh on 401
+- Paginated upstream fetch (`take` ≤ 500), EVOID dedupe, 15‑minute cache
+- Stats: total, focus-Zusatzfach count, cities in current filter, filtered hit count
+- Top-10 cities chart for current results
+- Filters: name, EVOID, city, main specialization, additional specialization (+ PLZ/Geschlecht if present)
+- Sortable paginated table (25 / 50 / 100)
+- `/health`, rate-limited `/api/doctors` and `/api/login`
 
 ## Setup
 
 ```bash
 cp .env.example .env
-# Edit .env and set DATAMATCHER_API_URL + DATAMATCHER_API_KEY
+# Set APP_PASSWORD, SESSION_SECRET, DATAMATCHER_API_URL, DATAMATCHER_API_KEY
 npm install
 ```
 
@@ -31,63 +38,65 @@ npm install
 
 | Variable | Required | Description |
 |---|---|---|
-| `DATAMATCHER_API_URL` | yes (for live data) | Base URL of DataMatcherAPI (no trailing slash needed) |
-| `DATAMATCHER_API_KEY` | yes (for live data) | API key sent as `X-API-Key` to `/api/auth/token` |
-| `PORT` | no | Server port (default `3000`) |
-| `CACHE_TTL_MINUTES` | no | Cache lifetime in minutes (default `15`) |
-| `API_TIMEOUT_MS` | no | Upstream request timeout (default `30000`) |
+| `APP_PASSWORD` | yes | Shared login password |
+| `SESSION_SECRET` | yes (prod) | HMAC secret for session cookies |
+| `DATAMATCHER_API_URL` | yes (live data) | Base URL of DataMatcherAPI |
+| `DATAMATCHER_API_KEY` | yes (live data) | API key sent as `X-API-Key` |
+| `SEARCH_COUNTRY` | no | Default `Austria` |
+| `PORT` | no | Default `3000` |
+| `CACHE_TTL_MINUTES` | no | Default `15` |
+| `API_TIMEOUT_MS` | no | Default `30000` |
 
 ## Run locally
 
 ```bash
 npm start
-# open http://localhost:3000
+# open http://localhost:3000/login
 ```
-
-Development (auto-restart on file changes, Node 18+):
 
 ```bash
 npm run dev
 ```
 
-## API connection test
+## Tests
 
 ```bash
+# Upstream API (needs DATAMATCHER_API_URL + DATAMATCHER_API_KEY)
 npm run test:api
+
+# Local smoke against a running server (login gate, heroes, authz)
+# Tip: USE_MOCK_DATA=1 serves fixture doctors when the API URL is missing
+npm start &
+npm run test:smoke
 ```
 
-Verifies token issuance and a small Vienna doctor search against the configured upstream API.
+## Railway
 
-## Health check
-
-```bash
-curl http://localhost:3000/health
-```
-
-## Railway deployment
-
-1. Create a Railway project from this repository.
-2. Set environment variables: `DATAMATCHER_API_URL`, `DATAMATCHER_API_KEY` (and optionally `CACHE_TTL_MINUTES`).
-3. Deploy. Railway uses `railway.toml` / `Procfile` (`npm start`).
-4. Health check path: `/health`.
+1. Deploy from this repository / branch.
+2. Set `APP_PASSWORD`, `SESSION_SECRET`, `DATAMATCHER_API_URL`, `DATAMATCHER_API_KEY`.
+3. Health check: `/health`.
 
 ## Project layout
 
 ```
-├── server.js              # Express app entry
+├── server.js
 ├── src/
-│   ├── config.js          # Env config
-│   ├── cache.js           # In-memory TTL cache
-│   └── datamatcher.js     # JWT + paginated doctor fetch
-├── public/                # Static frontend
-├── scripts/test-api.js    # Connection smoke test
-├── .env.example
-├── railway.toml
-└── Procfile
+│   ├── auth.js            # Password gate + signed session cookie
+│   ├── config.js
+│   ├── cache.js
+│   └── datamatcher.js
+├── public/
+│   ├── login.html         # Full DataDominance hero
+│   ├── index.html         # App shell + short hero
+│   └── assets/
+├── scripts/
+│   ├── test-api.js
+│   └── smoke-local.js
+└── .env.example
 ```
 
 ## Notes
 
-- The city filter is fixed to **Wien** on the server; clients cannot query other cities.
+- Do not commit `.env` or real API keys / passwords.
 - API keys and JWTs never leave the backend.
-- Do not commit a real `.env` file.
+- This branch is a NeoTarget deliverable adapted inside the ViennaTarget checkout for handoff / rename to a dedicated NeoTarget repo if desired.

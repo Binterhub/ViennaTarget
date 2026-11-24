@@ -6,6 +6,14 @@ const rateLimit = require('express-rate-limit');
 const { config, hasApiCredentials } = require('./src/config');
 const { MemoryCache } = require('./src/cache');
 const { DataMatcherClient } = require('./src/datamatcher');
+const { getMockPayload } = require('./src/fixtures');
+const {
+  isAuthenticated,
+  createSessionCookie,
+  clearSessionCookie,
+  verifyPassword,
+  requireAuth,
+} = require('./src/auth');
 
 const app = express();
 const client = new DataMatcherClient();
@@ -27,19 +35,79 @@ const apiLimiter = rateLimit({
   },
 });
 
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    error: 'Zu viele Anmeldeversuche. Bitte später erneut versuchen.',
+  },
+});
+
 app.get('/health', (_req, res) => {
   const meta = cache.meta();
   res.json({
     status: 'ok',
-    service: 'vienna-doctor-explorer',
+    service: 'neotarget',
+    focus: config.focusAdditionalSpecialization,
     timestamp: new Date().toISOString(),
     configured: hasApiCredentials(),
+    loginConfigured: Boolean(config.appPassword),
     cache: meta,
   });
 });
 
+app.get('/api/meta', (_req, res) => {
+  res.json({
+    service: 'neotarget',
+    focus: config.focusAdditionalSpecialization,
+    country: config.country,
+    configured: hasApiCredentials(),
+    authenticated: isAuthenticated(_req),
+  });
+});
+
+app.get('/api/session', (req, res) => {
+  res.json({
+    success: true,
+    authenticated: isAuthenticated(req),
+  });
+});
+
+app.post('/api/login', loginLimiter, (req, res) => {
+  if (!config.appPassword) {
+    return res.status(503).json({
+      success: false,
+      error: 'Login ist nicht konfiguriert (APP_PASSWORD fehlt).',
+    });
+  }
+
+  const password = req.body && typeof req.body.password === 'string' ? req.body.password : '';
+  if (!verifyPassword(password)) {
+    return res.status(401).json({
+      success: false,
+      error: 'Passwort ist ungültig.',
+    });
+  }
+
+  res.setHeader('Set-Cookie', createSessionCookie());
+  return res.json({ success: true });
+});
+
+app.post('/api/logout', (req, res) => {
+  res.setHeader('Set-Cookie', clearSessionCookie());
+  res.json({ success: true });
+});
+
 async function loadDoctors({ force = false } = {}) {
   if (!hasApiCredentials()) {
+    if (config.useMockData) {
+      const payload = getMockPayload();
+      cache.set(payload);
+      return { ...payload, fromCache: false, stale: false };
+    }
     const error = new Error(
       'DataMatcherAPI ist nicht konfiguriert. Bitte DATAMATCHER_API_URL und DATAMATCHER_API_KEY setzen.'
     );
@@ -59,7 +127,7 @@ async function loadDoctors({ force = false } = {}) {
   }
 
   refreshPromise = (async () => {
-    const payload = await client.fetchAllViennaDoctors();
+    const payload = await client.fetchAllFocusDoctors();
     cache.set(payload);
     return payload;
   })();
@@ -72,7 +140,7 @@ async function loadDoctors({ force = false } = {}) {
   }
 }
 
-app.get('/api/doctors', apiLimiter, async (req, res) => {
+app.get('/api/doctors', apiLimiter, requireAuth, async (req, res) => {
   const force = String(req.query.refresh || '') === '1';
 
   try {
@@ -83,6 +151,8 @@ app.get('/api/doctors', apiLimiter, async (req, res) => {
       total: data.total,
       fetchedAt: data.fetchedAt,
       fields: data.fields,
+      focus: data.focus || config.focusAdditionalSpecialization,
+      country: data.country || config.country,
       fromCache: data.fromCache,
       stale: false,
       warning: null,
@@ -97,6 +167,8 @@ app.get('/api/doctors', apiLimiter, async (req, res) => {
         total: stale.total,
         fetchedAt: stale.fetchedAt,
         fields: stale.fields,
+        focus: stale.focus || config.focusAdditionalSpecialization,
+        country: stale.country || config.country,
         fromCache: true,
         stale: true,
         warning:
@@ -113,6 +185,8 @@ app.get('/api/doctors', apiLimiter, async (req, res) => {
       total: 0,
       fetchedAt: null,
       fields: { postalCode: false, gender: false, postalKey: null, genderKey: null },
+      focus: config.focusAdditionalSpecialization,
+      country: config.country,
       fromCache: false,
       stale: false,
       warning: null,
@@ -121,10 +195,34 @@ app.get('/api/doctors', apiLimiter, async (req, res) => {
   }
 });
 
-app.use(express.static(path.join(__dirname, 'public')));
+const publicDir = path.join(__dirname, 'public');
 
-app.get('*', (_req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// Public assets for login + shared static files
+app.use('/assets', express.static(path.join(publicDir, 'assets')));
+app.get('/login.css', (_req, res) => res.sendFile(path.join(publicDir, 'login.css')));
+app.get('/login.js', (_req, res) => res.sendFile(path.join(publicDir, 'login.js')));
+
+app.get('/login', (req, res) => {
+  if (isAuthenticated(req)) return res.redirect('/');
+  res.sendFile(path.join(publicDir, 'login.html'));
+});
+
+// Protect app shell + authenticated static assets
+app.get('/', requireAuth, (_req, res) => {
+  res.sendFile(path.join(publicDir, 'index.html'));
+});
+
+app.get('/styles.css', requireAuth, (_req, res) => {
+  res.sendFile(path.join(publicDir, 'styles.css'));
+});
+
+app.get('/app.js', requireAuth, (_req, res) => {
+  res.sendFile(path.join(publicDir, 'app.js'));
+});
+
+app.get('*', (req, res) => {
+  if (!isAuthenticated(req)) return res.redirect('/login');
+  res.sendFile(path.join(publicDir, 'index.html'));
 });
 
 app.use((err, _req, res, _next) => {
@@ -137,7 +235,11 @@ app.use((err, _req, res, _next) => {
 
 if (require.main === module) {
   app.listen(config.port, () => {
-    console.log(`Vienna Doctor Explorer listening on port ${config.port}`);
+    console.log(`NeoTarget listening on port ${config.port}`);
+    console.log(`Focus Zusatzfach: ${config.focusAdditionalSpecialization}`);
+    if (!config.appPassword) {
+      console.warn('Warning: APP_PASSWORD not set. Login will fail until configured.');
+    }
     if (!hasApiCredentials()) {
       console.warn(
         'Warning: DATAMATCHER_API_URL / DATAMATCHER_API_KEY not set. Configure .env before loading doctors.'

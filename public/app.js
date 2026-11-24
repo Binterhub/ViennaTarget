@@ -1,5 +1,7 @@
 'use strict';
 
+const FOCUS_ZUSATZFACH = 'Neonatologie und pädriatrische Intensivmedizin';
+
 const state = {
   doctors: [],
   fields: { postalCode: false, gender: false, postalKey: null, genderKey: null },
@@ -10,26 +12,31 @@ const state = {
   pageSize: 50,
   chart: null,
   fetchedAt: null,
+  focus: FOCUS_ZUSATZFACH,
 };
 
 const el = {
   banner: document.getElementById('banner'),
   statTotal: document.getElementById('stat-total'),
-  statSpecs: document.getElementById('stat-specs'),
-  statAdditional: document.getElementById('stat-additional'),
+  statFocus: document.getElementById('stat-focus'),
+  statCities: document.getElementById('stat-cities'),
   statFiltered: document.getElementById('stat-filtered'),
-  chart: document.getElementById('spec-chart'),
+  chart: document.getElementById('city-chart'),
   filterName: document.getElementById('filter-name'),
   filterEvoid: document.getElementById('filter-evoid'),
   filterPostal: document.getElementById('filter-postal'),
   filterGender: document.getElementById('filter-gender'),
+  filterCity: document.getElementById('filter-city'),
   filterSpec: document.getElementById('filter-spec'),
   filterAddSpec: document.getElementById('filter-addspec'),
   fieldPostal: document.getElementById('field-postal'),
   fieldGender: document.getElementById('field-gender'),
   thPostal: document.getElementById('th-postal'),
+  btnFocus: document.getElementById('btn-focus'),
+  btnAllSpecs: document.getElementById('btn-all-specs'),
   btnReset: document.getElementById('btn-reset'),
   btnRefresh: document.getElementById('btn-refresh'),
+  btnLogout: document.getElementById('btn-logout'),
   lastUpdated: document.getElementById('last-updated'),
   resultsSummary: document.getElementById('results-summary'),
   pageSize: document.getElementById('page-size'),
@@ -85,10 +92,10 @@ function uniqueSorted(values) {
   return Array.from(set).sort(compareDe);
 }
 
-function fillSelect(select, options, { keepSelection = true } = {}) {
+function fillSelect(select, options, { keepSelection = true, preferSelected = [] } = {}) {
   const previous = keepSelection
     ? new Set(Array.from(select.selectedOptions).map((o) => o.value))
-    : new Set();
+    : new Set(preferSelected);
   select.innerHTML = '';
   for (const opt of options) {
     const option = document.createElement('option');
@@ -101,6 +108,23 @@ function fillSelect(select, options, { keepSelection = true } = {}) {
 
 function selectedValues(select) {
   return Array.from(select.selectedOptions).map((o) => o.value);
+}
+
+function hasFocusZusatzfach(doc) {
+  const raw = text(doc.additionalspecialization);
+  if (!raw) return false;
+  const focus = normalize(FOCUS_ZUSATZFACH);
+  // Field may contain comma-separated values (OR semantics upstream).
+  // Match exact focus string, or a part that equals / fully contains the focus —
+  // never match shorter unrelated Zusatzfächer like plain "Intensivmedizin".
+  return raw
+    .split(',')
+    .map((part) => normalize(part))
+    .some((part) => part === focus || part.includes(focus));
+}
+
+function countFocusDoctors() {
+  return state.doctors.filter(hasFocusZusatzfach).length;
 }
 
 function applyOptionalFields() {
@@ -124,16 +148,55 @@ function applyOptionalFields() {
   }
 }
 
-function populateFilterOptions() {
-  fillSelect(
-    el.filterSpec,
-    uniqueSorted(state.doctors.map((d) => d.specialization))
-  );
-  fillSelect(
-    el.filterAddSpec,
-    uniqueSorted(state.doctors.map((d) => d.additionalspecialization))
-  );
+function populateFilterOptions({ applyFocusDefault = false } = {}) {
+  fillSelect(el.filterCity, uniqueSorted(state.doctors.map((d) => d.city)));
+  fillSelect(el.filterSpec, uniqueSorted(state.doctors.map((d) => d.specialization)));
+
+  const addSpecs = uniqueSorted(state.doctors.map((d) => d.additionalspecialization));
+  // Ensure focus label is present even if spelling variants differ in data
+  if (!addSpecs.includes(FOCUS_ZUSATZFACH)) {
+    // Prefer exact match variants already in data; otherwise inject focus string for UX
+    const focusNorm = normalize(FOCUS_ZUSATZFACH);
+    const existing = addSpecs.find((s) => normalize(s) === focusNorm || normalize(s).includes(focusNorm));
+    if (!existing) addSpecs.unshift(FOCUS_ZUSATZFACH);
+  }
+
+  const prefer = applyFocusDefault ? [FOCUS_ZUSATZFACH] : undefined;
+  fillSelect(el.filterAddSpec, addSpecs, {
+    keepSelection: !applyFocusDefault,
+    preferSelected: prefer || [],
+  });
+
+  // If focus string was injected but data uses a close variant, select that variant too
+  if (applyFocusDefault) {
+    selectFocusZusatzfach();
+  }
+
   applyOptionalFields();
+}
+
+function selectFocusZusatzfach() {
+  const focusNorm = normalize(FOCUS_ZUSATZFACH);
+  let matched = false;
+  Array.from(el.filterAddSpec.options).forEach((o) => {
+    const n = normalize(o.value);
+    // Exact match only (or option text that fully contains the focus phrase).
+    // Do NOT use focusNorm.includes(n) — that wrongly selects "Intensivmedizin".
+    const isFocus = n === focusNorm || n.includes(focusNorm);
+    o.selected = isFocus;
+    if (isFocus) matched = true;
+  });
+  if (!matched) {
+    Array.from(el.filterAddSpec.options).forEach((o) => {
+      o.selected = o.value === FOCUS_ZUSATZFACH;
+    });
+  }
+}
+
+function clearAddSpecSelection() {
+  Array.from(el.filterAddSpec.options).forEach((o) => {
+    o.selected = false;
+  });
 }
 
 function matchesFilters(doc) {
@@ -141,7 +204,12 @@ function matchesFilters(doc) {
   if (nameQ) {
     const full = `${normalize(doc.firstname)} ${normalize(doc.lastname)}`;
     const reverse = `${normalize(doc.lastname)} ${normalize(doc.firstname)}`;
-    if (!full.includes(nameQ) && !reverse.includes(nameQ) && !normalize(doc.firstname).includes(nameQ) && !normalize(doc.lastname).includes(nameQ)) {
+    if (
+      !full.includes(nameQ) &&
+      !reverse.includes(nameQ) &&
+      !normalize(doc.firstname).includes(nameQ) &&
+      !normalize(doc.lastname).includes(nameQ)
+    ) {
       return false;
     }
   }
@@ -159,12 +227,20 @@ function matchesFilters(doc) {
     if (genderQ && text(getGender(doc)) !== genderQ) return false;
   }
 
+  const cities = selectedValues(el.filterCity);
+  if (cities.length && !cities.includes(text(doc.city).trim())) return false;
+
   const specs = selectedValues(el.filterSpec);
   if (specs.length && !specs.includes(text(doc.specialization).trim())) return false;
 
   const addSpecs = selectedValues(el.filterAddSpec);
-  if (addSpecs.length && !addSpecs.includes(text(doc.additionalspecialization).trim())) {
-    return false;
+  if (addSpecs.length) {
+    const docAdd = text(doc.additionalspecialization).trim();
+    const parts = docAdd
+      ? docAdd.split(',').map((p) => p.trim())
+      : [docAdd];
+    const hit = addSpecs.some((sel) => parts.includes(sel) || docAdd === sel);
+    if (!hit) return false;
   }
 
   return true;
@@ -191,22 +267,14 @@ function sortDoctors(list) {
 }
 
 function computeBaseStats() {
-  const specs = new Set();
-  let withAdditional = 0;
-  for (const d of state.doctors) {
-    const s = text(d.specialization).trim();
-    if (s) specs.add(s);
-    if (text(d.additionalspecialization).trim()) withAdditional += 1;
-  }
   el.statTotal.textContent = String(state.doctors.length);
-  el.statSpecs.textContent = String(specs.size);
-  el.statAdditional.textContent = String(withAdditional);
+  el.statFocus.textContent = String(countFocusDoctors());
 }
 
-function topSpecializations(list, n = 10) {
+function topCities(list, n = 10) {
   const counts = new Map();
   for (const d of list) {
-    const s = text(d.specialization).trim() || '(ohne Angabe)';
+    const s = text(d.city).trim() || '(ohne Angabe)';
     counts.set(s, (counts.get(s) || 0) + 1);
   }
   return Array.from(counts.entries())
@@ -215,9 +283,12 @@ function topSpecializations(list, n = 10) {
 }
 
 function renderChart(list) {
-  const top = topSpecializations(list, 10);
+  const top = topCities(list, 10);
   const labels = top.map(([name]) => name);
   const values = top.map(([, count]) => count);
+
+  const cities = new Set(list.map((d) => text(d.city).trim()).filter(Boolean));
+  el.statCities.textContent = String(cities.size);
 
   if (state.chart) {
     state.chart.data.labels = labels;
@@ -236,7 +307,7 @@ function renderChart(list) {
         {
           label: 'Anzahl',
           data: values,
-          backgroundColor: '#0b3d6e',
+          backgroundColor: '#0a5c5a',
           borderRadius: 3,
         },
       ],
@@ -259,7 +330,7 @@ function renderChart(list) {
         x: {
           beginAtZero: true,
           ticks: { precision: 0 },
-          grid: { color: '#e4ebf3' },
+          grid: { color: '#dce8e6' },
         },
         y: {
           ticks: {
@@ -353,13 +424,28 @@ function updateSortHeaders() {
   });
 }
 
+async function logout() {
+  try {
+    await fetch('/api/logout', { method: 'POST', headers: { Accept: 'application/json' } });
+  } catch {
+    // still leave the app shell
+  }
+  window.location.href = '/login';
+}
+
 async function loadDoctors({ refresh = false } = {}) {
   showBanner(refresh ? 'Daten werden aktualisiert…' : 'Daten werden geladen…');
   el.tbody.innerHTML = `<tr><td colspan="7" class="empty">Daten werden geladen…</td></tr>`;
 
   try {
     const url = refresh ? '/api/doctors?refresh=1' : '/api/doctors';
-    const res = await fetch(url, { headers: { Accept: 'application/json' } });
+    const res = await fetch(url, { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
+
+    if (res.status === 401) {
+      window.location.href = '/login';
+      return;
+    }
+
     const data = await res.json();
 
     if (!data.success && (!data.doctors || data.doctors.length === 0)) {
@@ -367,6 +453,7 @@ async function loadDoctors({ refresh = false } = {}) {
       state.filtered = [];
       computeBaseStats();
       el.statFiltered.textContent = '0';
+      el.statCities.textContent = '0';
       showBanner(data.error || 'Daten konnten nicht geladen werden.', 'error');
       el.tbody.innerHTML = `<tr><td colspan="7" class="empty">${escapeHtml(data.error || 'Keine Daten')}</td></tr>`;
       el.lastUpdated.textContent = formatUpdated(null);
@@ -376,28 +463,31 @@ async function loadDoctors({ refresh = false } = {}) {
     state.doctors = Array.isArray(data.doctors) ? data.doctors : [];
     state.fields = data.fields || state.fields;
     state.fetchedAt = data.fetchedAt;
+    state.focus = data.focus || FOCUS_ZUSATZFACH;
     state.page = 1;
 
-    populateFilterOptions();
+    populateFilterOptions({ applyFocusDefault: true });
     computeBaseStats();
     refreshView();
     updateSortHeaders();
     el.lastUpdated.textContent = formatUpdated(data.fetchedAt);
+
+    const focusCount = countFocusDoctors();
 
     if (data.warning) {
       showBanner(data.warning, 'warn');
     } else if (data.stale) {
       showBanner('Zwischengespeicherte Daten werden angezeigt.', 'warn');
     } else if (state.doctors.length === 0) {
-      showBanner('Keine Ärztedaten für Wien gefunden.', 'warn');
+      showBanner('Keine Ärztedaten für das Land gefunden.', 'warn');
     } else {
       showBanner(
         data.fromCache
-          ? `Daten aus dem Cache (${state.doctors.length} Einträge).`
-          : `${state.doctors.length} Ärztinnen und Ärzte geladen.`,
+          ? `Daten aus dem Cache (${state.doctors.length} gesamt, ${focusCount} mit Fokus-Zusatzfach).`
+          : `${state.doctors.length} Ärztinnen und Ärzte geladen · ${focusCount} mit Fokus „${FOCUS_ZUSATZFACH}“.`,
         'info'
       );
-      setTimeout(() => showBanner(''), 3500);
+      setTimeout(() => showBanner(''), 4000);
     }
   } catch {
     showBanner('Netzwerkfehler beim Laden der Daten.', 'error');
@@ -405,17 +495,18 @@ async function loadDoctors({ refresh = false } = {}) {
   }
 }
 
-function resetFilters() {
+function resetFiltersToFocus() {
   el.filterName.value = '';
   el.filterEvoid.value = '';
   el.filterPostal.value = '';
   el.filterGender.value = '';
+  Array.from(el.filterCity.options).forEach((o) => {
+    o.selected = false;
+  });
   Array.from(el.filterSpec.options).forEach((o) => {
     o.selected = false;
   });
-  Array.from(el.filterAddSpec.options).forEach((o) => {
-    o.selected = false;
-  });
+  selectFocusZusatzfach();
   state.page = 1;
   refreshView();
 }
@@ -431,12 +522,26 @@ function bindEvents() {
     el.filterEvoid.addEventListener(evt, onFilterChange);
     el.filterPostal.addEventListener(evt, onFilterChange);
     el.filterGender.addEventListener(evt, onFilterChange);
+    el.filterCity.addEventListener(evt, onFilterChange);
     el.filterSpec.addEventListener(evt, onFilterChange);
     el.filterAddSpec.addEventListener(evt, onFilterChange);
   });
 
-  el.btnReset.addEventListener('click', resetFilters);
+  el.btnFocus.addEventListener('click', () => {
+    selectFocusZusatzfach();
+    state.page = 1;
+    refreshView();
+  });
+
+  el.btnAllSpecs.addEventListener('click', () => {
+    clearAddSpecSelection();
+    state.page = 1;
+    refreshView();
+  });
+
+  el.btnReset.addEventListener('click', resetFiltersToFocus);
   el.btnRefresh.addEventListener('click', () => loadDoctors({ refresh: true }));
+  el.btnLogout.addEventListener('click', logout);
 
   el.pageSize.addEventListener('change', () => {
     state.pageSize = Number(el.pageSize.value) || 50;

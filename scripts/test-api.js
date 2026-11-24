@@ -1,14 +1,17 @@
 'use strict';
 
 /**
- * Simple DataMatcherAPI connection test.
+ * Simple DataMatcherAPI connection test for NeoTarget.
  * Usage: npm run test:api
  */
 require('dotenv').config();
 
+const { FOCUS_ADDITIONAL_SPECIALIZATION } = require('../src/config');
+
 const baseUrl = (process.env.DATAMATCHER_API_URL || '').replace(/\/+$/, '');
 const apiKey = process.env.DATAMATCHER_API_KEY || '';
 const timeoutMs = Number(process.env.API_TIMEOUT_MS) || 30000;
+const country = process.env.SEARCH_COUNTRY || 'Austria';
 
 function fail(message, code = 1) {
   console.error(`FAIL: ${message}`);
@@ -26,8 +29,9 @@ async function fetchWithTimeout(url, options) {
 }
 
 async function main() {
-  console.log('Vienna Doctor Explorer – API connection test');
-  console.log('-------------------------------------------');
+  console.log('NeoTarget – API connection test');
+  console.log('--------------------------------');
+  console.log(`Focus (UI default): ${FOCUS_ADDITIONAL_SPECIALIZATION}`);
 
   if (!baseUrl || !apiKey) {
     fail(
@@ -60,6 +64,8 @@ async function main() {
   }
   console.log(`Token OK (expiresIn=${tokenBody.expiresIn ?? 'n/a'})`);
 
+  // Broad country pull (app default dataset)
+  const broadPayload = [{ country }];
   let searchRes;
   try {
     searchRes = await fetchWithTimeout(`${baseUrl}/api/doctorsearch?skip=0&take=5`, {
@@ -69,7 +75,7 @@ async function main() {
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },
-      body: JSON.stringify([{ country: 'Austria', city: 'Wien' }]),
+      body: JSON.stringify(broadPayload),
     });
   } catch (err) {
     fail(`Doctor search failed: ${err.message}`);
@@ -90,12 +96,53 @@ async function main() {
     fail('Unexpected search response shape');
   }
 
-  console.log(`Search OK (${results.length} row(s) in first page sample)`);
-  if (results[0]) {
-    const sample = results[0];
-    console.log(
-      `Sample fields: ${Object.keys(sample).join(', ')}`
-    );
+  console.log(`Broad search OK (${results.length} row(s) in first page sample)`);
+
+  // Focus Zusatzfach sample
+  const focusPayload = [
+    {
+      country,
+      additionalspecialization: FOCUS_ADDITIONAL_SPECIALIZATION,
+    },
+  ];
+  let focusRes;
+  try {
+    focusRes = await fetchWithTimeout(`${baseUrl}/api/doctorsearch?skip=0&take=5`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${tokenBody.accessToken}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(focusPayload),
+    });
+  } catch (err) {
+    fail(`Focus search failed: ${err.message}`);
+  }
+
+  if (!focusRes.ok) {
+    fail(`Focus search returned HTTP ${focusRes.status}`);
+  }
+
+  const focusBody = await focusRes.json();
+  const focusResults = Array.isArray(focusBody)
+    ? focusBody
+    : Array.isArray(focusBody.results)
+      ? focusBody.results
+      : null;
+
+  if (!focusResults) {
+    fail('Unexpected focus search response shape');
+  }
+
+  console.log(
+    `Focus search OK (${focusResults.length} row(s) for „${FOCUS_ADDITIONAL_SPECIALIZATION}“)`
+  );
+  if (focusResults[0]) {
+    console.log(`Sample fields: ${Object.keys(focusResults[0]).join(', ')}`);
+    if (focusResults[0].additionalspecialization) {
+      console.log(`Sample Zusatzfach: ${focusResults[0].additionalspecialization}`);
+    }
   }
   console.log('PASS');
 }

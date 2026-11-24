@@ -99,10 +99,22 @@ class DataMatcherClient {
     return { results: [], resultCount: 0 };
   }
 
+  /**
+   * Broad Austria (or SEARCH_COUNTRY) pull — focus Zusatzfach is a client default,
+   * not an exclusive server lock (mirrors Vienna Target's city focus).
+   */
+  searchPayload() {
+    return [
+      {
+        country: config.country,
+      },
+    ];
+  }
+
   async searchPage(skip, take, { retried = false } = {}) {
     const token = await this.getToken();
     const url = `${config.apiUrl}/api/doctorsearch?skip=${skip}&take=${take}`;
-    const payload = [{ country: 'Austria', city: 'Wien' }];
+    const payload = this.searchPayload();
 
     let response;
     try {
@@ -151,10 +163,11 @@ class DataMatcherClient {
   }
 
   /**
-   * Fetch all Vienna doctors via pagination (take max 500).
-   * Deduplicate by evoid.
+   * Fetch all doctors for the configured country via pagination (take max 500).
+   * Deduplicate by evoid. NeoTarget emphasizes Zusatzfach
+   * "Neonatologie und pädriatrische Intensivmedizin" in the UI as the default filter.
    */
-  async fetchAllViennaDoctors() {
+  async fetchAllFocusDoctors() {
     const take = config.pageSize;
     const byId = new Map();
     let skip = 0;
@@ -175,10 +188,7 @@ class DataMatcherClient {
         }
       }
 
-      // Empty array / no results → done
       if (page.results.length === 0) break;
-
-      // Fewer than requested → last page
       if (page.results.length < take) break;
 
       skip += take;
@@ -192,6 +202,8 @@ class DataMatcherClient {
       total: doctors.length,
       fetchedAt: new Date().toISOString(),
       fields: fieldFlags,
+      focus: config.focusAdditionalSpecialization,
+      country: config.country,
     };
   }
 }
@@ -211,7 +223,6 @@ function detectOptionalFields(doctors) {
           break;
         }
       }
-      // Also detect key present even if empty on first rows
       if (!hasPostal) {
         for (const key of OPTIONAL_POSTAL_KEYS) {
           if (Object.prototype.hasOwnProperty.call(doc, key)) {

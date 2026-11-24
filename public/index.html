@@ -3,11 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Vienna Doctor Explorer</title>
+    <title>NeoTarget – Neonatologie und pädriatrische Intensivmedizin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/styles.css" />
@@ -15,10 +15,26 @@
     <script src="/app.js" defer></script>
   </head>
   <body>
+    <div class="app-hero" aria-hidden="true">
+      <img
+        src="/assets/datadominance-app-hero.jpg"
+        alt=""
+        width="1600"
+        height="180"
+      />
+    </div>
+
     <header class="site-header">
       <div class="header-inner">
-        <h1>Vienna Doctor Explorer</h1>
-        <p class="subtitle">Powered by Evolantis DataMatcherAPI</p>
+        <div class="header-top">
+          <p class="brand">NeoTarget</p>
+          <button type="button" id="btn-logout" class="btn btn-ghost">Abmelden</button>
+        </div>
+        <h1>Neonatologie und pädriatrische Intensivmedizin</h1>
+        <p class="subtitle">
+          Doctor-Targeting mit Fokus auf Zusatzfach Neonatologie und pädriatrische Intensivmedizin –
+          andere Fachgebiete bleiben über die Filter erreichbar. Powered by Evolantis DataMatcherAPI.
+        </p>
       </div>
     </header>
 
@@ -28,16 +44,16 @@
       <section class="stats" aria-label="Statistiken">
         <div class="stat-grid">
           <article class="stat-tile">
-            <p class="stat-label">Ärzte in Wien</p>
+            <p class="stat-label">Gesamt (Land)</p>
             <p class="stat-value" id="stat-total">–</p>
           </article>
           <article class="stat-tile">
-            <p class="stat-label">Hauptfachgebiete</p>
-            <p class="stat-value" id="stat-specs">–</p>
+            <p class="stat-label">Fokus-Zusatzfach</p>
+            <p class="stat-value" id="stat-focus">–</p>
           </article>
           <article class="stat-tile">
-            <p class="stat-label">Mit Zusatzfach</p>
-            <p class="stat-value" id="stat-additional">–</p>
+            <p class="stat-label">Orte (Filter)</p>
+            <p class="stat-value" id="stat-cities">–</p>
           </article>
           <article class="stat-tile">
             <p class="stat-label">Aktuelle Treffer</p>
@@ -45,18 +61,27 @@
           </article>
         </div>
         <div class="chart-wrap">
-          <h2 class="section-title">Top 10 Hauptfachgebiete</h2>
-          <canvas id="spec-chart" height="120" aria-label="Balkendiagramm Fachgebiete"></canvas>
+          <h2 class="section-title">Top 10 Orte (aktuelle Treffer)</h2>
+          <canvas id="city-chart" height="120" aria-label="Balkendiagramm Orte"></canvas>
         </div>
       </section>
 
       <section class="filters" aria-label="Filter">
         <h2 class="section-title">Suche &amp; Filter</h2>
+        <p class="focus-note">
+          Standardmäßig ist Zusatzfach
+          <strong>Neonatologie und pädriatrische Intensivmedizin</strong>
+          vorausgewählt. Auswahl aufheben oder erweitern, um alle geladenen Ärztinnen und Ärzte zu durchsuchen.
+        </p>
+        <div class="focus-actions">
+          <button type="button" id="btn-focus" class="btn btn-primary">Nur Fokus-Zusatzfach</button>
+          <button type="button" id="btn-all-specs" class="btn btn-secondary">Alle Zusatzfächer</button>
+        </div>
         <form id="filter-form" class="filter-form" autocomplete="off">
           <div class="filter-row">
             <label class="field">
               <span>Name (Vor- / Nachname)</span>
-              <input type="search" id="filter-name" name="name" placeholder="z. B. Gnant" />
+              <input type="search" id="filter-name" name="name" placeholder="z. B. Huber" />
             </label>
             <label class="field">
               <span>Evolantis-ID (EVOID)</span>
@@ -75,16 +100,22 @@
           </div>
           <div class="filter-row">
             <label class="field field-wide">
+              <span>Ort (Mehrfachauswahl)</span>
+              <select id="filter-city" name="city" multiple size="5"></select>
+            </label>
+            <label class="field field-wide">
               <span>Hauptfachgebiet (Mehrfachauswahl)</span>
               <select id="filter-spec" name="specialization" multiple size="5"></select>
             </label>
+          </div>
+          <div class="filter-row">
             <label class="field field-wide">
               <span>Zusatzfachgebiet (Mehrfachauswahl)</span>
-              <select id="filter-addspec" name="additionalspecialization" multiple size="5"></select>
+              <select id="filter-addspec" name="additionalspecialization" multiple size="6"></select>
             </label>
           </div>
           <div class="filter-actions">
-            <button type="button" id="btn-reset" class="btn btn-secondary">Filter zurücksetzen</button>
+            <button type="button" id="btn-reset" class="btn btn-secondary">Filter zurücksetzen (Fokus)</button>
             <button type="button" id="btn-refresh" class="btn btn-secondary">Daten aktualisieren</button>
             <p class="meta" id="last-updated">Letzte Aktualisierung: –</p>
           </div>
@@ -112,7 +143,7 @@
                 <th data-sort="firstname">Vorname</th>
                 <th data-sort="lastname" class="sorted asc">Nachname</th>
                 <th data-sort="specialization">Hauptfachgebiet</th>
-                <th data-sort="additionalspecialization">Zusatzfachgebiet</th>
+                <th data-sort="additionalspecialization">Zusatzfach</th>
                 <th data-sort="city">Ort</th>
                 <th data-sort="postal" id="th-postal" hidden>Postleitzahl</th>
               </tr>
@@ -133,7 +164,7 @@
     </main>
 
     <footer class="site-footer">
-      <p>© Evolantis IT-Solutions GmbH | Powered by DataMatcherAPI</p>
+      <p>NeoTarget · © Evolantis IT-Solutions GmbH | Powered by DataMatcherAPI</p>
     </footer>
   </body>
 </html>
