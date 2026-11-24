@@ -165,7 +165,7 @@ class DataMatcherClient {
   /**
    * Fetch all doctors for the configured country via pagination (take max 500).
    * Deduplicate by evoid. NeoTarget emphasizes Zusatzfach
-   * "Neonatologie und pädriatrische Intensivmedizin" in the UI as the default filter.
+   * "Neonatologie und Pädiatrische Intensivmedizin" in the UI as the default filter.
    */
   async fetchAllFocusDoctors() {
     const take = config.pageSize;

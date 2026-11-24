@@ -1,6 +1,6 @@
 # NeoTarget
 
-Doctor-targeting web app focused on Zusatzfach **Neonatologie und pädriatrische Intensivmedizin**, adapted from the Vienna Target / Vienna Doctor Explorer approach.
+Doctor-targeting web app focused on Zusatzfach **Neonatologie und Pädiatrische Intensivmedizin**, adapted from the Vienna Target / Vienna Doctor Explorer approach.
 
 - Backend: Node.js + Express (password gate, DataMatcherAPI JWT auth, in-memory cache, pagination)
 - Frontend: HTML / CSS / Vanilla JS + Chart.js
@@ -9,7 +9,7 @@ Doctor-targeting web app focused on Zusatzfach **Neonatologie und pädriatrische
 
 ## Product focus
 
-- **Default UX:** Zusatzfach `Neonatologie und pädriatrische Intensivmedizin` is pre-selected
+- **Default UX:** Zusatzfach `Neonatologie und Pädiatrische Intensivmedizin` is pre-selected
 - **Not exclusive:** Server loads doctors for `SEARCH_COUNTRY` (default `Austria`); users can clear/expand Zusatzfach and browse other specializations
 - **Geography:** City is a client-side multi-select filter (not locked to Wien)
 - **Login hero:** Full DataDominance “Know Your Client” artwork

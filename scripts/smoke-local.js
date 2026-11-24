@@ -82,7 +82,7 @@ async function main() {
   if (!appHtml.includes('datadominance-app-hero.jpg')) {
     fail('app page missing short post-login hero');
   }
-  if (!appHtml.includes('Neonatologie und pädriatrische Intensivmedizin')) {
+  if (!appHtml.includes('Neonatologie und Pädiatrische Intensivmedizin')) {
     fail('app page missing focus Zusatzfach copy');
   }
   ok('authenticated app shell + short hero');
@@ -102,7 +102,7 @@ async function main() {
     if (!doctorsBody.success) fail('200 doctors payload not success');
     if (!Array.isArray(doctorsBody.doctors)) fail('doctors array missing');
     ok(`/api/doctors returned ${doctorsBody.total ?? doctorsBody.doctors.length} doctors`);
-    if (doctorsBody.focus !== 'Neonatologie und pädriatrische Intensivmedizin') {
+    if (doctorsBody.focus !== 'Neonatologie und Pädiatrische Intensivmedizin') {
       fail(`unexpected focus: ${doctorsBody.focus}`);
     }
     ok('focus Zusatzfach present in payload');

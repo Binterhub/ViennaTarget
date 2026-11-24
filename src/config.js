@@ -9,7 +9,7 @@ function positiveInt(value, fallback) {
 
 /** Fixed Zusatzfach / additionalspecialization used for all NeoTarget searches. */
 const FOCUS_ADDITIONAL_SPECIALIZATION =
-  'Neonatologie und pädriatrische Intensivmedizin';
+  'Neonatologie und Pädiatrische Intensivmedizin';
 
 const config = {
   port: positiveInt(process.env.PORT, 3000),

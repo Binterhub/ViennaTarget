@@ -1,6 +1,14 @@
 'use strict';
 
-const FOCUS_ZUSATZFACH = 'Neonatologie und pädriatrische Intensivmedizin';
+const FOCUS_ZUSATZFACH = 'Neonatologie und Pädiatrische Intensivmedizin';
+
+// Live API spelling; also accept earlier typo variant in UI matching.
+const FOCUS_ZUSATZFACH_ALIASES = [
+  FOCUS_ZUSATZFACH,
+  'Neonatologie und pädriatrische Intensivmedizin',
+  'Neonatologie und pädiatrische Intensivmedizin',
+];
+
 
 const state = {
   doctors: [],
@@ -110,17 +118,20 @@ function selectedValues(select) {
   return Array.from(select.selectedOptions).map((o) => o.value);
 }
 
+function focusAliasNorms() {
+  return FOCUS_ZUSATZFACH_ALIASES.map((s) => normalize(s));
+}
+
 function hasFocusZusatzfach(doc) {
   const raw = text(doc.additionalspecialization);
   if (!raw) return false;
-  const focus = normalize(FOCUS_ZUSATZFACH);
+  const aliases = focusAliasNorms();
   // Field may contain comma-separated values (OR semantics upstream).
-  // Match exact focus string, or a part that equals / fully contains the focus —
-  // never match shorter unrelated Zusatzfächer like plain "Intensivmedizin".
+  // Match exact focus / aliases — never match shorter unrelated Zusatzfächer.
   return raw
     .split(',')
     .map((part) => normalize(part))
-    .some((part) => part === focus || part.includes(focus));
+    .some((part) => aliases.some((focus) => part === focus || part.includes(focus)));
 }
 
 function countFocusDoctors() {
@@ -176,13 +187,12 @@ function populateFilterOptions({ applyFocusDefault = false } = {}) {
 }
 
 function selectFocusZusatzfach() {
-  const focusNorm = normalize(FOCUS_ZUSATZFACH);
+  const aliases = focusAliasNorms();
   let matched = false;
   Array.from(el.filterAddSpec.options).forEach((o) => {
     const n = normalize(o.value);
-    // Exact match only (or option text that fully contains the focus phrase).
-    // Do NOT use focusNorm.includes(n) — that wrongly selects "Intensivmedizin".
-    const isFocus = n === focusNorm || n.includes(focusNorm);
+    // Prefer exact / contains-focus match; never select short unrelated values.
+    const isFocus = aliases.some((focus) => n === focus || n.includes(focus));
     o.selected = isFocus;
     if (isFocus) matched = true;
   });
