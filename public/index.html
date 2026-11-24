@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vienna Doctor Explorer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js" defer></script>
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <h1>Vienna Doctor Explorer</h1>
+        <p class="subtitle">Powered by Evolantis DataMatcherAPI</p>
+      </div>
+    </header>
+
+    <main class="container">
+      <div id="banner" class="banner" hidden></div>
+
+      <section class="stats" aria-label="Statistiken">
+        <div class="stat-grid">
+          <article class="stat-tile">
+            <p class="stat-label">Ärzte in Wien</p>
+            <p class="stat-value" id="stat-total">–</p>
+          </article>
+          <article class="stat-tile">
+            <p class="stat-label">Hauptfachgebiete</p>
+            <p class="stat-value" id="stat-specs">–</p>
+          </article>
+          <article class="stat-tile">
+            <p class="stat-label">Mit Zusatzfach</p>
+            <p class="stat-value" id="stat-additional">–</p>
+          </article>
+          <article class="stat-tile">
+            <p class="stat-label">Aktuelle Treffer</p>
+            <p class="stat-value" id="stat-filtered">–</p>
+          </article>
+        </div>
+        <div class="chart-wrap">
+          <h2 class="section-title">Top 10 Hauptfachgebiete</h2>
+          <canvas id="spec-chart" height="120" aria-label="Balkendiagramm Fachgebiete"></canvas>
+        </div>
+      </section>
+
+      <section class="filters" aria-label="Filter">
+        <h2 class="section-title">Suche &amp; Filter</h2>
+        <form id="filter-form" class="filter-form" autocomplete="off">
+          <div class="filter-row">
+            <label class="field">
+              <span>Name (Vor- / Nachname)</span>
+              <input type="search" id="filter-name" name="name" placeholder="z. B. Gnant" />
+            </label>
+            <label class="field">
+              <span>Evolantis-ID (EVOID)</span>
+              <input type="search" id="filter-evoid" name="evoid" placeholder="z. B. 1962009" />
+            </label>
+            <label class="field" id="field-postal" hidden>
+              <span>Postleitzahl</span>
+              <input type="search" id="filter-postal" name="postal" placeholder="PLZ" />
+            </label>
+            <label class="field" id="field-gender" hidden>
+              <span>Geschlecht</span>
+              <select id="filter-gender" name="gender">
+                <option value="">Alle</option>
+              </select>
+            </label>
+          </div>
+          <div class="filter-row">
+            <label class="field field-wide">
+              <span>Hauptfachgebiet (Mehrfachauswahl)</span>
+              <select id="filter-spec" name="specialization" multiple size="5"></select>
+            </label>
+            <label class="field field-wide">
+              <span>Zusatzfachgebiet (Mehrfachauswahl)</span>
+              <select id="filter-addspec" name="additionalspecialization" multiple size="5"></select>
+            </label>
+          </div>
+          <div class="filter-actions">
+            <button type="button" id="btn-reset" class="btn btn-secondary">Filter zurücksetzen</button>
+            <button type="button" id="btn-refresh" class="btn btn-secondary">Daten aktualisieren</button>
+            <p class="meta" id="last-updated">Letzte Aktualisierung: –</p>
+          </div>
+        </form>
+      </section>
+
+      <section class="results" aria-label="Ergebnistabelle">
+        <div class="results-toolbar">
+          <p id="results-summary">Keine Daten geladen.</p>
+          <label class="page-size">
+            <span>Zeilen pro Seite</span>
+            <select id="page-size">
+              <option value="25">25</option>
+              <option value="50" selected>50</option>
+              <option value="100">100</option>
+            </select>
+          </label>
+        </div>
+        <div class="table-scroll">
+          <table id="doctors-table">
+            <thead>
+              <tr>
+                <th data-sort="evoid">Evolantis-ID</th>
+                <th data-sort="title">Titel</th>
+                <th data-sort="firstname">Vorname</th>
+                <th data-sort="lastname" class="sorted asc">Nachname</th>
+                <th data-sort="specialization">Hauptfachgebiet</th>
+                <th data-sort="additionalspecialization">Zusatzfachgebiet</th>
+                <th data-sort="city">Ort</th>
+                <th data-sort="postal" id="th-postal" hidden>Postleitzahl</th>
+              </tr>
+            </thead>
+            <tbody id="doctors-body">
+              <tr>
+                <td colspan="7" class="empty">Daten werden geladen…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <nav class="pagination" aria-label="Seitennavigation">
+          <button type="button" id="page-prev" class="btn btn-secondary" disabled>Zurück</button>
+          <span id="page-info">Seite 1</span>
+          <button type="button" id="page-next" class="btn btn-secondary" disabled>Weiter</button>
+        </nav>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>© Evolantis IT-Solutions GmbH | Powered by DataMatcherAPI</p>
+    </footer>
+  </body>
+</html>
