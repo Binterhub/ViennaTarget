@@ -410,6 +410,9 @@ function renderChart(list) {
   if (state.chart) {
     state.chart.data.labels = labels;
     state.chart.data.datasets[0].data = values;
+    state.chart.data.datasets[0].barPercentage = 0.55;
+    state.chart.data.datasets[0].categoryPercentage = 0.7;
+    state.chart.data.datasets[0].maxBarThickness = 12;
     state.chart.update();
     return;
   }
@@ -425,7 +428,10 @@ function renderChart(list) {
           label: 'Anzahl',
           data: values,
           backgroundColor: '#0a5c5a',
-          borderRadius: 3,
+          borderRadius: 2,
+          barPercentage: 0.55,
+          categoryPercentage: 0.7,
+          maxBarThickness: 12,
         },
       ],
     },
@@ -433,6 +439,9 @@ function renderChart(list) {
       indexAxis: 'y',
       responsive: true,
       maintainAspectRatio: true,
+      layout: {
+        padding: { top: 2, right: 6, bottom: 2, left: 0 },
+      },
       onHover(event, elements) {
         const canvas = event?.native?.target || el.chart;
         if (canvas && canvas.style) {
@@ -461,15 +470,16 @@ function renderChart(list) {
       scales: {
         x: {
           beginAtZero: true,
-          ticks: { precision: 0 },
+          ticks: { precision: 0, font: { size: 11 } },
           grid: { color: '#dce8e6' },
         },
         y: {
           ticks: {
             autoSkip: false,
+            font: { size: 11 },
             callback(value) {
               const label = this.getLabelForValue(value);
-              return label.length > 42 ? `${label.slice(0, 40)}…` : label;
+              return label.length > 28 ? `${label.slice(0, 26)}…` : label;
             },
           },
           grid: { display: false },

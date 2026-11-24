@@ -250,11 +250,13 @@ body {
 }
 
 .chart-wrap {
-  max-width: 100%;
+  max-width: 22rem;
+  width: 100%;
 }
 
 .chart-wrap canvas {
   cursor: pointer;
+  max-height: 14rem;
 }
 
 .filter-form {
