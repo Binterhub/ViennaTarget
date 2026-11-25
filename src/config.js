@@ -11,6 +11,9 @@ function positiveInt(value, fallback) {
 const FOCUS_ADDITIONAL_SPECIALIZATION =
   'Neonatologie und Pädiatrische Intensivmedizin';
 
+/** Dev-only fallback — never allowed when NODE_ENV=production. */
+const DEFAULT_SESSION_SECRET = 'neotarget-dev-session-secret-change-me';
+
 const config = {
   port: positiveInt(process.env.PORT, 3000),
   nodeEnv: process.env.NODE_ENV || 'development',
@@ -23,9 +26,7 @@ const config = {
   country: process.env.SEARCH_COUNTRY || 'Austria',
   /** Simple shared password gate (never expose to the browser). */
   appPassword: process.env.APP_PASSWORD || '',
-  sessionSecret:
-    process.env.SESSION_SECRET ||
-    'neotarget-dev-session-secret-change-me',
+  sessionSecret: process.env.SESSION_SECRET || DEFAULT_SESSION_SECRET,
   /** When true and API is not configured, serve local fixture doctors for UI demos. */
   useMockData: String(process.env.USE_MOCK_DATA || '') === '1',
 };
@@ -34,4 +35,23 @@ function hasApiCredentials() {
   return Boolean(config.apiUrl && config.apiKey);
 }
 
-module.exports = { config, hasApiCredentials, FOCUS_ADDITIONAL_SPECIALIZATION };
+function assertProductionSecrets() {
+  if (config.nodeEnv !== 'production') return;
+  const secret = process.env.SESSION_SECRET || '';
+  if (!secret || secret === DEFAULT_SESSION_SECRET) {
+    console.error(
+      'Fatal: SESSION_SECRET must be set to a non-default value when NODE_ENV=production.'
+    );
+    process.exit(1);
+  }
+}
+
+assertProductionSecrets();
+
+module.exports = {
+  config,
+  hasApiCredentials,
+  FOCUS_ADDITIONAL_SPECIALIZATION,
+  DEFAULT_SESSION_SECRET,
+  assertProductionSecrets,
+};
