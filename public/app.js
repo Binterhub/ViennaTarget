@@ -626,15 +626,19 @@ async function logout() {
 }
 
 async function loadDoctors({ refresh = false } = {}) {
+  const hadDoctors = state.doctors.length > 0;
   setLoading(true, { refresh });
   showBanner(
     refresh
       ? 'Daten werden aktualisiert (Austria-weiter Abruf, bitte warten)…'
-      : 'Daten werden geladen (Austria-weiter Abruf kann 30–60 s dauern)…',
+      : 'Daten werden geladen (Austria-weiter Abruf kann 30–90 s dauern)…',
     'loading'
   );
-  el.tbody.innerHTML = `<tr><td colspan="7" class="empty">Daten werden geladen — bitte warten…</td></tr>`;
-  if (el.resultsSummary) {
+  // Keep existing rows visible during refresh so a failed reload cannot blank the UI.
+  if (!hadDoctors) {
+    el.tbody.innerHTML = `<tr><td colspan="7" class="empty">Daten werden geladen — bitte warten…</td></tr>`;
+  }
+  if (el.resultsSummary && !hadDoctors) {
     el.resultsSummary.textContent = 'Lade Ärztedaten von DataMatcherAPI…';
   }
 
@@ -649,20 +653,37 @@ async function loadDoctors({ refresh = false } = {}) {
     }
 
     const data = await res.json();
+    const incoming = Array.isArray(data.doctors) ? data.doctors : [];
 
-    if (!data.success && (!data.doctors || data.doctors.length === 0)) {
-      state.doctors = [];
-      state.filtered = [];
-      computeBaseStats();
-      el.statFiltered.textContent = '0';
-      el.statCities.textContent = '0';
-      showBanner(data.error || 'Daten konnten nicht geladen werden.', 'error');
-      el.tbody.innerHTML = `<tr><td colspan="7" class="empty">${escapeHtml(data.error || 'Keine Daten')}</td></tr>`;
-      el.lastUpdated.textContent = formatUpdated(null);
+    if ((!data.success && incoming.length === 0) || (data.success && incoming.length === 0 && !hadDoctors)) {
+      if (!hadDoctors) {
+        state.doctors = [];
+        state.filtered = [];
+        computeBaseStats();
+        el.statFiltered.textContent = '0';
+        el.statCities.textContent = '0';
+        el.tbody.innerHTML = `<tr><td colspan="7" class="empty">${escapeHtml(data.error || 'Keine Daten')}</td></tr>`;
+        el.lastUpdated.textContent = formatUpdated(null);
+      } else {
+        refreshView();
+      }
+      showBanner(
+        data.error ||
+          (hadDoctors
+            ? 'Aktualisierung fehlgeschlagen — bestehende Daten bleiben sichtbar.'
+            : 'Daten konnten nicht geladen werden.'),
+        'error'
+      );
       return;
     }
 
-    state.doctors = Array.isArray(data.doctors) ? data.doctors : [];
+    if (incoming.length === 0 && hadDoctors) {
+      refreshView();
+      showBanner('Aktualisierung lieferte keine Daten — bestehende Treffer bleiben sichtbar.', 'warn');
+      return;
+    }
+
+    state.doctors = incoming;
     state.fields = data.fields || state.fields;
     state.fetchedAt = data.fetchedAt;
     state.focus = data.focus || FOCUS_ZUSATZFACH;
@@ -689,11 +710,16 @@ async function loadDoctors({ refresh = false } = {}) {
           : `${state.doctors.length} Ärztinnen und Ärzte geladen · ${focusCount} mit Fokus „${FOCUS_ZUSATZFACH}“.`,
         'info'
       );
-      setTimeout(() => showBanner(''), 4000);
+      setTimeout(() => showBanner(''), 5000);
     }
   } catch {
-    showBanner('Netzwerkfehler beim Laden der Daten.', 'error');
-    el.tbody.innerHTML = `<tr><td colspan="7" class="empty">Netzwerkfehler</td></tr>`;
+    if (hadDoctors) {
+      refreshView();
+      showBanner('Netzwerkfehler — bestehende Daten bleiben sichtbar.', 'error');
+    } else {
+      showBanner('Netzwerkfehler beim Laden der Daten.', 'error');
+      el.tbody.innerHTML = `<tr><td colspan="7" class="empty">Netzwerkfehler</td></tr>`;
+    }
   } finally {
     setLoading(false);
   }

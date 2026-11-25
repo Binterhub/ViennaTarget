@@ -157,7 +157,9 @@ app.get('/api/doctors', apiLimiter, requireAuth, async (req, res) => {
       country: data.country || config.country,
       fromCache: data.fromCache,
       stale: false,
-      warning: null,
+      warning: data.upstreamNotes && data.upstreamNotes.length
+        ? `Teilweise Filterübersprungen nach API/DB-Änderung (${data.upstreamNotes.length}).`
+        : null,
       error: null,
     });
   } catch (err) {

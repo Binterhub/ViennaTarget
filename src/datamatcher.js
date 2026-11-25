@@ -5,6 +5,46 @@ const { config } = require('./config');
 const OPTIONAL_POSTAL_KEYS = ['postalcode', 'postalCode', 'plz', 'zip', 'zipcode', 'zipCode'];
 const OPTIONAL_GENDER_KEYS = ['gender', 'geschlecht', 'sex', 'Geschlecht'];
 
+/**
+ * After the 2026-11 DB change, country-only (and some city-only) filters return
+ * HTTP 400 "Nullable object must have a value.". Working pulls need at least one
+ * additional supported field (specialization / additionalspecialization / lastname).
+ * Success bodies are often a raw JSON array instead of { results, resultCount }.
+ */
+const AUSTRIA_SPECIALIZATION_SEEDS = [
+  'Allgemeinmedizin',
+  'Kinder- und Jugendheilkunde',
+  'Innere Medizin',
+  'Frauenheilkunde und Geburtshilfe',
+  'Anästhesiologie und Intensivmedizin',
+  'Orthopädie und Traumatologie',
+  'Neurologie',
+  'Psychiatrie und Psychotherapeutische Medizin',
+  'Haut- und Geschlechtskrankheiten',
+  'Augenheilkunde und Optometrie',
+  'Urologie',
+  'Radiologie',
+  'Neurochirurgie',
+  'Herzchirurgie',
+  'Thoraxchirurgie',
+  'Allgemeinchirurgie und Viszeralchirurgie',
+  'Nuklearmedizin',
+  'Strahlentherapie-Radioonkologie',
+  'Medizinische Genetik',
+  'Transfusionsmedizin',
+  'Pharmakologie und Toxikologie',
+  'Arbeitsmedizin',
+  'Kinder- und Jugendchirurgie',
+  'Kinder- und Jugendpsychiatrie',
+  'Lungenkrankheiten',
+  'Rheumatologie',
+  'Gastroenterologie und Hepatologie',
+  'Kardiologie',
+  'Nephrologie',
+  'Endokrinologie und Stoffwechselerkrankungen',
+  'Hämatologie und internistische Onkologie',
+];
+
 class DataMatcherClient {
   constructor() {
     this.accessToken = null;
@@ -87,6 +127,7 @@ class DataMatcherClient {
   }
 
   normalizePage(body) {
+    // Post-DB-change: many successful searches return a raw array.
     if (Array.isArray(body)) {
       return { results: body, resultCount: body.length };
     }
@@ -100,21 +141,39 @@ class DataMatcherClient {
   }
 
   /**
-   * Broad Austria (or SEARCH_COUNTRY) pull — focus Zusatzfach is a client default,
-   * not an exclusive server lock (mirrors Vienna Target's city focus).
+   * Build filter groups that work after the DB/API drift.
+   * Country alone is rejected — always pair with specialization or Zusatzfach.
    */
-  searchPayload() {
-    return [
-      {
-        country: config.country,
-      },
-    ];
+  buildSearchJobs() {
+    const country = config.country;
+    const focus = config.focusAdditionalSpecialization;
+    const jobs = [];
+
+    if (focus) {
+      jobs.push({
+        label: 'focus',
+        payload: [{ country, additionalspecialization: focus }],
+      });
+      // Also without country in case country coupling regresses again.
+      jobs.push({
+        label: 'focus-nocountry',
+        payload: [{ additionalspecialization: focus }],
+      });
+    }
+
+    for (const specialization of AUSTRIA_SPECIALIZATION_SEEDS) {
+      jobs.push({
+        label: `spec:${specialization}`,
+        payload: [{ country, specialization }],
+      });
+    }
+
+    return jobs;
   }
 
-  async searchPage(skip, take, { retried = false } = {}) {
+  async searchPageWithPayload(payload, skip, take, { retried = false } = {}) {
     const token = await this.getToken();
     const url = `${config.apiUrl}/api/doctorsearch?skip=${skip}&take=${take}`;
-    const payload = this.searchPayload();
 
     let response;
     try {
@@ -140,13 +199,25 @@ class DataMatcherClient {
 
     if (response.status === 401 && !retried) {
       await this.getToken({ force: true });
-      return this.searchPage(skip, take, { retried: true });
+      return this.searchPageWithPayload(payload, skip, take, { retried: true });
     }
 
     if (!response.ok) {
-      const error = new Error(this.statusMessage(response.status, 'Ärztesuche'));
+      let detail = '';
+      try {
+        const errBody = await response.json();
+        detail = errBody && errBody.detail ? String(errBody.detail) : '';
+      } catch {
+        // ignore parse errors
+      }
+      const error = new Error(
+        detail
+          ? `${this.statusMessage(response.status, 'Ärztesuche')} (${detail})`
+          : this.statusMessage(response.status, 'Ärztesuche')
+      );
       error.status = response.status;
       error.code = 'SEARCH_FAILED';
+      error.detail = detail;
       throw error;
     }
 
@@ -162,39 +233,56 @@ class DataMatcherClient {
     return this.normalizePage(body);
   }
 
-  /**
-   * Fetch all doctors for the configured country via pagination (take max 500).
-   * Deduplicate by evoid. NeoTarget emphasizes Zusatzfach
-   * "Neonatologie und Pädiatrische Intensivmedizin" in the UI as the default filter.
-   */
-  async fetchAllFocusDoctors() {
-    const take = config.pageSize;
-    const byId = new Map();
+  async collectAllForPayload(payload, take, byId, { maxPages = 80 } = {}) {
     let skip = 0;
     let pages = 0;
-    const maxPages = 200;
-
     while (pages < maxPages) {
-      const page = await this.searchPage(skip, take);
+      const page = await this.searchPageWithPayload(payload, skip, take);
       pages += 1;
-
       for (const row of page.results) {
         if (!row || typeof row !== 'object') continue;
         const id = row.evoid;
         if (id === undefined || id === null || id === '') continue;
         const key = String(id);
-        if (!byId.has(key)) {
-          byId.set(key, row);
-        }
+        if (!byId.has(key)) byId.set(key, normalizeDoctorRow(row));
       }
-
       if (page.results.length === 0) break;
       if (page.results.length < take) break;
-
       skip += take;
+    }
+  }
+
+  /**
+   * Austria-wide pull via specialization + Fokus-Zusatzfach jobs (dedupe by evoid).
+   * Avoids broken country-only filter after upstream DB change.
+   */
+  async fetchAllFocusDoctors() {
+    const take = config.pageSize;
+    const byId = new Map();
+    const jobs = this.buildSearchJobs();
+    const errors = [];
+
+    for (const job of jobs) {
+      try {
+        await this.collectAllForPayload(job.payload, take, byId);
+      } catch (err) {
+        // Skip broken filter variants; keep going so partial corpus still loads.
+        errors.push(`${job.label}: ${err.message || err}`);
+      }
     }
 
     const doctors = Array.from(byId.values());
+    if (doctors.length === 0) {
+      const error = new Error(
+        errors[0] ||
+          'Keine Ärztedaten von der DataMatcherAPI erhalten (Filter nach DB-Änderung prüfen).'
+      );
+      error.code = 'SEARCH_FAILED';
+      error.status = 502;
+      error.details = errors;
+      throw error;
+    }
+
     const fieldFlags = detectOptionalFields(doctors);
 
     return {
@@ -204,8 +292,24 @@ class DataMatcherClient {
       fields: fieldFlags,
       focus: config.focusAdditionalSpecialization,
       country: config.country,
+      upstreamNotes: errors.length ? errors.slice(0, 5) : undefined,
     };
   }
+}
+
+function normalizeDoctorRow(row) {
+  // Keep known fields stable for the UI; coerce nullish specialty strings.
+  return {
+    ...row,
+    title: row.title == null ? '' : row.title,
+    firstname: row.firstname == null ? '' : row.firstname,
+    lastname: row.lastname == null ? '' : row.lastname,
+    city: row.city == null ? '' : row.city,
+    specialization: row.specialization == null ? '' : row.specialization,
+    additionalspecialization:
+      row.additionalspecialization == null ? '' : row.additionalspecialization,
+    country: row.country == null ? '' : row.country,
+  };
 }
 
 function detectOptionalFields(doctors) {
@@ -256,6 +360,8 @@ function detectOptionalFields(doctors) {
 module.exports = {
   DataMatcherClient,
   detectOptionalFields,
+  normalizeDoctorRow,
+  AUSTRIA_SPECIALIZATION_SEEDS,
   OPTIONAL_POSTAL_KEYS,
   OPTIONAL_GENDER_KEYS,
 };
