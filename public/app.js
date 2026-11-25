@@ -1,6 +1,9 @@
 'use strict';
 
+/** Actual Zusatzfach filter value sent to / matched against DataMatcher data. */
 const FOCUS_ZUSATZFACH = 'Neonatologie und Pädiatrische Intensivmedizin';
+/** Visible product focus label in the UI (not the raw Zusatzfach string). */
+const FOCUS_LABEL = 'Fokus: Poractant alfa';
 
 // Live API spelling; also accept earlier typo variant in UI matching.
 const FOCUS_ZUSATZFACH_ALIASES = [
@@ -1253,7 +1256,7 @@ async function loadDoctors({ refresh = false } = {}) {
       showBanner(
         data.fromCache
           ? `Daten aus dem Cache (${state.doctors.length} gesamt, ${focusCount} mit Fokus-Zusatzfach).`
-          : `${state.doctors.length} Ärztinnen und Ärzte geladen · ${focusCount} mit Fokus „${FOCUS_ZUSATZFACH}“.`,
+          : `${state.doctors.length} Ärztinnen und Ärzte geladen · ${focusCount} mit „${FOCUS_LABEL}“.`,
         'info'
       );
       setTimeout(() => showBanner(''), 5000);
