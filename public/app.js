@@ -66,9 +66,10 @@ const el = {
 /** Preferred display order / labels for known API person fields (case-insensitive lookup). */
 const DETAIL_FIELD_DEFS = [
   { keys: ['evoid', 'evoId', 'EVOID'], label: 'EVO-ID' },
-  { keys: ['title', 'Title'], label: 'Titel' },
-  { keys: ['firstname', 'firstName', 'FirstName'], label: 'Vorname' },
-  { keys: ['lastname', 'lastName', 'LastName'], label: 'Nachname' },
+  // Titel / Vorname / Nachname are shown in the header only.
+  { keys: ['title', 'Title'], label: 'Titel', headerOnly: true },
+  { keys: ['firstname', 'firstName', 'FirstName'], label: 'Vorname', headerOnly: true },
+  { keys: ['lastname', 'lastName', 'LastName'], label: 'Nachname', headerOnly: true },
   { keys: ['specialization', 'Specialization'], label: 'Hauptfachgebiet' },
   { keys: ['additionalspecialization', 'additionalSpecialization', 'AdditionalSpecialization'], label: 'Zusatzfach' },
   { keys: ['city', 'City'], label: 'Ort' },
@@ -76,17 +77,23 @@ const DETAIL_FIELD_DEFS = [
   { keys: ['country', 'Country'], label: 'Land' },
   { keys: ['countrycode', 'countryCode', 'CountryCode'], label: 'Ländercode' },
   { keys: ['gender', 'geschlecht', 'sex', 'Geschlecht'], label: 'Geschlecht' },
-  { keys: ['orcid', 'ORCID', 'Orcid'], label: 'ORCID', kind: 'link' },
+  { keys: ['orcid', 'ORCID', 'Orcid'], label: 'ORCID', kind: 'social' },
   { keys: ['openalexid', 'openAlexId', 'OpenAlexId', 'openalex'], label: 'OpenAlex ID', kind: 'openalex' },
-  { keys: ['homepage', 'Homepage', 'website', 'url'], label: 'Homepage', kind: 'link' },
-  { keys: ['facebook', 'Facebook'], label: 'Facebook', kind: 'link' },
-  { keys: ['x', 'X', 'twitter', 'Twitter'], label: 'X (Twitter)', kind: 'link' },
-  { keys: ['externalphoto', 'externalPhoto', 'ExternalPhoto', 'photo', 'image'], label: 'Foto (URL)', kind: 'link' },
+  { keys: ['homepage', 'Homepage', 'website', 'url'], label: 'Homepage', kind: 'social' },
+  { keys: ['facebook', 'Facebook'], label: 'Facebook', kind: 'social' },
+  { keys: ['linkedin', 'LinkedIn', 'linkedIn'], label: 'LinkedIn', kind: 'social' },
+  { keys: ['instagram', 'Instagram'], label: 'Instagram', kind: 'social' },
+  { keys: ['x', 'X', 'twitter', 'Twitter'], label: 'X (Twitter)', kind: 'social' },
+  // Photo is rendered as a linked image in the header — omit URL row from body.
+  { keys: ['externalphoto', 'externalPhoto', 'ExternalPhoto', 'photo', 'image'], label: 'Foto', headerOnly: true },
   { keys: ['vpnr', 'vpNr', 'VpNr', 'VPN R', 'vp_nr'], label: 'VPNR' },
   { keys: ['hindex', 'hIndex', 'HIndex', 'h_index'], label: 'h-Index' },
   { keys: ['kasse', 'Kasse'], label: 'Kasse', kind: 'yesno' },
   { keys: ['wahlarzt', 'WahlArzt', 'wahlarztflag'], label: 'Wahlarzt', kind: 'yesno' },
 ];
+
+const SOCIAL_EXTRA_KEY_RE =
+  /^(facebook|linkedin|instagram|twitter|x|xing|youtube|tiktok|homepage|website|orcid|openalex)/i;
 
 let loadingTimer = null;
 let loadingStartedAt = 0;
@@ -623,7 +630,14 @@ function closeDoctorDetail() {
 function openDoctorDetail(doc) {
   if (!el.doctorDetail || !doc) return;
 
-  const title = [text(doc.title), text(doc.firstname), text(doc.lastname)].filter(Boolean).join(' ') || 'Person';
+  const titleParts = [
+    pickDoctorField(doc, ['title', 'Title']).value,
+    pickDoctorField(doc, ['firstname', 'firstName', 'FirstName']).value,
+    pickDoctorField(doc, ['lastname', 'lastName', 'LastName']).value,
+  ]
+    .map((v) => text(v).trim())
+    .filter(Boolean);
+  const title = titleParts.join(' ') || 'Person';
   el.doctorDetailTitle.textContent = title;
   el.doctorDetailSub.textContent = [
     text(doc.specialization),
@@ -635,11 +649,13 @@ function openDoctorDetail(doc) {
 
   const photo = pickDoctorField(doc, ['externalphoto', 'externalPhoto', 'ExternalPhoto', 'photo', 'image']);
   const photoUrl = hrefForField('link', photo.value);
-  if (photoUrl) {
+  if (photoUrl && el.doctorDetailPhoto) {
     el.doctorDetailPhoto.hidden = false;
+    el.doctorDetailPhoto.href = photoUrl;
     el.doctorDetailPhoto.innerHTML = `<img src="${escapeHtml(photoUrl)}" alt="Foto von ${escapeHtml(title)}" loading="lazy" referrerpolicy="no-referrer" />`;
-  } else {
+  } else if (el.doctorDetailPhoto) {
     el.doctorDetailPhoto.hidden = true;
+    el.doctorDetailPhoto.removeAttribute('href');
     el.doctorDetailPhoto.innerHTML = '';
   }
 
@@ -650,13 +666,28 @@ function openDoctorDetail(doc) {
     const picked = pickDoctorField(doc, def.keys);
     if (!picked.key) continue;
     usedKeys.add(picked.key.toLocaleLowerCase('en-US'));
-    let display = text(picked.value);
+    if (def.headerOnly) continue;
+
+    let display = text(picked.value).trim();
     if (def.kind === 'yesno') display = formatYesNo(picked.value);
+
+    // Social / profile links: only show when a value exists.
+    if (def.kind === 'social' || def.kind === 'openalex') {
+      if (!display) continue;
+      const href = hrefForField(def.kind === 'openalex' ? 'openalex' : 'link', picked.value);
+      if (!href && !display) continue;
+      const valueHtml = href
+        ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(display)}</a>`
+        : escapeHtml(display);
+      rows.push(`<div><dt>${escapeHtml(def.label)}</dt><dd>${valueHtml}</dd></div>`);
+      continue;
+    }
+
     let valueHtml;
     if (!display) {
       valueHtml = '<span class="doctor-detail-empty">–</span>';
-    } else if (def.kind === 'link' || def.kind === 'openalex') {
-      const href = hrefForField(def.kind, picked.value);
+    } else if (def.kind === 'link') {
+      const href = hrefForField('link', picked.value);
       valueHtml = href
         ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(display)}</a>`
         : escapeHtml(display);
@@ -673,12 +704,21 @@ function openDoctorDetail(doc) {
   for (const key of extras) {
     const value = doc[key];
     if (value !== null && typeof value === 'object') continue;
-    const display = text(value);
-    rows.push(
-      `<div><dt>${escapeHtml(key)}</dt><dd>${
-        display ? escapeHtml(display) : '<span class="doctor-detail-empty">–</span>'
-      }</dd></div>`
-    );
+    const display = text(value).trim();
+    // Hide empty social/profile-like extras (Facebook, LinkedIn, X, …).
+    if (!display && SOCIAL_EXTRA_KEY_RE.test(key)) continue;
+    if (!display) {
+      rows.push(
+        `<div><dt>${escapeHtml(key)}</dt><dd><span class="doctor-detail-empty">–</span></dd></div>`
+      );
+      continue;
+    }
+    const maybeHref = hrefForField('link', value);
+    const valueHtml =
+      SOCIAL_EXTRA_KEY_RE.test(key) && maybeHref
+        ? `<a href="${escapeHtml(maybeHref)}" target="_blank" rel="noopener noreferrer">${escapeHtml(display)}</a>`
+        : escapeHtml(display);
+    rows.push(`<div><dt>${escapeHtml(key)}</dt><dd>${valueHtml}</dd></div>`);
   }
 
   el.doctorDetailFields.innerHTML = rows.join('') || '<div><dt>–</dt><dd class="doctor-detail-empty">Keine Felder</dd></div>';
