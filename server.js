@@ -49,25 +49,24 @@ const loginLimiter = rateLimit({
 });
 
 app.get('/health', (_req, res) => {
-  const meta = cache.meta();
+  // Public liveness only — no config/cache details.
   res.json({
     status: 'ok',
     service: 'neotarget',
-    focus: config.focusAdditionalSpecialization,
     timestamp: new Date().toISOString(),
-    configured: hasApiCredentials(),
-    loginConfigured: Boolean(config.appPassword),
-    cache: meta,
   });
 });
 
-app.get('/api/meta', (_req, res) => {
+app.get('/api/meta', requireAuth, (_req, res) => {
+  const meta = cache.meta();
   res.json({
     service: 'neotarget',
     focus: config.focusAdditionalSpecialization,
     country: config.country,
     configured: hasApiCredentials(),
-    authenticated: isAuthenticated(_req),
+    loginConfigured: Boolean(config.appPassword),
+    authenticated: true,
+    cache: meta,
   });
 });
 
