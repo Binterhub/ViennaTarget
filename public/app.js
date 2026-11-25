@@ -55,7 +55,38 @@ const el = {
   loadingPanel: document.getElementById('loading-panel'),
   loadingTitle: document.getElementById('loading-title'),
   loadingElapsed: document.getElementById('loading-elapsed'),
+  doctorDetail: document.getElementById('doctor-detail'),
+  doctorDetailTitle: document.getElementById('doctor-detail-title'),
+  doctorDetailSub: document.getElementById('doctor-detail-sub'),
+  doctorDetailPhoto: document.getElementById('doctor-detail-photo'),
+  doctorDetailFields: document.getElementById('doctor-detail-fields'),
+  doctorDetailClose: document.getElementById('doctor-detail-close'),
 };
+
+/** Preferred display order / labels for known API person fields (case-insensitive lookup). */
+const DETAIL_FIELD_DEFS = [
+  { keys: ['evoid', 'evoId', 'EVOID'], label: 'EVO-ID' },
+  { keys: ['title', 'Title'], label: 'Titel' },
+  { keys: ['firstname', 'firstName', 'FirstName'], label: 'Vorname' },
+  { keys: ['lastname', 'lastName', 'LastName'], label: 'Nachname' },
+  { keys: ['specialization', 'Specialization'], label: 'Hauptfachgebiet' },
+  { keys: ['additionalspecialization', 'additionalSpecialization', 'AdditionalSpecialization'], label: 'Zusatzfach' },
+  { keys: ['city', 'City'], label: 'Ort' },
+  { keys: ['postalcode', 'postalCode', 'plz', 'zip', 'zipcode', 'zipCode'], label: 'Postleitzahl' },
+  { keys: ['country', 'Country'], label: 'Land' },
+  { keys: ['countrycode', 'countryCode', 'CountryCode'], label: 'Ländercode' },
+  { keys: ['gender', 'geschlecht', 'sex', 'Geschlecht'], label: 'Geschlecht' },
+  { keys: ['orcid', 'ORCID', 'Orcid'], label: 'ORCID', kind: 'link' },
+  { keys: ['openalexid', 'openAlexId', 'OpenAlexId', 'openalex'], label: 'OpenAlex ID', kind: 'openalex' },
+  { keys: ['homepage', 'Homepage', 'website', 'url'], label: 'Homepage', kind: 'link' },
+  { keys: ['facebook', 'Facebook'], label: 'Facebook', kind: 'link' },
+  { keys: ['x', 'X', 'twitter', 'Twitter'], label: 'X (Twitter)', kind: 'link' },
+  { keys: ['externalphoto', 'externalPhoto', 'ExternalPhoto', 'photo', 'image'], label: 'Foto (URL)', kind: 'link' },
+  { keys: ['vpnr', 'vpNr', 'VpNr', 'VPN R', 'vp_nr'], label: 'VPNR' },
+  { keys: ['hindex', 'hIndex', 'HIndex', 'h_index'], label: 'h-Index' },
+  { keys: ['kasse', 'Kasse'], label: 'Kasse', kind: 'yesno' },
+  { keys: ['wahlarzt', 'WahlArzt', 'wahlarztflag'], label: 'Wahlarzt', kind: 'yesno' },
+];
 
 let loadingTimer = null;
 let loadingStartedAt = 0;
@@ -543,6 +574,129 @@ function exportFilteredXlsx() {
   setTimeout(() => showBanner(''), 2500);
 }
 
+function doctorKey(doc) {
+  return text(doc && doc.evoid);
+}
+
+function pickDoctorField(doc, keys) {
+  if (!doc || typeof doc !== 'object') return { key: null, value: undefined };
+  const entries = Object.keys(doc);
+  for (const want of keys) {
+    const found = entries.find((k) => k.toLocaleLowerCase('en-US') === String(want).toLocaleLowerCase('en-US'));
+    if (found !== undefined) return { key: found, value: doc[found] };
+  }
+  return { key: null, value: undefined };
+}
+
+function formatYesNo(value) {
+  const raw = text(value).trim().toLocaleLowerCase('de-AT');
+  if (!raw) return '';
+  if (['yes', 'y', 'true', '1', 'ja', 'j'].includes(raw)) return 'Yes';
+  if (['no', 'n', 'false', '0', 'nein'].includes(raw)) return 'No';
+  return text(value);
+}
+
+function hrefForField(kind, value) {
+  const raw = text(value).trim();
+  if (!raw) return '';
+  if (kind === 'openalex') {
+    if (/^https?:\/\//i.test(raw)) return raw;
+    return `https://openalex.org/${encodeURIComponent(raw)}`;
+  }
+  if (kind === 'link') {
+    if (/^https?:\/\//i.test(raw)) return raw;
+    if (/^www\./i.test(raw)) return `https://${raw}`;
+    if (raw.includes('@') && !raw.includes(' ')) return `mailto:${raw}`;
+    if (/^[a-z0-9.-]+\.[a-z]{2,}/i.test(raw)) return `https://${raw}`;
+    if (/^orcid\.org\//i.test(raw)) return `https://${raw}`;
+    if (/^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/i.test(raw)) return `https://orcid.org/${raw}`;
+  }
+  return raw.startsWith('http') ? raw : '';
+}
+
+function closeDoctorDetail() {
+  if (!el.doctorDetail) return;
+  el.doctorDetail.hidden = true;
+  document.body.style.overflow = '';
+}
+
+function openDoctorDetail(doc) {
+  if (!el.doctorDetail || !doc) return;
+
+  const title = [text(doc.title), text(doc.firstname), text(doc.lastname)].filter(Boolean).join(' ') || 'Person';
+  el.doctorDetailTitle.textContent = title;
+  el.doctorDetailSub.textContent = [
+    text(doc.specialization),
+    text(doc.additionalspecialization),
+    text(doc.city),
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
+  const photo = pickDoctorField(doc, ['externalphoto', 'externalPhoto', 'ExternalPhoto', 'photo', 'image']);
+  const photoUrl = hrefForField('link', photo.value);
+  if (photoUrl) {
+    el.doctorDetailPhoto.hidden = false;
+    el.doctorDetailPhoto.innerHTML = `<img src="${escapeHtml(photoUrl)}" alt="Foto von ${escapeHtml(title)}" loading="lazy" referrerpolicy="no-referrer" />`;
+  } else {
+    el.doctorDetailPhoto.hidden = true;
+    el.doctorDetailPhoto.innerHTML = '';
+  }
+
+  const usedKeys = new Set();
+  const rows = [];
+
+  for (const def of DETAIL_FIELD_DEFS) {
+    const picked = pickDoctorField(doc, def.keys);
+    if (!picked.key) continue;
+    usedKeys.add(picked.key.toLocaleLowerCase('en-US'));
+    let display = text(picked.value);
+    if (def.kind === 'yesno') display = formatYesNo(picked.value);
+    let valueHtml;
+    if (!display) {
+      valueHtml = '<span class="doctor-detail-empty">–</span>';
+    } else if (def.kind === 'link' || def.kind === 'openalex') {
+      const href = hrefForField(def.kind, picked.value);
+      valueHtml = href
+        ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(display)}</a>`
+        : escapeHtml(display);
+    } else {
+      valueHtml = escapeHtml(display);
+    }
+    rows.push(`<div><dt>${escapeHtml(def.label)}</dt><dd>${valueHtml}</dd></div>`);
+  }
+
+  // Any additional API fields not in the known map.
+  const extras = Object.keys(doc)
+    .filter((k) => !usedKeys.has(k.toLocaleLowerCase('en-US')))
+    .sort(compareDe);
+  for (const key of extras) {
+    const value = doc[key];
+    if (value !== null && typeof value === 'object') continue;
+    const display = text(value);
+    rows.push(
+      `<div><dt>${escapeHtml(key)}</dt><dd>${
+        display ? escapeHtml(display) : '<span class="doctor-detail-empty">–</span>'
+      }</dd></div>`
+    );
+  }
+
+  el.doctorDetailFields.innerHTML = rows.join('') || '<div><dt>–</dt><dd class="doctor-detail-empty">Keine Felder</dd></div>';
+  el.doctorDetail.hidden = false;
+  document.body.style.overflow = 'hidden';
+  if (el.doctorDetailClose) el.doctorDetailClose.focus();
+}
+
+function findDoctorByEvoid(evoid) {
+  const key = text(evoid);
+  if (!key) return null;
+  return (
+    state.filtered.find((d) => doctorKey(d) === key) ||
+    state.doctors.find((d) => doctorKey(d) === key) ||
+    null
+  );
+}
+
 function renderTable() {
   const total = state.filtered.length;
   const pages = Math.max(1, Math.ceil(total / state.pageSize));
@@ -575,11 +729,13 @@ function renderTable() {
 
   const html = pageRows
     .map((d) => {
+      const id = escapeHtml(doctorKey(d));
+      const lastname = escapeHtml(text(d.lastname));
       const cells = [
         `<td class="cell-evoid">${escapeHtml(text(d.evoid))}</td>`,
         `<td>${escapeHtml(text(d.title))}</td>`,
         `<td>${escapeHtml(text(d.firstname))}</td>`,
-        `<td class="cell-lastname">${escapeHtml(text(d.lastname))}</td>`,
+        `<td class="cell-lastname"><button type="button" class="lastname-link" data-open-doctor="${id}">${lastname || '–'}</button></td>`,
         `<td>${escapeHtml(text(d.specialization))}</td>`,
         `<td>${escapeHtml(text(d.additionalspecialization))}</td>`,
         `<td>${escapeHtml(text(d.city))}</td>`,
@@ -587,7 +743,7 @@ function renderTable() {
       if (state.fields.postalCode) {
         cells.push(`<td>${escapeHtml(text(getPostal(d)))}</td>`);
       }
-      return `<tr>${cells.join('')}</tr>`;
+      return `<tr class="doctor-row" tabindex="0" data-evoid="${id}" title="Details anzeigen">${cells.join('')}</tr>`;
     })
     .join('');
   el.tbody.innerHTML = html;
@@ -805,6 +961,38 @@ function bindEvents() {
       updateSortHeaders();
       refreshView();
     });
+  });
+
+  el.tbody.addEventListener('click', (event) => {
+    const openBtn = event.target.closest('[data-open-doctor]');
+    const row = event.target.closest('tr.doctor-row');
+    const evoid = openBtn?.getAttribute('data-open-doctor') || row?.getAttribute('data-evoid');
+    if (!evoid) return;
+    const doc = findDoctorByEvoid(evoid);
+    if (doc) openDoctorDetail(doc);
+  });
+
+  el.tbody.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    const row = event.target.closest('tr.doctor-row');
+    if (!row) return;
+    event.preventDefault();
+    const doc = findDoctorByEvoid(row.getAttribute('data-evoid'));
+    if (doc) openDoctorDetail(doc);
+  });
+
+  if (el.doctorDetailClose) {
+    el.doctorDetailClose.addEventListener('click', closeDoctorDetail);
+  }
+  if (el.doctorDetail) {
+    el.doctorDetail.querySelectorAll('[data-close-detail]').forEach((node) => {
+      node.addEventListener('click', closeDoctorDetail);
+    });
+  }
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && el.doctorDetail && !el.doctorDetail.hidden) {
+      closeDoctorDetail();
+    }
   });
 }
 

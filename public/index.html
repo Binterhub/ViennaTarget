@@ -172,6 +172,29 @@
       </section>
     </main>
 
+    <div id="doctor-detail" class="doctor-detail" hidden>
+      <div class="doctor-detail-backdrop" data-close-detail tabindex="-1" aria-hidden="true"></div>
+      <aside
+        class="doctor-detail-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="doctor-detail-title"
+      >
+        <header class="doctor-detail-header">
+          <div>
+            <p class="doctor-detail-kicker">Personendetails</p>
+            <h2 id="doctor-detail-title">–</h2>
+            <p id="doctor-detail-sub" class="doctor-detail-sub"></p>
+          </div>
+          <button type="button" id="doctor-detail-close" class="btn btn-secondary" aria-label="Details schließen">
+            Schließen
+          </button>
+        </header>
+        <div id="doctor-detail-photo" class="doctor-detail-photo" hidden></div>
+        <dl id="doctor-detail-fields" class="doctor-detail-fields"></dl>
+      </aside>
+    </div>
+
     <footer class="site-footer">
       <p>NeoTarget · © Evolantis IT-Solutions GmbH | Powered by DataMatcherAPI</p>
     </footer>
