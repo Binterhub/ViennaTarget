@@ -87,16 +87,16 @@
         </div>
       </div>
 
-      <section class="filters" aria-label="Filter">
-        <h2 class="section-title">Suche &amp; Filter</h2>
-        <p class="focus-note">
-          Standardmäßig ist
-          <strong>Fokus: Poractant alfa</strong>
-          vorausgewählt.
-        </p>
+      <section class="filters filters-compact" aria-label="Filter">
+        <div class="filters-heading">
+          <h2 class="section-title">Suche &amp; Filter</h2>
+          <p class="focus-note">
+            Standard: <strong>Fokus: Poractant alfa</strong>
+          </p>
+        </div>
         <form id="filter-form" class="filter-form" autocomplete="off">
-          <div class="filter-row filter-row-top">
-            <label class="field">
+          <div class="filter-row filter-row-compact">
+            <label class="field field-name">
               <span>Name</span>
               <input type="search" id="filter-name" name="name" placeholder="Vor- / Nachname" />
             </label>
@@ -104,29 +104,27 @@
               <span>EVOID</span>
               <input type="search" id="filter-evoid" name="evoid" placeholder="ID" />
             </label>
-          </div>
-          <div class="chart-wrap chart-wrap-inline" id="chart-wrap">
-            <button
-              type="button"
-              id="chart-toggle"
-              class="chart-toggle"
-              aria-expanded="false"
-              aria-controls="city-chart-body"
-            >
-              <span class="chart-toggle-title">Ranking nach Orten</span>
-              <span class="chart-toggle-hint" id="chart-toggle-hint">Aufklappen</span>
-            </button>
-            <div id="city-chart-body" class="chart-body">
-              <p class="focus-note chart-filter-hint">
-                Alle Orte nach HCP-Anzahl. Balken anklicken zum Filtern (sortiert nach Nachname).
-              </p>
-              <div class="chart-scroll">
-                <canvas id="city-chart" height="80" aria-label="Ranking nach Orten – HCP-Anzahl je Ort"></canvas>
+            <div class="chart-wrap chart-wrap-inline" id="chart-wrap">
+              <button
+                type="button"
+                id="chart-toggle"
+                class="chart-toggle"
+                aria-expanded="false"
+                aria-controls="city-chart-body"
+              >
+                <span class="chart-toggle-title">Ranking nach Orten</span>
+                <span class="chart-toggle-hint" id="chart-toggle-hint">Aufklappen</span>
+              </button>
+              <div id="city-chart-body" class="chart-body">
+                <p class="focus-note chart-filter-hint">
+                  Alle Orte nach HCP-Anzahl. Balken anklicken zum Filtern (sortiert nach Nachname).
+                </p>
+                <div class="chart-scroll">
+                  <canvas id="city-chart" height="80" aria-label="Ranking nach Orten – HCP-Anzahl je Ort"></canvas>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="filter-row filter-row-city">
-            <label class="field">
+            <label class="field field-city">
               <span>Ort</span>
               <input type="search" id="filter-city" name="city" placeholder="z. B. Wien" />
             </label>
@@ -142,7 +140,7 @@
             </label>
           </div>
           <div class="filter-actions">
-            <button type="button" id="btn-reset" class="btn btn-secondary">Filter zurücksetzen (Fokus)</button>
+            <button type="button" id="btn-reset" class="btn btn-secondary btn-compact">Filter zurücksetzen (Fokus)</button>
             <p class="meta" id="last-updated">Letzte Aktualisierung: –</p>
           </div>
         </form>
