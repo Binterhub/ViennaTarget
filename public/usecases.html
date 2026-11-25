@@ -65,6 +65,16 @@
         max-width: min(42rem, 100%);
       }
 
+      .brand-home {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .brand-home:hover .brand-name {
+        text-decoration: underline;
+        text-underline-offset: 0.12em;
+      }
+
       .brand-name {
         font-family: var(--display);
         font-weight: 700;
@@ -365,7 +375,7 @@
       <div class="header-inner">
         <div class="header-top">
           <p class="brand">
-            <span class="brand-name">EvoEdge</span><span class="brand-sep"> – </span><span class="brand-tagline">Healthcare &amp; Pharma Intelligence</span>
+            <a href="/" class="brand-home" aria-label="Zur Startseite"><span class="brand-name">EvoEdge</span></a><span class="brand-sep"> – </span><span class="brand-tagline">Healthcare &amp; Pharma Intelligence</span>
           </p>
           <a class="header-link" href="/">Zur App</a>
         </div>
