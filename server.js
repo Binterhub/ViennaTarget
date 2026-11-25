@@ -216,6 +216,11 @@ app.get(['/datenquellen', '/datenquellen.html'], (_req, res) => {
   res.sendFile(path.join(publicDir, 'datenquellen.html'));
 });
 
+// Public Use Cases page (linked from app header)
+app.get(['/usecases', '/usecases.html'], (_req, res) => {
+  res.sendFile(path.join(publicDir, 'usecases.html'));
+});
+
 // Protect app shell + authenticated static assets
 app.get('/', requireAuth, (_req, res) => {
   res.sendFile(path.join(publicDir, 'index.html'));

@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Use Cases · EvoEdge - Healthcare &amp; Pharma Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #eef4f3;
+        --surface: #ffffff;
+        --ink: #152428;
+        --muted: #4d6468;
+        --accent: #0a5c5a;
+        --accent-deep: #063d3c;
+        --accent-soft: #dceceb;
+        --border: #c5d6d4;
+        --radius: 6px;
+        --font: "DM Sans", "Segoe UI", sans-serif;
+        --display: "Fraunces", Georgia, serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: var(--font);
+        color: var(--ink);
+        background:
+          radial-gradient(1100px 480px at 8% -12%, #c5e0dc 0%, transparent 55%),
+          linear-gradient(180deg, #e8f1ef 0%, var(--bg) 40%, #e6eeec 100%);
+        line-height: 1.45;
+      }
+
+      .site-header {
+        background: linear-gradient(145deg, #042e2d 0%, var(--accent-deep) 40%, var(--accent) 78%, #1a7a76 100%);
+        color: #f2faf9;
+        padding: 0.55rem 1.15rem 0.6rem;
+        border-bottom: 2px solid #031f1e;
+      }
+
+      .header-inner {
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+
+      .header-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.65rem;
+      }
+
+      .brand {
+        margin: 0;
+        line-height: 1.3;
+        max-width: min(42rem, 100%);
+      }
+
+      .brand-name {
+        font-family: var(--display);
+        font-weight: 700;
+        font-size: clamp(0.95rem, 1.8vw, 1.25rem);
+        letter-spacing: -0.02em;
+      }
+
+      .brand-sep {
+        font-family: var(--display);
+        font-weight: 400;
+        font-size: clamp(0.85rem, 1.5vw, 1.05rem);
+        opacity: 0.5;
+      }
+
+      .brand-tagline {
+        font-family: var(--font);
+        font-weight: 400;
+        font-size: clamp(0.7rem, 1.2vw, 0.86rem);
+        letter-spacing: 0.055em;
+        opacity: 0.78;
+        vertical-align: 0.06em;
+      }
+
+      .site-header h1 {
+        margin: 0.15rem 0 0;
+        font-family: var(--font);
+        font-weight: 600;
+        font-size: clamp(0.95rem, 1.6vw, 1.08rem);
+        letter-spacing: 0.01em;
+        opacity: 0.95;
+      }
+
+      .header-link {
+        color: #f5fffe;
+        text-decoration: none;
+        font-size: 0.88rem;
+        font-weight: 600;
+        padding: 0.3rem 0.65rem;
+        border: 1px solid rgba(245, 255, 254, 0.35);
+        border-radius: var(--radius);
+        white-space: nowrap;
+      }
+
+      .header-link:hover {
+        background: rgba(245, 255, 254, 0.12);
+      }
+
+      .uc-page {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 1.5rem 1.25rem 3.5rem;
+      }
+
+      .uc-back {
+        display: inline-block;
+        margin-bottom: 1rem;
+        color: var(--accent);
+        font-size: 0.92rem;
+        font-weight: 600;
+        text-decoration: none;
+      }
+
+      .uc-back:hover {
+        text-decoration: underline;
+      }
+
+      .uc-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem 1.1rem;
+        margin: 0 0 1.5rem;
+        padding: 0;
+        list-style: none;
+        font-size: 0.88rem;
+      }
+
+      .uc-nav a {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .uc-nav a:hover {
+        text-decoration: underline;
+      }
+
+      .uc-section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.25rem 1.35rem 1.45rem;
+        margin-bottom: 1.25rem;
+        box-shadow: 0 1px 2px rgba(21, 36, 40, 0.05);
+      }
+
+      .uc-section-head {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        margin: 0 0 1rem;
+      }
+
+      .uc-section-head h2 {
+        margin: 0;
+        font-family: var(--display);
+        font-size: 1.2rem;
+        font-weight: 700;
+        letter-spacing: -0.015em;
+        color: var(--accent-deep);
+      }
+
+      .uc-icon {
+        flex-shrink: 0;
+        width: 1.85rem;
+        height: 1.85rem;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: var(--accent-soft);
+        color: var(--accent);
+      }
+
+      .uc-icon svg {
+        width: 1rem;
+        height: 1rem;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.75;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+        margin: 0 -0.15rem;
+      }
+
+      table.uc-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+        min-width: 36rem;
+      }
+
+      table.uc-table th,
+      table.uc-table td {
+        text-align: left;
+        vertical-align: top;
+        padding: 0.7rem 0.75rem;
+        border-bottom: 1px solid var(--border);
+      }
+
+      table.uc-table th {
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--muted);
+        background: #f4f9f8;
+        border-bottom: 1px solid #b7ccc9;
+      }
+
+      table.uc-table tbody tr:last-child td {
+        border-bottom: none;
+      }
+
+      table.uc-table tbody tr:hover td {
+        background: rgba(220, 236, 235, 0.35);
+      }
+
+      table.uc-table .uc-name {
+        font-weight: 700;
+        color: var(--accent-deep);
+        white-space: nowrap;
+      }
+
+      table.uc-table .uc-name-cell {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      table.uc-table .uc-row-icon {
+        flex-shrink: 0;
+        margin-top: 0.1rem;
+        width: 1.35rem;
+        height: 1.35rem;
+        display: grid;
+        place-items: center;
+        border-radius: 4px;
+        background: var(--accent-soft);
+        color: var(--accent);
+      }
+
+      table.uc-table .uc-row-icon svg {
+        width: 0.78rem;
+        height: 0.78rem;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.85;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      table.uc-table .uc-audience {
+        color: var(--muted);
+        font-size: 0.86rem;
+      }
+
+      table.uc-compare {
+        min-width: 28rem;
+      }
+
+      table.uc-compare td:first-child {
+        color: var(--muted);
+        width: 42%;
+      }
+
+      table.uc-compare td:last-child {
+        font-weight: 600;
+        color: var(--accent-deep);
+      }
+
+      .example-grid {
+        display: grid;
+        gap: 0.9rem;
+      }
+
+      .example-card {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1rem 1.1rem 1.05rem;
+        background: linear-gradient(180deg, #f7fbfa 0%, #fff 55%);
+      }
+
+      .example-card-head {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        margin: 0 0 0.55rem;
+      }
+
+      .example-card h3 {
+        margin: 0;
+        font-size: 1.02rem;
+        font-weight: 700;
+        color: var(--accent-deep);
+      }
+
+      .example-card p {
+        margin: 0 0 0.55rem;
+        font-size: 0.92rem;
+        color: var(--ink);
+      }
+
+      .example-card p:last-child {
+        margin-bottom: 0;
+      }
+
+      .example-result {
+        margin-top: 0.55rem;
+        padding-top: 0.55rem;
+        border-top: 1px solid var(--border);
+        font-size: 0.9rem;
+      }
+
+      .example-result strong {
+        color: var(--accent);
+        font-weight: 700;
+      }
+
+      .site-footer {
+        text-align: center;
+        padding: 1.25rem;
+        color: var(--muted);
+        font-size: 0.88rem;
+        border-top: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.65);
+      }
+
+      .site-footer p {
+        margin: 0;
+      }
+
+      @media (max-width: 640px) {
+        .uc-section {
+          padding: 1rem 0.95rem 1.15rem;
+        }
+
+        table.uc-table .uc-name {
+          white-space: normal;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="header-top">
+          <p class="brand">
+            <span class="brand-name">EvoEdge</span><span class="brand-sep"> – </span><span class="brand-tagline">Healthcare &amp; Pharma Intelligence</span>
+          </p>
+          <a class="header-link" href="/">Zur App</a>
+        </div>
+        <h1>Use Cases</h1>
+      </div>
+    </header>
+
+    <main class="uc-page">
+      <a class="uc-back" href="javascript:history.length>1?history.back():location.href='/'">← Zurück</a>
+
+      <nav aria-label="Abschnitte">
+        <ul class="uc-nav">
+          <li><a href="#typische">1. Typische Use Cases</a></li>
+          <li><a href="#anwendungsbeispiele">2. Anwendungsbeispiele</a></li>
+          <li><a href="#unterscheidung">3. Abgrenzung zur Ärztedatenbank</a></li>
+        </ul>
+      </nav>
+
+      <section class="uc-section" id="typische">
+        <div class="uc-section-head">
+          <span class="uc-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 4v16"/></svg>
+          </span>
+          <h2>1. Typische Use Cases</h2>
+        </div>
+        <div class="table-wrap">
+          <table class="uc-table">
+            <thead>
+              <tr>
+                <th scope="col">Use Case</th>
+                <th scope="col">Konkrete Fragestellung</th>
+                <th scope="col">Zielgruppe</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <div class="uc-name-cell">
+                    <span class="uc-row-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 19c1.8-3.2 5-4.5 7-4.5s5.2 1.3 7 4.5"/></svg></span>
+                    <span class="uc-name">HCP Targeting</span>
+                  </div>
+                </td>
+                <td>Welche 100 Ärzte sind für die Einführung meines neuen Arzneimittels besonders relevant?</td>
+                <td class="uc-audience">Product Manager</td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="uc-name-cell">
+                    <span class="uc-row-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l2.4 4.9L20 9l-4 3.9.9 5.6L12 16.2 7.1 18.5 8 12.9 4 9l5.6-1.1L12 3z"/></svg></span>
+                    <span class="uc-name">KOL Identification</span>
+                  </div>
+                </td>
+                <td>Welche Ärzte verfügen über die höchste wissenschaftliche und fachgesellschaftliche Relevanz in einer Indikation?</td>
+                <td class="uc-audience">Medical Affairs, MSL</td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="uc-name-cell">
+                    <span class="uc-row-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l4.5 4.5"/><path d="M9 11h4M11 9v4"/></svg></span>
+                    <span class="uc-name">Pre-Call Intelligence</span>
+                  </div>
+                </td>
+                <td>Was ist seit dem letzten Außendienstbesuch bei diesem Arzt öffentlich dokumentiert worden?</td>
+                <td class="uc-audience">Sales, Außendienst</td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="uc-name-cell">
+                    <span class="uc-row-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V6a2 2 0 012-2h7l5 5v10a2 2 0 01-2 2H6a2 2 0 01-2-2z"/><path d="M13 4v5h5"/><path d="M8 13h8M8 17h5"/></svg></span>
+                    <span class="uc-name">Product Launch</span>
+                  </div>
+                </td>
+                <td>Welche Ärzte, Kliniken und Studienzentren sind für einen bevorstehenden Produktlaunch relevant?</td>
+                <td class="uc-audience">Launch Manager</td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="uc-name-cell">
+                    <span class="uc-row-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-5 4 10 2-5h6"/><circle cx="19" cy="6" r="2"/></svg></span>
+                    <span class="uc-name">Competitive Intelligence</span>
+                  </div>
+                </td>
+                <td>Welche Ärzte haben öffentlich dokumentierte Beziehungen zu Mitbewerbern?</td>
+                <td class="uc-audience">Product Manager</td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="uc-name-cell">
+                    <span class="uc-row-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 4h6v4H9z"/><path d="M7 8h10v12H7z"/><path d="M10 12h4M10 16h4"/></svg></span>
+                    <span class="uc-name">Clinical Trial Intelligence</span>
+                  </div>
+                </td>
+                <td>Welche österreichischen Ärzte sind an klinischen Studien zu bestimmten Wirkstoffen beteiligt?</td>
+                <td class="uc-audience">Medical Affairs</td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="uc-name-cell">
+                    <span class="uc-row-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v10"/><path d="M8 9l4 4 4-4"/><path d="M5 17h14"/><path d="M7 21h10"/></svg></span>
+                    <span class="uc-name">Speaker Identification</span>
+                  </div>
+                </td>
+                <td>Welche Ärzte kommen aufgrund ihrer Vortragstätigkeit und wissenschaftlichen Expertise als Referenten infrage?</td>
+                <td class="uc-audience">Marketing, Medical Affairs</td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="uc-name-cell">
+                    <span class="uc-row-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s-7-5.2-7-11a7 7 0 0114 0c0 5.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
+                    <span class="uc-name">Territory Management</span>
+                  </div>
+                </td>
+                <td>Wie verteilen sich relevante Ärzte geografisch auf die Außendienstgebiete?</td>
+                <td class="uc-audience">Sales Management</td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="uc-name-cell">
+                    <span class="uc-row-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></span>
+                    <span class="uc-name">Market Monitoring</span>
+                  </div>
+                </td>
+                <td>Welche neuen Arzneimittel, Zulassungen und Indikationserweiterungen betreffen meinen Markt?</td>
+                <td class="uc-audience">Business Development</td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="uc-name-cell">
+                    <span class="uc-row-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 11l2.5 2.5L16 9"/><rect x="4" y="4" width="16" height="16" rx="2"/></svg></span>
+                    <span class="uc-name">HCP Data Validation</span>
+                  </div>
+                </td>
+                <td>Sind die bestehenden CRM-Stammdaten noch aktuell?</td>
+                <td class="uc-audience">Commercial Excellence</td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="uc-name-cell">
+                    <span class="uc-row-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="7" cy="8" r="2.5"/><circle cx="17" cy="8" r="2.5"/><circle cx="12" cy="17" r="2.5"/><path d="M9.2 9.5l2.1 5M14.8 9.5l-2.1 5"/></svg></span>
+                    <span class="uc-name">Network Intelligence</span>
+                  </div>
+                </td>
+                <td>Welche beruflichen, wissenschaftlichen und institutionellen Verbindungen bestehen zwischen Ärzten?</td>
+                <td class="uc-audience">Medical Affairs</td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="uc-name-cell">
+                    <span class="uc-row-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="4"/><path d="M7.5 7.5l2 2M14.5 14.5l2 2M16.5 7.5l-2 2M9.5 14.5l-2 2"/></svg></span>
+                    <span class="uc-name">Transparency Intelligence</span>
+                  </div>
+                </td>
+                <td>Welche veröffentlichten geldwerten Leistungen pharmazeutischer Unternehmen lassen sich einem Arzt zuordnen?</td>
+                <td class="uc-audience">Compliance, Marketing</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="uc-section" id="anwendungsbeispiele">
+        <div class="uc-section-head">
+          <span class="uc-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M5 19l5.5-5.5M14 5l5 5-9 9H5v-5l9-9z"/></svg>
+          </span>
+          <h2>2. Besonders attraktive Anwendungsbeispiele</h2>
+        </div>
+
+        <div class="example-grid">
+          <article class="example-card">
+            <div class="example-card-head">
+              <span class="uc-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V6a2 2 0 012-2h7l5 5v10a2 2 0 01-2 2H6a2 2 0 01-2-2z"/><path d="M13 4v5h5"/></svg></span>
+              <h3>Product Launch Intelligence</h3>
+            </div>
+            <p>Ein Pharmaunternehmen plant die Markteinführung eines neuen Onkologikums.</p>
+            <p>EvoEdge identifiziert relevante Fachärzte anhand ihrer Publikationen, klinischen Studien, Krankenhausfunktionen, Fachgesellschaftsaktivitäten und Vortragstätigkeiten.</p>
+            <p class="example-result"><strong>Ergebnis:</strong> evidenzbasierte HCP-Zielgruppenliste als Grundlage der Launch-Strategie.</p>
+          </article>
+
+          <article class="example-card">
+            <div class="example-card-head">
+              <span class="uc-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l4.5 4.5"/></svg></span>
+              <h3>Know Your Customer (KYC)</h3>
+            </div>
+            <p>Ein Außendienstmitarbeiter bereitet einen Arztbesuch vor. EvoEdge zeigt neue Publikationen, Vorträge, Medienberichte, berufliche Veränderungen und Studienbeteiligungen seit dem letzten Besuch.</p>
+            <p class="example-result"><strong>Ergebnis:</strong> bessere Gesprächsvorbereitung bei reduziertem Rechercheaufwand.</p>
+          </article>
+
+          <article class="example-card">
+            <div class="example-card-head">
+              <span class="uc-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="7" cy="8" r="2.5"/><circle cx="17" cy="8" r="2.5"/><circle cx="12" cy="17" r="2.5"/><path d="M9.2 9.5l2.1 5M14.8 9.5l-2.1 5"/></svg></span>
+              <h3>Scientific Network Mapping</h3>
+            </div>
+            <p>Ein MSL möchte die wissenschaftlich relevanten Akteure innerhalb einer Indikation identifizieren. EvoEdge verknüpft Koautorenschaften, Studienbeteiligungen, Fachgesellschaften und institutionelle Funktionen.</p>
+            <p class="example-result"><strong>Ergebnis:</strong> Abbildung wissenschaftlicher Netzwerke und Identifikation relevanter Experten.</p>
+          </article>
+
+          <article class="example-card">
+            <div class="example-card-head">
+              <span class="uc-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-5 4 10 2-5h6"/></svg></span>
+              <h3>Competitive Intelligence</h3>
+            </div>
+            <p>Ein Product Manager möchte nachvollziehen, welche Ärzte mit anderen pharmazeutischen Unternehmen wissenschaftlich oder wirtschaftlich in Verbindung stehen.</p>
+            <p>EvoEdge analysiert veröffentlichte Transparenzberichte, Studiensponsoren, Kongressprogramme und Interessenerklärungen.</p>
+            <p class="example-result"><strong>Ergebnis:</strong> dokumentierte Markttransparenz auf Basis nachvollziehbarer Quellen.</p>
+          </article>
+
+          <article class="example-card">
+            <div class="example-card-head">
+              <span class="uc-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></span>
+              <h3>Market Signal Detection</h3>
+            </div>
+            <p>Ein Pharmamanager möchte relevante Marktveränderungen frühzeitig erkennen.</p>
+            <p>EvoEdge könnte mittels KI-Agenten kontinuierlich neue Zulassungen, klinische Studien, Personalveränderungen, Publikationen und Kongressaktivitäten erfassen.</p>
+            <p class="example-result"><strong>Ergebnis:</strong> automatisierte, indikationsspezifische Opportunity Briefings.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="uc-section" id="unterscheidung">
+        <div class="uc-section-head">
+          <span class="uc-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M8 7h13M8 12h13M8 17h13"/><path d="M3 7h.01M3 12h.01M3 17h.01"/></svg>
+          </span>
+          <h2>3. Was EvoEdge von einer klassischen Ärztedatenbank unterscheidet</h2>
+        </div>
+        <div class="table-wrap">
+          <table class="uc-table uc-compare">
+            <thead>
+              <tr>
+                <th scope="col">Klassische HCP-Datenbank</th>
+                <th scope="col">EvoEdge</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Wer ist der Arzt?</td>
+                <td>Was ist über den Arzt nachweisbar?</td>
+              </tr>
+              <tr>
+                <td>Wo arbeitet er?</td>
+                <td>Welche Funktionen und Beziehungen hat er?</td>
+              </tr>
+              <tr>
+                <td>Welches Fachgebiet hat er?</td>
+                <td>Welche wissenschaftlichen Schwerpunkte hat er?</td>
+              </tr>
+              <tr>
+                <td>Wie kann man ihn erreichen?</td>
+                <td>Welche fachlich relevanten Gesprächsthemen gibt es?</td>
+              </tr>
+              <tr>
+                <td>Statische Stammdaten</td>
+                <td>Dynamische Informationsprofile</td>
+              </tr>
+              <tr>
+                <td>Adressmanagement</td>
+                <td>Healthcare Intelligence</td>
+              </tr>
+              <tr>
+                <td>Manuelle Recherche</td>
+                <td>KI-gestützte Informationsgewinnung</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>EvoEdge – Healthcare &amp; Pharma Intelligence · © Evolantis IT-Solutions GmbH</p>
+    </footer>
+  </body>
+</html>
