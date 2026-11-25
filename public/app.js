@@ -912,6 +912,17 @@ function openDoctorDetail(doc) {
     el.doctorDetailPhoto.hidden = false;
     el.doctorDetailPhoto.href = photoUrl;
     el.doctorDetailPhoto.innerHTML = `<img src="${escapeHtml(photoUrl)}" alt="Foto von ${escapeHtml(title)}" loading="lazy" referrerpolicy="no-referrer" />`;
+    // Broken / 404 photos: hide container entirely (no alt-text stub).
+    const img = el.doctorDetailPhoto.querySelector('img');
+    if (img) {
+      const hideBrokenPhoto = () => {
+        el.doctorDetailPhoto.hidden = true;
+        el.doctorDetailPhoto.removeAttribute('href');
+        el.doctorDetailPhoto.innerHTML = '';
+      };
+      img.addEventListener('error', hideBrokenPhoto, { once: true });
+      if (img.complete && img.naturalWidth === 0) hideBrokenPhoto();
+    }
   } else if (el.doctorDetailPhoto) {
     el.doctorDetailPhoto.hidden = true;
     el.doctorDetailPhoto.removeAttribute('href');
