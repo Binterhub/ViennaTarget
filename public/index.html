@@ -113,14 +113,16 @@
               aria-expanded="false"
               aria-controls="city-chart-body"
             >
-              <span class="chart-toggle-title">Top 10 Orte (aktuelle Treffer)</span>
+              <span class="chart-toggle-title">Ranking nach Orten</span>
               <span class="chart-toggle-hint" id="chart-toggle-hint">Aufklappen</span>
             </button>
             <div id="city-chart-body" class="chart-body">
               <p class="focus-note chart-filter-hint">
-                Balken anklicken, um nach Ort zu filtern (sortiert nach Nachname). Überschrift erneut klicken zum Zuklappen.
+                Alle Orte nach HCP-Anzahl. Balken anklicken zum Filtern (sortiert nach Nachname).
               </p>
-              <canvas id="city-chart" height="80" aria-label="Balkendiagramm Orte – Klick filtert nach Ort"></canvas>
+              <div class="chart-scroll">
+                <canvas id="city-chart" height="80" aria-label="Ranking nach Orten – HCP-Anzahl je Ort"></canvas>
+              </div>
             </div>
           </div>
           <div class="filter-row filter-row-city">

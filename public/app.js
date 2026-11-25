@@ -572,15 +572,49 @@ function sortDoctors(list) {
   });
 }
 
-function topCities(list, n = 10) {
+function rankCities(list) {
   const counts = new Map();
   for (const d of list) {
     const s = text(d.city).trim() || '(ohne Angabe)';
     counts.set(s, (counts.get(s) || 0) + 1);
   }
-  return Array.from(counts.entries())
-    .sort((a, b) => b[1] - a[1] || compareDe(a[0], b[0]))
-    .slice(0, n);
+  return Array.from(counts.entries()).sort((a, b) => b[1] - a[1] || compareDe(a[0], b[0]));
+}
+
+/** Draw HCP counts at the end of each horizontal bar. */
+const hcpCountLabelsPlugin = {
+  id: 'hcpCountLabels',
+  afterDatasetsDraw(chart) {
+    const { ctx } = chart;
+    const meta = chart.getDatasetMeta(0);
+    if (!meta || !meta.data) return;
+    ctx.save();
+    ctx.fillStyle = '#063d3c';
+    ctx.font = '600 10px "DM Sans", "Segoe UI", sans-serif';
+    ctx.textBaseline = 'middle';
+    meta.data.forEach((bar, i) => {
+      const value = chart.data.datasets[0].data[i];
+      if (value == null) return;
+      const label = String(value);
+      const x = Math.min(bar.x + 5, chart.chartArea.right - ctx.measureText(label).width - 2);
+      ctx.textAlign = 'left';
+      ctx.fillText(label, x, bar.y);
+    });
+    ctx.restore();
+  },
+};
+
+function chartPixelHeight(rowCount, expanded) {
+  if (!expanded) return 72;
+  const rows = Math.max(rowCount, 1);
+  return Math.max(96, rows * 18 + 8);
+}
+
+function applyChartCanvasHeight(rowCount) {
+  if (!el.chart) return;
+  const h = chartPixelHeight(rowCount, state.chartExpanded);
+  el.chart.style.height = `${h}px`;
+  el.chart.height = h;
 }
 
 function selectOnlyCity(cityLabel) {
@@ -628,9 +662,10 @@ function syncChartBarMetrics() {
   ds.barPercentage = metrics.barPercentage;
   ds.categoryPercentage = metrics.categoryPercentage;
   ds.maxBarThickness = metrics.maxBarThickness;
-  state.chart.options.maintainAspectRatio = !state.chartExpanded;
+  state.chart.options.maintainAspectRatio = false;
+  const rowCount = state.chart.data.labels?.length || 0;
+  applyChartCanvasHeight(rowCount);
   state.chart.update();
-  // Layout class may change canvas box — resize after paint.
   requestAnimationFrame(() => {
     if (state.chart) state.chart.resize();
   });
@@ -647,12 +682,13 @@ function toggleChartExpanded() {
 }
 
 function renderChart(list) {
-  const top = topCities(list, 10);
-  const labels = top.map(([name]) => name);
-  const values = top.map(([, count]) => count);
+  const ranked = rankCities(list);
+  const labels = ranked.map(([name]) => name);
+  const values = ranked.map(([, count]) => count);
 
   const metrics = chartBarMetrics(state.chartExpanded);
   applyChartExpandedUi();
+  applyChartCanvasHeight(labels.length);
 
   if (state.chart) {
     state.chart.data.labels = labels;
@@ -660,7 +696,11 @@ function renderChart(list) {
     state.chart.data.datasets[0].barPercentage = metrics.barPercentage;
     state.chart.data.datasets[0].categoryPercentage = metrics.categoryPercentage;
     state.chart.data.datasets[0].maxBarThickness = metrics.maxBarThickness;
+    state.chart.options.maintainAspectRatio = false;
     state.chart.update();
+    requestAnimationFrame(() => {
+      if (state.chart) state.chart.resize();
+    });
     return;
   }
 
@@ -672,7 +712,7 @@ function renderChart(list) {
       labels,
       datasets: [
         {
-          label: 'Anzahl',
+          label: 'HCPs',
           data: values,
           backgroundColor: '#0a5c5a',
           borderRadius: 2,
@@ -685,9 +725,9 @@ function renderChart(list) {
     options: {
       indexAxis: 'y',
       responsive: true,
-      maintainAspectRatio: !state.chartExpanded,
+      maintainAspectRatio: false,
       layout: {
-        padding: { top: 2, right: 6, bottom: 2, left: 0 },
+        padding: { top: 2, right: 22, bottom: 2, left: 0 },
       },
       onHover(event, elements) {
         const canvas = event?.native?.target || el.chart;
@@ -708,6 +748,10 @@ function renderChart(list) {
             title(items) {
               return items[0]?.label || '';
             },
+            label(item) {
+              const n = item.parsed?.x ?? item.raw;
+              return `${n} HCP${n === 1 ? '' : 's'}`;
+            },
             afterBody() {
               return 'Klicken zum Filtern nach Ort';
             },
@@ -717,22 +761,23 @@ function renderChart(list) {
       scales: {
         x: {
           beginAtZero: true,
-          ticks: { precision: 0, font: { size: 11 } },
+          ticks: { precision: 0, font: { size: 10 } },
           grid: { color: '#dce8e6' },
         },
         y: {
           ticks: {
             autoSkip: false,
-            font: { size: 12 },
+            font: { size: 10 },
             callback(value) {
               const label = this.getLabelForValue(value);
-              return label.length > 28 ? `${label.slice(0, 26)}…` : label;
+              return label.length > 22 ? `${label.slice(0, 20)}…` : label;
             },
           },
           grid: { display: false },
         },
       },
     },
+    plugins: [hcpCountLabelsPlugin],
   });
 }
 

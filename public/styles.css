@@ -403,14 +403,21 @@ body {
   font-size: 0.78rem;
 }
 
-.chart-wrap canvas {
-  cursor: pointer;
-  max-height: 9rem;
-  width: 100% !important;
+.chart-scroll {
+  max-height: 14rem;
+  overflow: auto;
+  padding-right: 0.15rem;
 }
 
-.chart-wrap.is-expanded canvas {
-  max-height: 16rem;
+.chart-wrap.is-expanded .chart-scroll {
+  max-height: 18rem;
+}
+
+.chart-wrap canvas {
+  cursor: pointer;
+  display: block;
+  width: 100% !important;
+  max-height: none;
 }
 
 .filter-form {
