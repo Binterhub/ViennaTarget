@@ -788,10 +788,15 @@ function markOpenDoctorRow() {
   });
 }
 
+function setDetailLayoutOpen(open) {
+  document.body.classList.toggle('detail-open', Boolean(open));
+}
+
 function closeDoctorDetail() {
   if (!el.doctorDetail) return;
   el.doctorDetail.hidden = true;
   state.openEvoid = null;
+  setDetailLayoutOpen(false);
   markOpenDoctorRow();
 }
 
@@ -894,6 +899,7 @@ function openDoctorDetail(doc) {
   el.doctorDetailFields.innerHTML = rows.join('') || '<div><dt>–</dt><dd class="doctor-detail-empty">Keine Felder</dd></div>';
   state.openEvoid = doctorKey(doc);
   el.doctorDetail.hidden = false;
+  setDetailLayoutOpen(true);
   markOpenDoctorRow();
   // Focus close only on first open — keep list keyboard-friendly when swapping rows.
   if (wasHidden && el.doctorDetailClose) el.doctorDetailClose.focus();
