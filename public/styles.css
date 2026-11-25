@@ -19,6 +19,7 @@
   --display: "Fraunces", Georgia, serif;
   --detail-serif: "Source Serif 4", "Libre Baskerville", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   --detail-width: 28rem;
+  --social-preview-width: 18rem;
 }
 
 *,
@@ -43,7 +44,7 @@ body {
   line-height: 1.45;
 }
 
-/* Desktop: reserve the detail column and pin overview to the left. */
+/* Desktop: reserve detail (+ optional social preview) and pin overview left. */
 @media (min-width: 901px) {
   body {
     transition: padding-right 0.2s ease-out;
@@ -51,6 +52,10 @@ body {
 
   body.detail-open {
     padding-right: var(--detail-width);
+  }
+
+  body.detail-open.social-preview-open {
+    padding-right: calc(var(--detail-width) + var(--social-preview-width));
   }
 
   body.detail-open .header-inner,
@@ -617,25 +622,40 @@ td.empty {
   display: none !important;
 }
 
-/* Non-modal side card: does not dim/blur or intercept clicks on the main UI. */
+/* Non-modal side dock: detail (+ optional social preview). No blur/backdrop. */
 .doctor-detail {
   position: fixed;
   inset: 0;
   z-index: 50;
-  display: grid;
-  justify-items: end;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
   align-items: stretch;
   pointer-events: none;
 }
 
-.doctor-detail-shell {
+.doctor-detail-shell,
+.social-preview {
   pointer-events: auto;
-  width: min(var(--detail-width), 100%);
   height: 100%;
   max-height: 100vh;
   display: grid;
   grid-template-rows: auto 1fr;
   animation: detail-in 0.2s ease-out;
+}
+
+.doctor-detail-shell {
+  width: min(var(--detail-width), 100%);
+  flex: 0 0 auto;
+}
+
+.social-preview {
+  width: min(var(--social-preview-width), 100%);
+  flex: 0 0 auto;
+}
+
+.social-preview[hidden] {
+  display: none !important;
 }
 
 .doctor-row.is-open {
@@ -647,7 +667,8 @@ td.empty {
   background: #dcebea;
 }
 
-.doctor-detail-toolbar {
+.doctor-detail-toolbar,
+.social-preview-toolbar {
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -658,7 +679,8 @@ td.empty {
   border-bottom: 1px solid rgba(245, 255, 254, 0.12);
 }
 
-.doctor-detail-toolbar .btn {
+.doctor-detail-toolbar .btn,
+.social-preview-toolbar .btn {
   background: transparent;
   border-color: rgba(245, 255, 254, 0.35);
   color: #f5fffe;
@@ -666,16 +688,86 @@ td.empty {
   font-size: 0.88rem;
 }
 
-.doctor-detail-toolbar .btn:hover:not(:disabled) {
+.doctor-detail-toolbar .btn:hover:not(:disabled),
+.social-preview-toolbar .btn:hover:not(:disabled) {
   background: rgba(245, 255, 254, 0.12);
 }
 
-.doctor-detail-panel {
+.doctor-detail-panel,
+.social-preview-panel {
   overflow: auto;
   background: #fff;
   border-left: 1px solid var(--border);
   box-shadow: -12px 0 36px rgba(6, 61, 60, 0.16);
   padding: 1.1rem 1.15rem 1.5rem;
+}
+
+.social-preview-panel {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 0.65rem;
+}
+
+.social-preview-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #f4f8f7;
+  color: var(--accent-deep);
+}
+
+.social-preview-icon svg {
+  width: 1.55rem;
+  height: 1.55rem;
+}
+
+.social-preview-kicker {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.social-preview-title {
+  margin: 0;
+  font-family: var(--detail-serif);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--accent-deep);
+  line-height: 1.2;
+}
+
+.social-preview-url {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: var(--muted);
+  word-break: break-all;
+}
+
+.social-preview-open {
+  margin-top: 0.25rem;
+  text-decoration: none;
+}
+
+.social-preview-note {
+  margin: 0.35rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.detail-social-link.is-active,
+.detail-homepage-url.is-active {
+  outline: 2px solid #8cbcb8;
+  outline-offset: 2px;
 }
 
 .doctor-detail-header {

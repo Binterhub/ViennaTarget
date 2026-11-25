@@ -62,6 +62,12 @@ const el = {
   doctorDetailPhoto: document.getElementById('doctor-detail-photo'),
   doctorDetailFields: document.getElementById('doctor-detail-fields'),
   doctorDetailClose: document.getElementById('doctor-detail-close'),
+  socialPreview: document.getElementById('social-preview'),
+  socialPreviewClose: document.getElementById('social-preview-close'),
+  socialPreviewIcon: document.getElementById('social-preview-icon'),
+  socialPreviewTitle: document.getElementById('social-preview-title'),
+  socialPreviewUrl: document.getElementById('social-preview-url'),
+  socialPreviewOpen: document.getElementById('social-preview-open'),
 };
 
 /** Preferred display order / labels for known API person fields (case-insensitive lookup). */
@@ -199,13 +205,14 @@ function socialLabelForIcon(icon) {
 
 function renderSocialIconLink({ href, label, icon }) {
   const safeHref = href || '#';
-  return `<a class="detail-social-link" href="${escapeHtml(safeHref)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}">${socialIconSvg(icon)}<span class="detail-social-sr">${escapeHtml(label)}</span></a>`;
+  const safeIcon = icon || 'homepage';
+  return `<a class="detail-social-link" href="${escapeHtml(safeHref)}" data-social-preview data-social-icon="${escapeHtml(safeIcon)}" data-social-label="${escapeHtml(label)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}">${socialIconSvg(safeIcon)}<span class="detail-social-sr">${escapeHtml(label)}</span></a>`;
 }
 
 function renderHomepageRow({ href, display }) {
   const safeHref = href || '#';
   const longClass = text(display).length > 30 ? ' detail-link-long' : '';
-  return `<div class="detail-homepage"><dt>${socialIconSvg('homepage')}<span class="detail-social-sr">Homepage</span></dt><dd><a href="${escapeHtml(safeHref)}" target="_blank" rel="noopener noreferrer" class="detail-homepage-url${longClass}">${escapeHtml(display)}</a></dd></div>`;
+  return `<div class="detail-homepage"><dt>${socialIconSvg('homepage')}<span class="detail-social-sr">Homepage</span></dt><dd><a href="${escapeHtml(safeHref)}" data-social-preview data-social-icon="homepage" data-social-label="Homepage" target="_blank" rel="noopener noreferrer" class="detail-homepage-url${longClass}">${escapeHtml(display)}</a></dd></div>`;
 }
 
 function collectSocialLinksFromDoc(doc) {
@@ -790,10 +797,56 @@ function markOpenDoctorRow() {
 
 function setDetailLayoutOpen(open) {
   document.body.classList.toggle('detail-open', Boolean(open));
+  if (!open) document.body.classList.remove('social-preview-open');
+}
+
+function setSocialPreviewLayoutOpen(open) {
+  document.body.classList.toggle('social-preview-open', Boolean(open) && document.body.classList.contains('detail-open'));
+}
+
+function closeSocialPreview() {
+  if (!el.socialPreview) return;
+  el.socialPreview.hidden = true;
+  setSocialPreviewLayoutOpen(false);
+  if (el.doctorDetailFields) {
+    el.doctorDetailFields.querySelectorAll('[data-social-preview].is-active').forEach((node) => {
+      node.classList.remove('is-active');
+    });
+  }
+}
+
+function openSocialPreview({ href, icon, label }) {
+  if (!el.socialPreview || !href) return;
+  const network = label || socialLabelForIcon(icon) || 'Profile';
+  const kind = icon || socialIconFromUrl(href) || 'homepage';
+
+  if (el.socialPreviewIcon) {
+    el.socialPreviewIcon.innerHTML = socialIconSvg(kind);
+  }
+  if (el.socialPreviewTitle) {
+    el.socialPreviewTitle.textContent = network;
+  }
+  if (el.socialPreviewUrl) {
+    el.socialPreviewUrl.textContent = href;
+  }
+  if (el.socialPreviewOpen) {
+    el.socialPreviewOpen.href = href;
+  }
+
+  el.socialPreview.hidden = false;
+  setSocialPreviewLayoutOpen(true);
+
+  if (el.doctorDetailFields) {
+    el.doctorDetailFields.querySelectorAll('[data-social-preview]').forEach((node) => {
+      const match = node.getAttribute('href') === href;
+      node.classList.toggle('is-active', match);
+    });
+  }
 }
 
 function closeDoctorDetail() {
   if (!el.doctorDetail) return;
+  closeSocialPreview();
   el.doctorDetail.hidden = true;
   state.openEvoid = null;
   setDetailLayoutOpen(false);
@@ -898,6 +951,7 @@ function openDoctorDetail(doc) {
 
   el.doctorDetailFields.innerHTML = rows.join('') || '<div><dt>–</dt><dd class="doctor-detail-empty">Keine Felder</dd></div>';
   state.openEvoid = doctorKey(doc);
+  closeSocialPreview();
   el.doctorDetail.hidden = false;
   setDetailLayoutOpen(true);
   markOpenDoctorRow();
@@ -1203,8 +1257,31 @@ function bindEvents() {
   if (el.doctorDetailClose) {
     el.doctorDetailClose.addEventListener('click', closeDoctorDetail);
   }
+  if (el.socialPreviewClose) {
+    el.socialPreviewClose.addEventListener('click', closeSocialPreview);
+  }
+  if (el.doctorDetailFields) {
+    el.doctorDetailFields.addEventListener('click', (event) => {
+      const link = event.target.closest('[data-social-preview]');
+      if (!link || !el.doctorDetailFields.contains(link)) return;
+      // Allow modified / non-primary clicks to open the real profile in a new tab.
+      if (event.defaultPrevented) return;
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      openSocialPreview({
+        href: link.getAttribute('href'),
+        icon: link.getAttribute('data-social-icon'),
+        label: link.getAttribute('data-social-label'),
+      });
+    });
+  }
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && el.doctorDetail && !el.doctorDetail.hidden) {
+    if (event.key !== 'Escape') return;
+    if (el.socialPreview && !el.socialPreview.hidden) {
+      closeSocialPreview();
+      return;
+    }
+    if (el.doctorDetail && !el.doctorDetail.hidden) {
       closeDoctorDetail();
     }
   });

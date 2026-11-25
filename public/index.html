@@ -192,6 +192,36 @@
           <dl id="doctor-detail-fields" class="doctor-detail-fields"></dl>
         </aside>
       </div>
+      <div id="social-preview" class="social-preview" hidden>
+        <div class="social-preview-toolbar">
+          <button type="button" id="social-preview-close" class="btn btn-secondary" aria-label="Profilvorschau schließen">
+            Schließen
+          </button>
+        </div>
+        <aside
+          class="social-preview-panel"
+          role="complementary"
+          aria-labelledby="social-preview-title"
+        >
+          <div id="social-preview-icon" class="social-preview-icon" aria-hidden="true"></div>
+          <p class="social-preview-kicker">Profilvorschau</p>
+          <h2 id="social-preview-title" class="social-preview-title">–</h2>
+          <p id="social-preview-url" class="social-preview-url"></p>
+          <a
+            id="social-preview-open"
+            class="btn btn-primary social-preview-open"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            In neuem Tab öffnen
+          </a>
+          <p class="social-preview-note">
+            Externe Profile können hier nicht eingebettet werden (X-Frame-Options).
+            Der echte Profilinhalt öffnet sich im neuen Tab.
+          </p>
+        </aside>
+      </div>
     </div>
 
     <footer class="site-footer">
