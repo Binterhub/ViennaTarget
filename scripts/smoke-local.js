@@ -85,13 +85,13 @@ async function main() {
   const appPage = await fetch(`${base}/`, { headers: { Cookie: cookieHeader }, redirect: 'manual' });
   if (appPage.status !== 200) fail(`authenticated GET / expected 200, got ${appPage.status}`);
   const appHtml = await appPage.text();
-  if (!appHtml.includes('datadominance-app-hero.jpg')) {
-    fail('app page missing short post-login hero');
+  if (!appHtml.includes('evoedge-logo.jpg')) {
+    fail('app page missing EvoEdge logo');
   }
   if (!appHtml.includes('Fokus: Poractant alfa')) {
     fail('app page missing Fokus: Poractant alfa label');
   }
-  ok('authenticated app shell + short hero');
+  ok('authenticated app shell + EvoEdge logo');
 
   const doctors = await fetch(`${base}/api/doctors`, {
     headers: { Cookie: cookieHeader, Accept: 'application/json' },
