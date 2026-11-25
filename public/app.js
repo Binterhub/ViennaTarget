@@ -78,13 +78,16 @@ const DETAIL_FIELD_DEFS = [
   { keys: ['country', 'Country'], label: 'Land', headerOnly: true },
   { keys: ['countrycode', 'countryCode', 'CountryCode'], label: 'Ländercode', headerOnly: true },
   { keys: ['gender', 'geschlecht', 'sex', 'Geschlecht'], label: 'Geschlecht' },
-  { keys: ['orcid', 'ORCID', 'Orcid'], label: 'ORCID', kind: 'social' },
-  { keys: ['openalexid', 'openAlexId', 'OpenAlexId', 'openalex'], label: 'OpenAlex ID', kind: 'openalex' },
-  { keys: ['homepage', 'Homepage', 'website', 'url'], label: 'Homepage', kind: 'social' },
-  { keys: ['facebook', 'Facebook'], label: 'Facebook', kind: 'social' },
-  { keys: ['linkedin', 'LinkedIn', 'linkedIn'], label: 'LinkedIn', kind: 'social' },
-  { keys: ['instagram', 'Instagram'], label: 'Instagram', kind: 'social' },
-  { keys: ['x', 'X', 'twitter', 'Twitter'], label: 'X (Twitter)', kind: 'social' },
+  { keys: ['orcid', 'ORCID', 'Orcid'], label: 'ORCID', kind: 'social', icon: 'orcid' },
+  { keys: ['openalexid', 'openAlexId', 'OpenAlexId', 'openalex'], label: 'OpenAlex', kind: 'openalex', icon: 'openalex' },
+  { keys: ['homepage', 'Homepage', 'website', 'url'], label: 'Homepage', kind: 'social', icon: 'homepage' },
+  { keys: ['facebook', 'Facebook'], label: 'Facebook', kind: 'social', icon: 'facebook' },
+  { keys: ['linkedin', 'LinkedIn', 'linkedIn'], label: 'LinkedIn', kind: 'social', icon: 'linkedin' },
+  { keys: ['researchgate', 'ResearchGate', 'researchGate'], label: 'ResearchGate', kind: 'social', icon: 'researchgate' },
+  { keys: ['instagram', 'Instagram'], label: 'Instagram', kind: 'social', icon: 'instagram' },
+  { keys: ['x', 'X', 'twitter', 'Twitter'], label: 'X', kind: 'social', icon: 'x' },
+  { keys: ['youtube', 'YouTube', 'Youtube'], label: 'YouTube', kind: 'social', icon: 'youtube' },
+  { keys: ['xing', 'Xing', 'XING'], label: 'Xing', kind: 'social', icon: 'xing' },
   // Photo is rendered as a linked image in the header — omit URL row from body.
   { keys: ['externalphoto', 'externalPhoto', 'ExternalPhoto', 'photo', 'image'], label: 'Foto', headerOnly: true },
   { keys: ['vpnr', 'vpNr', 'VpNr', 'VPN R', 'vp_nr'], label: 'VPNR' },
@@ -94,7 +97,64 @@ const DETAIL_FIELD_DEFS = [
 ];
 
 const SOCIAL_EXTRA_KEY_RE =
-  /^(facebook|linkedin|instagram|twitter|x|xing|youtube|tiktok|homepage|website|orcid|openalex)/i;
+  /^(facebook|linkedin|instagram|twitter|x|xing|youtube|tiktok|homepage|website|orcid|openalex|researchgate)/i;
+
+const SOCIAL_ICON_BY_KEY = {
+  facebook: 'facebook',
+  linkedin: 'linkedin',
+  instagram: 'instagram',
+  twitter: 'x',
+  x: 'x',
+  xing: 'xing',
+  youtube: 'youtube',
+  tiktok: 'tiktok',
+  homepage: 'homepage',
+  website: 'homepage',
+  orcid: 'orcid',
+  openalex: 'openalex',
+  openalexid: 'openalex',
+  researchgate: 'researchgate',
+};
+
+function socialIconSvg(name) {
+  const common = 'viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"';
+  switch (name) {
+    case 'facebook':
+      return `<svg ${common}><path fill="currentColor" d="M14 8h2.5V5.5H14c-1.9 0-3.5 1.6-3.5 3.5V11H8v2.5h2.5V20H14v-6.5h2.3L17 11h-3V9c0-.6.4-1 1-1z"/></svg>`;
+    case 'x':
+      return `<svg ${common}><path fill="currentColor" d="M4.5 4h4.1l3.3 4.6L16.3 4H20l-5.4 6.3L20.5 20h-4.1l-3.6-5-4.2 5H4.5l5.7-6.7L4.5 4zm3.2 1.5 8.9 13h1.7L9.3 5.5H7.7z"/></svg>`;
+    case 'linkedin':
+      return `<svg ${common}><path fill="currentColor" d="M6.2 9.5H3.7V20h2.5V9.5zM5 3.8C4 3.8 3.2 4.6 3.2 5.6S4 7.4 5 7.4s1.8-.8 1.8-1.8S6 3.8 5 3.8zM20.3 12.3c0-2.4-1.5-4-3.9-4-1.3 0-2.3.6-2.8 1.4h-.1V9.5h-2.5c0 .7 0 10.5 0 10.5h2.5v-5.9c0-.3 0-.7.1-1 .3-.7.9-1.5 2-1.5 1.4 0 2 1.1 2 2.6V20h2.5v-7.7z"/></svg>`;
+    case 'instagram':
+      return `<svg ${common}><path fill="currentColor" d="M7.5 3h9A4.5 4.5 0 0 1 21 7.5v9A4.5 4.5 0 0 1 16.5 21h-9A4.5 4.5 0 0 1 3 16.5v-9A4.5 4.5 0 0 1 7.5 3zm0 1.7A2.8 2.8 0 0 0 4.7 7.5v9c0 1.5 1.3 2.8 2.8 2.8h9c1.5 0 2.8-1.3 2.8-2.8v-9c0-1.5-1.3-2.8-2.8-2.8h-9zm9.2 1.2a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2zM12 7.8A4.2 4.2 0 1 1 12 16.2 4.2 4.2 0 0 1 12 7.8zm0 1.7a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg>`;
+    case 'orcid':
+      return `<svg ${common}><path fill="currentColor" d="M12 2a10 10 0 1 0 .001 20.001A10 10 0 0 0 12 2zm-3.1 4.4a1.15 1.15 0 1 1 0 2.3 1.15 1.15 0 0 1 0-2.3zM7.7 9.7h2.3v7.8H7.7V9.7zm4.1 0h3.4c2.3 0 3.8 1.4 3.8 3.7s-1.5 4.1-3.9 4.1h-3.3V9.7zm2.3 1.8v4.6h1c1.4 0 2.2-.8 2.2-2.3s-.8-2.3-2.2-2.3h-1z"/></svg>`;
+    case 'openalex':
+      return `<svg ${common}><path fill="currentColor" d="M12 3 4.5 7.2v9.6L12 21l7.5-4.2V7.2L12 3zm0 2.1 5.4 3v2.3L12 13.5 6.6 10.4V7.1L12 5.1zm-5.4 7.1L12 15.4l5.4-3.2v3.5L12 19l-5.4-3.2v-3.6z"/></svg>`;
+    case 'researchgate':
+      return `<svg ${common}><path fill="currentColor" d="M12 2a10 10 0 1 0 .001 20.001A10 10 0 0 0 12 2zm-1.2 5.2h3.5c1.9 0 3.1 1.1 3.1 2.7 0 1.3-.7 2.2-1.8 2.6l2.1 3.3h-2.5l-1.8-3h-.7v3H9.8V7.2zm2.3 1.7h-.9v2.3h.9c.8 0 1.3-.4 1.3-1.2s-.5-1.1-1.3-1.1z"/></svg>`;
+    case 'youtube':
+      return `<svg ${common}><path fill="currentColor" d="M21.6 7.8a2.7 2.7 0 0 0-1.9-1.9C18 5.5 12 5.5 12 5.5s-6 0-7.7.4A2.7 2.7 0 0 0 2.4 7.8 28.4 28.4 0 0 0 2 12a28.4 28.4 0 0 0 .4 4.2 2.7 2.7 0 0 0 1.9 1.9c1.7.4 7.7.4 7.7.4s6 0 7.7-.4a2.7 2.7 0 0 0 1.9-1.9A28.4 28.4 0 0 0 22 12a28.4 28.4 0 0 0-.4-4.2zM10.2 15.1V8.9L15.5 12l-5.3 3.1z"/></svg>`;
+    case 'xing':
+      return `<svg ${common}><path fill="currentColor" d="M17.8 3h-2.6l-3.4 5.8L16 15.8h2.6l-4.2-7L17.8 3zM9.7 7.2H7.2l1.5 2.5L5.2 16h2.5l3.5-6.3L9.7 7.2z"/></svg>`;
+    case 'tiktok':
+      return `<svg ${common}><path fill="currentColor" d="M15.5 3c.4 2.1 1.7 3.7 3.8 4.1v2.4c-1.3 0-2.5-.4-3.6-1v5.5c0 3.2-2.5 5.6-5.7 5.6S4.3 17.2 4.3 14s2.5-5.6 5.7-5.6c.3 0 .6 0 .9.1v2.5a3.2 3.2 0 0 0-.9-.1 3.1 3.1 0 1 0 3.1 3.1V3h2.4z"/></svg>`;
+    case 'homepage':
+    default:
+      return `<svg ${common}><path fill="none" stroke="currentColor" stroke-width="1.8" d="M12 3.5 4.5 10v9.5h5.2v-5.2h4.6v5.2h5.2V10L12 3.5z"/></svg>`;
+  }
+}
+
+function socialIconForKey(key) {
+  const k = String(key || '').toLocaleLowerCase('en-US');
+  return SOCIAL_ICON_BY_KEY[k] || null;
+}
+
+function renderSocialIconLink({ href, label, icon, display }) {
+  const safeHref = href || '#';
+  const longClass = icon === 'homepage' && text(display).length >= 42 ? ' detail-link-long' : '';
+  return `<a class="detail-social-link${longClass}" href="${escapeHtml(safeHref)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}">${socialIconSvg(icon)}<span class="detail-social-sr">${escapeHtml(label)}</span></a>`;
+}
 
 let loadingTimer = null;
 let loadingStartedAt = 0;
@@ -662,6 +722,7 @@ function openDoctorDetail(doc) {
 
   const usedKeys = new Set();
   const rows = [];
+  const socialLinks = [];
 
   for (const def of DETAIL_FIELD_DEFS) {
     const picked = pickDoctorField(doc, def.keys);
@@ -672,18 +733,17 @@ function openDoctorDetail(doc) {
     let display = text(picked.value).trim();
     if (def.kind === 'yesno') display = formatYesNo(picked.value);
 
-    // Social / profile links: only show when a value exists.
+    // Social / profile links: collect into an icon strip (only when a value exists).
     if (def.kind === 'social' || def.kind === 'openalex') {
       if (!display) continue;
       const href = hrefForField(def.kind === 'openalex' ? 'openalex' : 'link', picked.value);
-      if (!href && !display) continue;
-      const isHomepage = def.keys.some((k) => String(k).toLocaleLowerCase('en-US') === 'homepage');
-      const longClass =
-        isHomepage && display.length >= 42 ? ' class="detail-link-long"' : '';
-      const valueHtml = href
-        ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer"${longClass}>${escapeHtml(display)}</a>`
-        : escapeHtml(display);
-      rows.push(`<div><dt>${escapeHtml(def.label)}</dt><dd>${valueHtml}</dd></div>`);
+      if (!href) continue;
+      socialLinks.push({
+        href,
+        label: def.label,
+        icon: def.icon || socialIconForKey(picked.key) || 'homepage',
+        display,
+      });
       continue;
     }
 
@@ -712,18 +772,31 @@ function openDoctorDetail(doc) {
     const display = text(value).trim();
     // Hide empty social/profile-like extras (Facebook, LinkedIn, X, …).
     if (!display && SOCIAL_EXTRA_KEY_RE.test(key)) continue;
+    if (SOCIAL_EXTRA_KEY_RE.test(key)) {
+      const href = hrefForField('link', value);
+      if (!href) continue;
+      socialLinks.push({
+        href,
+        label: key,
+        icon: socialIconForKey(key) || 'homepage',
+        display,
+      });
+      continue;
+    }
     if (!display) {
       rows.push(
         `<div><dt>${escapeHtml(key)}</dt><dd><span class="doctor-detail-empty">–</span></dd></div>`
       );
       continue;
     }
-    const maybeHref = hrefForField('link', value);
-    const valueHtml =
-      SOCIAL_EXTRA_KEY_RE.test(key) && maybeHref
-        ? `<a href="${escapeHtml(maybeHref)}" target="_blank" rel="noopener noreferrer">${escapeHtml(display)}</a>`
-        : escapeHtml(display);
-    rows.push(`<div><dt>${escapeHtml(key)}</dt><dd>${valueHtml}</dd></div>`);
+    rows.push(`<div><dt>${escapeHtml(key)}</dt><dd>${escapeHtml(display)}</dd></div>`);
+  }
+
+  if (socialLinks.length) {
+    const icons = socialLinks.map((s) => renderSocialIconLink(s)).join('');
+    rows.push(
+      `<div class="detail-socials"><dt>Profile</dt><dd class="detail-social-list">${icons}</dd></div>`
+    );
   }
 
   el.doctorDetailFields.innerHTML = rows.join('') || '<div><dt>–</dt><dd class="doctor-detail-empty">Keine Felder</dd></div>';
