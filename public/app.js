@@ -43,8 +43,6 @@ const el = {
   fieldPostal: document.getElementById('field-postal'),
   fieldGender: document.getElementById('field-gender'),
   thPostal: document.getElementById('th-postal'),
-  btnFocus: document.getElementById('btn-focus'),
-  btnAllSpecs: document.getElementById('btn-all-specs'),
   btnReset: document.getElementById('btn-reset'),
   btnRefresh: document.getElementById('btn-refresh'),
   btnLogout: document.getElementById('btn-logout'),
@@ -449,25 +447,11 @@ function applyOptionalFields() {
 
 function populateFilterOptions({ applyFocusDefault = false } = {}) {
   if (applyFocusDefault) state.focusOnly = true;
-  updateFocusButtons();
   applyOptionalFields();
-}
-
-function updateFocusButtons() {
-  if (el.btnFocus) el.btnFocus.classList.toggle('btn-primary', state.focusOnly);
-  if (el.btnFocus) el.btnFocus.classList.toggle('btn-secondary', !state.focusOnly);
-  if (el.btnAllSpecs) el.btnAllSpecs.classList.toggle('btn-primary', !state.focusOnly);
-  if (el.btnAllSpecs) el.btnAllSpecs.classList.toggle('btn-secondary', state.focusOnly);
 }
 
 function selectFocusZusatzfach() {
   state.focusOnly = true;
-  updateFocusButtons();
-}
-
-function clearAddSpecSelection() {
-  state.focusOnly = false;
-  updateFocusButtons();
 }
 
 function matchesFilters(doc) {
@@ -1312,18 +1296,6 @@ function bindEvents() {
       el.filterCity.dataset.exact = '';
       onFilterChange();
     });
-  });
-
-  el.btnFocus.addEventListener('click', () => {
-    selectFocusZusatzfach();
-    state.page = 1;
-    refreshView();
-  });
-
-  el.btnAllSpecs.addEventListener('click', () => {
-    clearAddSpecSelection();
-    state.page = 1;
-    refreshView();
   });
 
   el.btnReset.addEventListener('click', resetFiltersToFocus);

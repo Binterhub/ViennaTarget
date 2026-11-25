@@ -534,13 +534,6 @@ body {
   background: var(--accent-soft);
 }
 
-.focus-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.55rem;
-  margin-bottom: 0.85rem;
-}
-
 .meta {
   margin: 0;
   margin-left: auto;
