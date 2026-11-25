@@ -312,10 +312,25 @@ body {
 }
 
 .cell-evoid {
-  font-size: 0.78rem;
+  font-size: 0.68rem;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+
+#doctors-table th[data-sort='evoid'] {
+  font-size: 0.72rem;
+}
+
+.doctor-detail-fields > div.detail-evoid dt {
+  font-size: 0.7rem;
+}
+
+.doctor-detail-fields > div.detail-evoid dd {
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
 }
 
 .cell-lastname {

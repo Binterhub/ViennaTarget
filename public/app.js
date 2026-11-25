@@ -65,7 +65,7 @@ const el = {
 
 /** Preferred display order / labels for known API person fields (case-insensitive lookup). */
 const DETAIL_FIELD_DEFS = [
-  { keys: ['evoid', 'evoId', 'EVOID'], label: 'EVO-ID' },
+  { keys: ['evoid', 'evoId', 'EVOID'], label: 'EVO-ID', compact: true },
   // Titel / Vorname / Nachname are shown in the header only.
   { keys: ['title', 'Title'], label: 'Titel', headerOnly: true },
   { keys: ['firstname', 'firstName', 'FirstName'], label: 'Vorname', headerOnly: true },
@@ -698,7 +698,8 @@ function openDoctorDetail(doc) {
     } else {
       valueHtml = escapeHtml(display);
     }
-    rows.push(`<div><dt>${escapeHtml(def.label)}</dt><dd>${valueHtml}</dd></div>`);
+    const rowClass = def.compact ? ' class="detail-evoid"' : '';
+    rows.push(`<div${rowClass}><dt>${escapeHtml(def.label)}</dt><dd>${valueHtml}</dd></div>`);
   }
 
   // Any additional API fields not in the known map.
