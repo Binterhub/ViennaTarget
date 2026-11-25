@@ -589,6 +589,20 @@ td.empty {
   color: var(--accent);
 }
 
+#doctors-table th[data-sort='specialization'],
+#doctors-table th[data-sort='additionalspecialization'] {
+  font-size: 0.78rem;
+}
+
+#doctors-table td.cell-specialty {
+  font-size: 0.72rem;
+  line-height: 1.25;
+  padding-top: 0.35rem;
+  padding-bottom: 0.35rem;
+  max-width: 14rem;
+  color: var(--muted);
+}
+
 .doctor-detail[hidden] {
   display: none !important;
 }

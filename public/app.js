@@ -954,8 +954,8 @@ function renderTable() {
         `<td>${escapeHtml(text(d.title))}</td>`,
         `<td>${escapeHtml(text(d.firstname))}</td>`,
         `<td class="cell-lastname"><button type="button" class="lastname-link" data-open-doctor="${id}">${lastname || '–'}</button></td>`,
-        `<td>${escapeHtml(text(d.specialization))}</td>`,
-        `<td>${escapeHtml(text(d.additionalspecialization))}</td>`,
+        `<td class="cell-specialty">${escapeHtml(text(d.specialization))}</td>`,
+        `<td class="cell-specialty">${escapeHtml(text(d.additionalspecialization))}</td>`,
         `<td>${escapeHtml(text(d.city))}</td>`,
       ];
       if (state.fields.postalCode) {
