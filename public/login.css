@@ -24,43 +24,43 @@ body.login-page {
   min-height: 100vh;
   font-family: var(--font);
   color: var(--ink);
-  background:
-    radial-gradient(900px 420px at 10% -10%, #c5e0dc 0%, transparent 55%),
-    linear-gradient(165deg, #e8f1ef 0%, #eef4f3 45%, #dfecea 100%);
+  /* Full-bleed hero: clearer left for the form, busy right stays visible. */
+  background-color: #d7eceb;
+  background-image:
+    linear-gradient(
+      105deg,
+      rgba(238, 244, 243, 0.94) 0%,
+      rgba(238, 244, 243, 0.88) 28%,
+      rgba(238, 244, 243, 0.45) 48%,
+      rgba(238, 244, 243, 0.08) 62%,
+      transparent 78%
+    ),
+    url("/assets/login-hero-evoedge.jpg");
+  background-size: cover;
+  background-position: left center;
+  background-repeat: no-repeat;
 }
 
 .login-shell {
-  max-width: 980px;
+  max-width: 1100px;
   margin: 0 auto;
   min-height: 100vh;
   display: grid;
   align-content: center;
+  justify-items: start;
   gap: 1.25rem;
   padding: 1.5rem 1.25rem 2rem;
 }
 
-.login-hero {
-  border-radius: var(--radius);
-  overflow: hidden;
-  border: 1px solid var(--border);
-  box-shadow: 0 10px 30px rgba(6, 61, 60, 0.12);
-  background: #dceceb;
-  animation: rise 0.55s ease-out;
-}
-
-.login-hero img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
 .login-panel {
-  background: var(--surface);
+  width: min(100%, 26.5rem);
+  background: rgba(255, 255, 255, 0.94);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.35rem 1.35rem 1.2rem;
-  box-shadow: 0 4px 18px rgba(21, 36, 40, 0.06);
-  animation: rise 0.55s ease-out 0.08s both;
+  box-shadow: 0 8px 28px rgba(6, 61, 60, 0.12);
+  backdrop-filter: blur(6px);
+  animation: rise 0.55s ease-out both;
 }
 
 .login-brand {
@@ -205,39 +205,9 @@ body.login-page {
   cursor: wait;
 }
 
-.login-foot {
-  margin: 1rem 0 0;
-  color: var(--muted);
-  line-height: 1.35;
-}
-
-.login-foot .brand-name {
-  font-family: var(--display);
-  font-size: 0.88rem;
-  font-weight: 700;
-  letter-spacing: -0.015em;
-  color: var(--accent-deep);
-}
-
-.login-foot .brand-sep {
-  font-size: 0.8rem;
-  font-weight: 400;
-  opacity: 0.45;
-  color: var(--accent-deep);
-}
-
-.login-foot .brand-tagline {
-  font-family: var(--font);
-  font-size: 0.72rem;
-  font-weight: 400;
-  letter-spacing: 0.05em;
-  color: var(--muted);
-  vertical-align: 0.05em;
-}
-
 .login-legal {
-  margin: 0.55rem 0 0;
-  text-align: center;
+  margin: 0.85rem 0 0;
+  text-align: left;
 }
 
 .login-legal a {
@@ -262,31 +232,31 @@ body.login-page {
   }
 }
 
-@media (min-width: 880px) {
+@media (max-width: 720px) {
+  body.login-page {
+    background-position: 35% center;
+    background-image:
+      linear-gradient(
+        180deg,
+        rgba(238, 244, 243, 0.92) 0%,
+        rgba(238, 244, 243, 0.88) 42%,
+        rgba(238, 244, 243, 0.55) 70%,
+        rgba(238, 244, 243, 0.2) 100%
+      ),
+      url("/assets/login-hero-evoedge.jpg");
+  }
+
   .login-shell {
-    grid-template-columns: 1.35fr 0.9fr;
-    align-items: start;
-    gap: 1.5rem;
+    align-content: end;
+    padding: 1rem 1rem 1.5rem;
   }
 
-  .login-hero {
-    align-self: start;
-  }
-
-  .login-hero img {
+  .login-panel {
     width: 100%;
-    height: auto;
-    object-fit: contain;
-    object-position: left top;
-    vertical-align: top;
   }
 }
 
 @media (max-width: 560px) {
-  .login-shell {
-    padding: 1rem;
-  }
-
   .login-panel {
     padding: 1.1rem;
   }

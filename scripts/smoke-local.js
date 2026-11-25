@@ -46,11 +46,17 @@ async function main() {
   const loginPage = await fetch(`${base}/login`);
   if (!loginPage.ok) fail(`/login HTTP ${loginPage.status}`);
   const loginHtml = await loginPage.text();
-  if (!loginHtml.includes('datadominance-login-hero.jpg')) {
-    fail('login page missing full hero image');
-  }
   if (!loginHtml.includes('NeoTarget')) fail('login page missing NeoTarget brand');
-  ok('/login renders with full DataDominance hero');
+  const loginCss = await fetch(`${base}/login.css`);
+  if (!loginCss.ok) fail(`/login.css HTTP ${loginCss.status}`);
+  const loginCssText = await loginCss.text();
+  if (!loginCssText.includes('login-hero-evoedge.jpg')) {
+    fail('login CSS missing EvoEdge hero background');
+  }
+  if (loginCssText.includes('datadominance-login-hero.jpg')) {
+    fail('login CSS still references old DataDominance hero');
+  }
+  ok('/login renders with EvoEdge full-bleed hero');
 
   if (!password) fail('APP_PASSWORD not set for login smoke');
 
