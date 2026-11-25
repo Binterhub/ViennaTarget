@@ -391,7 +391,7 @@ body {
 }
 
 .chart-wrap.is-expanded {
-  max-width: min(28rem, 100%);
+  max-width: min(40rem, 100%);
 }
 
 .chart-wrap.is-expanded .chart-body {
@@ -399,8 +399,8 @@ body {
 }
 
 .chart-wrap.is-expanded .chart-filter-hint {
-  margin: 0 0 0.4rem;
-  font-size: 0.78rem;
+  margin: 0 0 0.55rem;
+  font-size: 0.84rem;
 }
 
 .chart-scroll {
@@ -410,7 +410,7 @@ body {
 }
 
 .chart-wrap.is-expanded .chart-scroll {
-  max-height: 18rem;
+  max-height: min(36rem, 70vh);
 }
 
 .chart-wrap canvas {

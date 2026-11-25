@@ -589,14 +589,16 @@ const hcpCountLabelsPlugin = {
     const meta = chart.getDatasetMeta(0);
     if (!meta || !meta.data) return;
     ctx.save();
+    const expanded = chart.canvas?.closest?.('.chart-wrap')?.classList.contains('is-expanded');
+    const fontSize = expanded ? 13 : 10;
     ctx.fillStyle = '#063d3c';
-    ctx.font = '600 10px "DM Sans", "Segoe UI", sans-serif';
+    ctx.font = `600 ${fontSize}px "DM Sans", "Segoe UI", sans-serif`;
     ctx.textBaseline = 'middle';
     meta.data.forEach((bar, i) => {
       const value = chart.data.datasets[0].data[i];
       if (value == null) return;
       const label = String(value);
-      const x = Math.min(bar.x + 5, chart.chartArea.right - ctx.measureText(label).width - 2);
+      const x = Math.min(bar.x + 6, chart.chartArea.right - ctx.measureText(label).width - 2);
       ctx.textAlign = 'left';
       ctx.fillText(label, x, bar.y);
     });
@@ -607,7 +609,7 @@ const hcpCountLabelsPlugin = {
 function chartPixelHeight(rowCount, expanded) {
   if (!expanded) return 72;
   const rows = Math.max(rowCount, 1);
-  return Math.max(96, rows * 18 + 8);
+  return Math.max(220, rows * 30 + 20);
 }
 
 function applyChartCanvasHeight(rowCount) {
@@ -643,9 +645,23 @@ function filterByCityFromChart(cityLabel) {
 
 function chartBarMetrics(expanded) {
   if (expanded) {
-    return { barPercentage: 0.92, categoryPercentage: 0.92, maxBarThickness: 32 };
+    return {
+      barPercentage: 0.88,
+      categoryPercentage: 0.9,
+      maxBarThickness: 42,
+      tickFont: 13,
+      valuePadRight: 28,
+      labelMax: 32,
+    };
   }
-  return { barPercentage: 0.45, categoryPercentage: 0.65, maxBarThickness: 8 };
+  return {
+    barPercentage: 0.45,
+    categoryPercentage: 0.65,
+    maxBarThickness: 8,
+    tickFont: 10,
+    valuePadRight: 22,
+    labelMax: 22,
+  };
 }
 
 function applyChartExpandedUi() {
@@ -653,6 +669,18 @@ function applyChartExpandedUi() {
   if (el.chartWrap) el.chartWrap.classList.toggle('is-expanded', expanded);
   if (el.chartToggle) el.chartToggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
   if (el.chartToggleHint) el.chartToggleHint.textContent = expanded ? 'Zuklappen' : 'Aufklappen';
+}
+
+function applyChartScaleFonts(metrics) {
+  if (!state.chart?.options?.scales) return;
+  const max = metrics.labelMax;
+  state.chart.options.layout.padding.right = metrics.valuePadRight;
+  state.chart.options.scales.x.ticks.font = { size: metrics.tickFont };
+  state.chart.options.scales.y.ticks.font = { size: metrics.tickFont };
+  state.chart.options.scales.y.ticks.callback = function truncatedLabel(value) {
+    const label = this.getLabelForValue(value);
+    return label.length > max ? `${label.slice(0, max - 1)}…` : label;
+  };
 }
 
 function syncChartBarMetrics() {
@@ -663,6 +691,7 @@ function syncChartBarMetrics() {
   ds.categoryPercentage = metrics.categoryPercentage;
   ds.maxBarThickness = metrics.maxBarThickness;
   state.chart.options.maintainAspectRatio = false;
+  applyChartScaleFonts(metrics);
   const rowCount = state.chart.data.labels?.length || 0;
   applyChartCanvasHeight(rowCount);
   state.chart.update();
@@ -697,6 +726,7 @@ function renderChart(list) {
     state.chart.data.datasets[0].categoryPercentage = metrics.categoryPercentage;
     state.chart.data.datasets[0].maxBarThickness = metrics.maxBarThickness;
     state.chart.options.maintainAspectRatio = false;
+    applyChartScaleFonts(metrics);
     state.chart.update();
     requestAnimationFrame(() => {
       if (state.chart) state.chart.resize();
@@ -727,7 +757,7 @@ function renderChart(list) {
       responsive: true,
       maintainAspectRatio: false,
       layout: {
-        padding: { top: 2, right: 22, bottom: 2, left: 0 },
+        padding: { top: 4, right: metrics.valuePadRight, bottom: 4, left: 0 },
       },
       onHover(event, elements) {
         const canvas = event?.native?.target || el.chart;
@@ -761,16 +791,17 @@ function renderChart(list) {
       scales: {
         x: {
           beginAtZero: true,
-          ticks: { precision: 0, font: { size: 10 } },
+          ticks: { precision: 0, font: { size: metrics.tickFont } },
           grid: { color: '#dce8e6' },
         },
         y: {
           ticks: {
             autoSkip: false,
-            font: { size: 10 },
+            font: { size: metrics.tickFont },
             callback(value) {
               const label = this.getLabelForValue(value);
-              return label.length > 22 ? `${label.slice(0, 20)}…` : label;
+              const max = metrics.labelMax;
+              return label.length > max ? `${label.slice(0, max - 1)}…` : label;
             },
           },
           grid: { display: false },
