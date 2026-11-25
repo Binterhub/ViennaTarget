@@ -888,22 +888,46 @@ function formatYesNo(value) {
   return text(value);
 }
 
+/** Allow only http(s) URLs for rendered href/src (blocks javascript:/data:/etc.). */
+function isHttpUrl(value) {
+  try {
+    const parsed = new URL(String(value));
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 function hrefForField(kind, value) {
   const raw = text(value).trim();
   if (!raw) return '';
   if (kind === 'openalex') {
-    if (/^https?:\/\//i.test(raw)) return raw;
-    return `https://openalex.org/${encodeURIComponent(raw)}`;
+    if (/^https?:\/\//i.test(raw)) return isHttpUrl(raw) ? raw : '';
+    const built = `https://openalex.org/${encodeURIComponent(raw)}`;
+    return isHttpUrl(built) ? built : '';
   }
   if (kind === 'link') {
-    if (/^https?:\/\//i.test(raw)) return raw;
-    if (/^www\./i.test(raw)) return `https://${raw}`;
-    if (raw.includes('@') && !raw.includes(' ')) return `mailto:${raw}`;
-    if (/^[a-z0-9.-]+\.[a-z]{2,}/i.test(raw)) return `https://${raw}`;
-    if (/^orcid\.org\//i.test(raw)) return `https://${raw}`;
-    if (/^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/i.test(raw)) return `https://orcid.org/${raw}`;
+    if (/^https?:\/\//i.test(raw)) return isHttpUrl(raw) ? raw : '';
+    if (/^www\./i.test(raw)) {
+      const built = `https://${raw}`;
+      return isHttpUrl(built) ? built : '';
+    }
+    if (raw.includes('@') && !raw.includes(' ') && !/^https?:/i.test(raw)) {
+      return `mailto:${raw}`;
+    }
+    if (/^[a-z0-9.-]+\.[a-z]{2,}/i.test(raw)) {
+      const built = `https://${raw}`;
+      return isHttpUrl(built) ? built : '';
+    }
+    if (/^orcid\.org\//i.test(raw)) {
+      const built = `https://${raw}`;
+      return isHttpUrl(built) ? built : '';
+    }
+    if (/^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/i.test(raw)) {
+      return `https://orcid.org/${raw}`;
+    }
   }
-  return raw.startsWith('http') ? raw : '';
+  return isHttpUrl(raw) ? raw : '';
 }
 
 function markOpenDoctorRow() {
