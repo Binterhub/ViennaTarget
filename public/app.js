@@ -28,10 +28,6 @@ const state = {
 
 const el = {
   banner: document.getElementById('banner'),
-  statTotal: document.getElementById('stat-total'),
-  statFocus: document.getElementById('stat-focus'),
-  statCities: document.getElementById('stat-cities'),
-  statFiltered: document.getElementById('stat-filtered'),
   chart: document.getElementById('city-chart'),
   chartWrap: document.getElementById('chart-wrap'),
   chartToggle: document.getElementById('chart-toggle'),
@@ -592,11 +588,6 @@ function sortDoctors(list) {
   });
 }
 
-function computeBaseStats() {
-  el.statTotal.textContent = String(state.doctors.length);
-  el.statFocus.textContent = String(countFocusDoctors());
-}
-
 function topCities(list, n = 10) {
   const counts = new Map();
   for (const d of list) {
@@ -675,9 +666,6 @@ function renderChart(list) {
   const top = topCities(list, 10);
   const labels = top.map(([name]) => name);
   const values = top.map(([, count]) => count);
-
-  const cities = new Set(list.map((d) => text(d.city).trim()).filter(Boolean));
-  el.statCities.textContent = String(cities.size);
 
   const metrics = chartBarMetrics(state.chartExpanded);
   applyChartExpandedUi();
@@ -1112,7 +1100,6 @@ function renderTable() {
   const start = (state.page - 1) * state.pageSize;
   const pageRows = state.filtered.slice(start, start + state.pageSize);
 
-  el.statFiltered.textContent = String(total);
   el.resultsSummary.textContent =
     total === 0
       ? 'Keine Treffer für die aktuellen Filter.'
@@ -1222,9 +1209,6 @@ async function loadDoctors({ refresh = false } = {}) {
       if (!hadDoctors) {
         state.doctors = [];
         state.filtered = [];
-        computeBaseStats();
-        el.statFiltered.textContent = '0';
-        el.statCities.textContent = '0';
         el.tbody.innerHTML = `<tr><td colspan="7" class="empty">${escapeHtml(data.error || 'Keine Daten')}</td></tr>`;
         el.lastUpdated.textContent = formatUpdated(null);
       } else {
@@ -1253,7 +1237,6 @@ async function loadDoctors({ refresh = false } = {}) {
     state.page = 1;
 
     populateFilterOptions({ applyFocusDefault: true });
-    computeBaseStats();
     refreshView();
     updateSortHeaders();
     el.lastUpdated.textContent = formatUpdated(data.fetchedAt);
