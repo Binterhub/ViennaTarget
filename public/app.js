@@ -14,7 +14,7 @@ const state = {
   doctors: [],
   fields: { postalCode: false, gender: false, postalKey: null, genderKey: null },
   filtered: [],
-  sortKey: 'lastname',
+  sortKey: 'title',
   sortDir: 'asc',
   page: 1,
   pageSize: 50,
@@ -1279,7 +1279,7 @@ function resetFiltersToFocus() {
   el.filterCity.value = '';
   el.filterCity.dataset.exact = '';
   selectFocusZusatzfach();
-  state.sortKey = 'lastname';
+  state.sortKey = 'title';
   state.sortDir = 'asc';
   state.page = 1;
   updateSortHeaders();
