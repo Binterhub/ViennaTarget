@@ -76,7 +76,15 @@ const el = {
   socialPreviewCopy: document.getElementById('social-preview-copy'),
 };
 
-const OEAK_SOURCE_TIP = 'Quelle: ÖÄK';
+/** Exact source labels for „Quelle: …“ hover tips (detail pane). */
+const SOCIAL_SOURCE_TIP_BY_ICON = {
+  facebook: 'Facebook',
+  linkedin: 'LinkedIn',
+  x: 'x',
+  researchgate: 'Researchgate',
+  orcid: 'ORCID',
+  openalex: 'OpenAlex',
+};
 
 /** Preferred display order / labels for known API person fields (case-insensitive lookup). */
 const DETAIL_FIELD_DEFS = [
@@ -85,9 +93,9 @@ const DETAIL_FIELD_DEFS = [
   { keys: ['title', 'Title'], label: 'Titel', headerOnly: true },
   { keys: ['firstname', 'firstName', 'FirstName'], label: 'Vorname', headerOnly: true },
   { keys: ['lastname', 'lastName', 'LastName'], label: 'Nachname', headerOnly: true },
-  { keys: ['specialization', 'Specialization'], label: 'Hauptfach', sourceOeak: true },
-  { keys: ['additionalspecialization', 'additionalSpecialization', 'AdditionalSpecialization'], label: 'Zusatzfach', sourceOeak: true },
-  { keys: ['city', 'City'], label: 'Ort', sourceOeak: true },
+  { keys: ['specialization', 'Specialization'], label: 'Hauptfach', sourceTip: 'ÖÄK' },
+  { keys: ['additionalspecialization', 'additionalSpecialization', 'AdditionalSpecialization'], label: 'Zusatzfach', sourceTip: 'ÖÄK' },
+  { keys: ['city', 'City'], label: 'Ort', sourceTip: 'ÖÄK' },
   { keys: ['postalcode', 'postalCode', 'plz', 'zip', 'zipcode', 'zipCode'], label: 'Postleitzahl' },
   // Land / Ländercode omitted from detail panel (Austria-wide context).
   { keys: ['country', 'Country'], label: 'Land', headerOnly: true },
@@ -106,13 +114,19 @@ const DETAIL_FIELD_DEFS = [
   // Photo is rendered as a linked image in the header — omit URL row from body.
   { keys: ['externalphoto', 'externalPhoto', 'ExternalPhoto', 'photo', 'image'], label: 'Foto', headerOnly: true },
   { keys: ['vpnr', 'vpNr', 'VpNr', 'VPN R', 'vp_nr'], label: 'VPNR' },
-  { keys: ['hindex', 'hIndex', 'HIndex', 'h_index'], label: 'h-Index' },
-  { keys: ['kasse', 'Kasse'], label: 'Kasse', kind: 'yesno', sourceOeak: true },
+  { keys: ['hindex', 'hIndex', 'HIndex', 'h_index'], label: 'h-Index', sourceTip: 'Scopus' },
+  { keys: ['kasse', 'Kasse'], label: 'Kasse', kind: 'yesno', sourceTip: 'ÖÄK' },
   { keys: ['wahlarzt', 'WahlArzt', 'wahlarztflag'], label: 'Wahlarzt', kind: 'yesno' },
 ];
 
-function oeakTipAttrs() {
-  return ` title="${OEAK_SOURCE_TIP}" data-tip="${OEAK_SOURCE_TIP}"`;
+function sourceTipText(sourceLabel) {
+  return `Quelle: ${sourceLabel}`;
+}
+
+function sourceTipAttrs(sourceLabel) {
+  if (!sourceLabel) return '';
+  const tip = sourceTipText(sourceLabel);
+  return ` title="${escapeHtml(tip)}" data-tip="${escapeHtml(tip)}"`;
 }
 
 const SOCIAL_EXTRA_KEY_RE =
@@ -218,7 +232,10 @@ function socialLabelForIcon(icon) {
 function renderSocialIconLink({ href, label, icon }) {
   const safeHref = href || '#';
   const safeIcon = icon || 'homepage';
-  return `<a class="detail-social-link" href="${escapeHtml(safeHref)}" data-social-preview data-social-icon="${escapeHtml(safeIcon)}" data-social-label="${escapeHtml(label)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}">${socialIconSvg(safeIcon)}<span class="detail-social-sr">${escapeHtml(label)}</span></a>`;
+  const sourceLabel = SOCIAL_SOURCE_TIP_BY_ICON[safeIcon] || '';
+  const tipClass = sourceLabel ? ' has-source-tip' : '';
+  const tip = sourceLabel ? sourceTipAttrs(sourceLabel) : ` title="${escapeHtml(label)}"`;
+  return `<a class="detail-social-link${tipClass}" href="${escapeHtml(safeHref)}" data-social-preview data-social-icon="${escapeHtml(safeIcon)}" data-social-label="${escapeHtml(label)}" target="_blank" rel="noopener noreferrer"${tip} aria-label="${escapeHtml(label)}">${socialIconSvg(safeIcon)}<span class="detail-social-sr">${escapeHtml(label)}</span></a>`;
 }
 
 function renderHomepageRow({ href, display }) {
@@ -1022,9 +1039,9 @@ function openDoctorDetail(doc) {
     }
     const classes = [];
     if (def.compact) classes.push('detail-evoid');
-    if (def.sourceOeak) classes.push('has-source-tip');
+    if (def.sourceTip) classes.push('has-source-tip');
     const rowClass = classes.length ? ` class="${classes.join(' ')}"` : '';
-    const tip = def.sourceOeak ? oeakTipAttrs() : '';
+    const tip = def.sourceTip ? sourceTipAttrs(def.sourceTip) : '';
     rows.push(`<div${rowClass}${tip}><dt>${escapeHtml(def.label)}</dt><dd>${valueHtml}</dd></div>`);
   }
 
