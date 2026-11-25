@@ -173,7 +173,6 @@
     </main>
 
     <div id="doctor-detail" class="doctor-detail" hidden>
-      <div class="doctor-detail-backdrop" data-close-detail tabindex="-1" aria-hidden="true"></div>
       <div class="doctor-detail-shell">
         <div class="doctor-detail-toolbar">
           <button type="button" id="doctor-detail-close" class="btn btn-secondary" aria-label="Details schließen">
@@ -182,8 +181,7 @@
         </div>
         <aside
           class="doctor-detail-panel"
-          role="dialog"
-          aria-modal="true"
+          role="complementary"
           aria-labelledby="doctor-detail-title"
         >
           <header class="doctor-detail-header">

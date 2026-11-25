@@ -22,6 +22,7 @@ const state = {
   fetchedAt: null,
   focus: FOCUS_ZUSATZFACH,
   focusOnly: true,
+  openEvoid: null,
 };
 
 const el = {
@@ -779,14 +780,24 @@ function hrefForField(kind, value) {
   return raw.startsWith('http') ? raw : '';
 }
 
+function markOpenDoctorRow() {
+  if (!el.tbody) return;
+  const openKey = text(state.openEvoid);
+  el.tbody.querySelectorAll('tr.doctor-row').forEach((row) => {
+    row.classList.toggle('is-open', Boolean(openKey) && row.getAttribute('data-evoid') === openKey);
+  });
+}
+
 function closeDoctorDetail() {
   if (!el.doctorDetail) return;
   el.doctorDetail.hidden = true;
-  document.body.style.overflow = '';
+  state.openEvoid = null;
+  markOpenDoctorRow();
 }
 
 function openDoctorDetail(doc) {
   if (!el.doctorDetail || !doc) return;
+  const wasHidden = el.doctorDetail.hidden;
 
   const titleParts = [
     pickDoctorField(doc, ['title', 'Title']).value,
@@ -881,9 +892,11 @@ function openDoctorDetail(doc) {
   }
 
   el.doctorDetailFields.innerHTML = rows.join('') || '<div><dt>–</dt><dd class="doctor-detail-empty">Keine Felder</dd></div>';
+  state.openEvoid = doctorKey(doc);
   el.doctorDetail.hidden = false;
-  document.body.style.overflow = 'hidden';
-  if (el.doctorDetailClose) el.doctorDetailClose.focus();
+  markOpenDoctorRow();
+  // Focus close only on first open — keep list keyboard-friendly when swapping rows.
+  if (wasHidden && el.doctorDetailClose) el.doctorDetailClose.focus();
 }
 
 function findDoctorByEvoid(evoid) {
@@ -942,7 +955,8 @@ function renderTable() {
       if (state.fields.postalCode) {
         cells.push(`<td>${escapeHtml(text(getPostal(d)))}</td>`);
       }
-      return `<tr class="doctor-row" tabindex="0" data-evoid="${id}" title="Details anzeigen">${cells.join('')}</tr>`;
+      const openClass = state.openEvoid && doctorKey(d) === text(state.openEvoid) ? ' is-open' : '';
+      return `<tr class="doctor-row${openClass}" tabindex="0" data-evoid="${id}" title="Details anzeigen">${cells.join('')}</tr>`;
     })
     .join('');
   el.tbody.innerHTML = html;
@@ -1182,11 +1196,6 @@ function bindEvents() {
 
   if (el.doctorDetailClose) {
     el.doctorDetailClose.addEventListener('click', closeDoctorDetail);
-  }
-  if (el.doctorDetail) {
-    el.doctorDetail.querySelectorAll('[data-close-detail]').forEach((node) => {
-      node.addEventListener('click', closeDoctorDetail);
-    });
   }
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && el.doctorDetail && !el.doctorDetail.hidden) {
