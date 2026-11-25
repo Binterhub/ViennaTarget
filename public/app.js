@@ -44,7 +44,6 @@ const el = {
   fieldGender: document.getElementById('field-gender'),
   thPostal: document.getElementById('th-postal'),
   btnReset: document.getElementById('btn-reset'),
-  btnRefresh: document.getElementById('btn-refresh'),
   btnLogout: document.getElementById('btn-logout'),
   btnExportXlsx: document.getElementById('btn-export-xlsx'),
   lastUpdated: document.getElementById('last-updated'),
@@ -298,7 +297,6 @@ function setLoading(active, { refresh = false } = {}) {
   }
   if (!active) {
     el.loadingPanel.hidden = true;
-    if (el.btnRefresh) el.btnRefresh.disabled = false;
     if (el.btnExportXlsx) el.btnExportXlsx.disabled = state.filtered.length === 0;
     return;
   }
@@ -311,7 +309,6 @@ function setLoading(active, { refresh = false } = {}) {
       : 'Ärztedaten werden geladen…';
   }
   if (el.loadingElapsed) el.loadingElapsed.textContent = 'Laufzeit: 0 s';
-  if (el.btnRefresh) el.btnRefresh.disabled = true;
   if (el.btnExportXlsx) el.btnExportXlsx.disabled = true;
 
   loadingTimer = setInterval(() => {
@@ -1299,7 +1296,6 @@ function bindEvents() {
   });
 
   el.btnReset.addEventListener('click', resetFiltersToFocus);
-  el.btnRefresh.addEventListener('click', () => loadDoctors({ refresh: true }));
   el.btnLogout.addEventListener('click', logout);
   if (el.btnExportXlsx) {
     el.btnExportXlsx.addEventListener('click', exportFilteredXlsx);
