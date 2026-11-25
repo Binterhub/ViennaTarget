@@ -44,10 +44,14 @@ body {
   line-height: 1.45;
 }
 
-/* Desktop: reserve detail (+ optional social preview) and pin overview left. */
+/*
+ * Desktop three-column dock when a profile is open:
+ *   [ Profil-Pane | Übersicht/Liste | Detail ]
+ * Overview compresses in the middle; close restores prior layout.
+ */
 @media (min-width: 901px) {
   body {
-    transition: padding-right 0.2s ease-out;
+    transition: padding-left 0.2s ease-out, padding-right 0.2s ease-out;
   }
 
   body.detail-open {
@@ -55,7 +59,8 @@ body {
   }
 
   body.detail-open.social-preview-open {
-    padding-right: calc(var(--detail-width) + var(--social-preview-width));
+    padding-left: var(--social-preview-width);
+    padding-right: var(--detail-width);
   }
 
   body.detail-open .header-inner,
@@ -622,7 +627,7 @@ td.empty {
   display: none !important;
 }
 
-/* Non-modal side dock: detail (+ optional social preview). No blur/backdrop. */
+/* Non-modal right detail dock. No blur/backdrop. */
 .doctor-detail {
   position: fixed;
   inset: 0;
@@ -634,9 +639,9 @@ td.empty {
   pointer-events: none;
 }
 
-.doctor-detail-shell,
-.social-preview {
+.doctor-detail-shell {
   pointer-events: auto;
+  width: min(var(--detail-width), 100%);
   height: 100%;
   max-height: 100vh;
   display: grid;
@@ -644,18 +649,32 @@ td.empty {
   animation: detail-in 0.2s ease-out;
 }
 
-.doctor-detail-shell {
-  width: min(var(--detail-width), 100%);
-  flex: 0 0 auto;
-}
-
+/* Leftmost profile pane — rich card only, never an iframe. */
 .social-preview {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 55;
   width: min(var(--social-preview-width), 100%);
-  flex: 0 0 auto;
+  max-width: 100vw;
+  height: 100%;
+  max-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  pointer-events: auto;
+  animation: social-in 0.2s ease-out;
 }
 
 .social-preview[hidden] {
   display: none !important;
+}
+
+@media (max-width: 900px) {
+  .social-preview {
+    width: min(22rem, 92vw);
+    box-shadow: 12px 0 36px rgba(6, 61, 60, 0.2);
+  }
 }
 
 .doctor-row.is-open {
@@ -675,7 +694,7 @@ td.empty {
   gap: 0.5rem;
   padding: 0.55rem 0.85rem;
   background: rgba(4, 46, 45, 0.92);
-  border-left: 1px solid #031f1e;
+  border-right: 1px solid #031f1e;
   border-bottom: 1px solid rgba(245, 255, 254, 0.12);
 }
 
@@ -693,8 +712,7 @@ td.empty {
   background: rgba(245, 255, 254, 0.12);
 }
 
-.doctor-detail-panel,
-.social-preview-panel {
+.doctor-detail-panel {
   overflow: auto;
   background: #fff;
   border-left: 1px solid var(--border);
@@ -703,6 +721,11 @@ td.empty {
 }
 
 .social-preview-panel {
+  overflow: auto;
+  background: #fff;
+  border-right: 1px solid var(--border);
+  box-shadow: 12px 0 36px rgba(6, 61, 60, 0.16);
+  padding: 1.1rem 1.15rem 1.5rem;
   display: grid;
   align-content: start;
   justify-items: start;
@@ -744,6 +767,14 @@ td.empty {
   line-height: 1.2;
 }
 
+.social-preview-host {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ink);
+  word-break: break-word;
+}
+
 .social-preview-url {
   margin: 0;
   font-size: 0.78rem;
@@ -752,8 +783,14 @@ td.empty {
   word-break: break-all;
 }
 
-.social-preview-open {
+.social-preview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
   margin-top: 0.25rem;
+}
+
+.social-preview-open {
   text-decoration: none;
 }
 
@@ -951,6 +988,17 @@ td.empty {
 @keyframes detail-in {
   from {
     transform: translateX(12px);
+    opacity: 0.4;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes social-in {
+  from {
+    transform: translateX(-12px);
     opacity: 0.4;
   }
   to {

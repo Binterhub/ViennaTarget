@@ -66,8 +66,10 @@ const el = {
   socialPreviewClose: document.getElementById('social-preview-close'),
   socialPreviewIcon: document.getElementById('social-preview-icon'),
   socialPreviewTitle: document.getElementById('social-preview-title'),
+  socialPreviewHost: document.getElementById('social-preview-host'),
   socialPreviewUrl: document.getElementById('social-preview-url'),
   socialPreviewOpen: document.getElementById('social-preview-open'),
+  socialPreviewCopy: document.getElementById('social-preview-copy'),
 };
 
 /** Preferred display order / labels for known API person fields (case-insensitive lookup). */
@@ -815,10 +817,19 @@ function closeSocialPreview() {
   }
 }
 
+function hostFromHref(href) {
+  try {
+    return new URL(href).hostname.replace(/^www\./, '');
+  } catch {
+    return '';
+  }
+}
+
 function openSocialPreview({ href, icon, label }) {
   if (!el.socialPreview || !href) return;
   const network = label || socialLabelForIcon(icon) || 'Profile';
   const kind = icon || socialIconFromUrl(href) || 'homepage';
+  const host = hostFromHref(href);
 
   if (el.socialPreviewIcon) {
     el.socialPreviewIcon.innerHTML = socialIconSvg(kind);
@@ -826,11 +837,19 @@ function openSocialPreview({ href, icon, label }) {
   if (el.socialPreviewTitle) {
     el.socialPreviewTitle.textContent = network;
   }
+  if (el.socialPreviewHost) {
+    el.socialPreviewHost.textContent = host || '—';
+    el.socialPreviewHost.hidden = !host;
+  }
   if (el.socialPreviewUrl) {
     el.socialPreviewUrl.textContent = href;
   }
   if (el.socialPreviewOpen) {
     el.socialPreviewOpen.href = href;
+  }
+  if (el.socialPreviewCopy) {
+    el.socialPreviewCopy.textContent = 'Link kopieren';
+    el.socialPreviewCopy.disabled = false;
   }
 
   el.socialPreview.hidden = false;
@@ -841,6 +860,20 @@ function openSocialPreview({ href, icon, label }) {
       const match = node.getAttribute('href') === href;
       node.classList.toggle('is-active', match);
     });
+  }
+}
+
+async function copySocialPreviewLink() {
+  const href = el.socialPreviewOpen?.getAttribute('href') || '';
+  if (!href || href === '#' || !el.socialPreviewCopy) return;
+  try {
+    await navigator.clipboard.writeText(href);
+    el.socialPreviewCopy.textContent = 'Kopiert';
+    window.setTimeout(() => {
+      if (el.socialPreviewCopy) el.socialPreviewCopy.textContent = 'Link kopieren';
+    }, 1600);
+  } catch {
+    el.socialPreviewCopy.textContent = 'Kopieren fehlgeschlagen';
   }
 }
 
@@ -1260,11 +1293,16 @@ function bindEvents() {
   if (el.socialPreviewClose) {
     el.socialPreviewClose.addEventListener('click', closeSocialPreview);
   }
+  if (el.socialPreviewCopy) {
+    el.socialPreviewCopy.addEventListener('click', () => {
+      copySocialPreviewLink();
+    });
+  }
   if (el.doctorDetailFields) {
     el.doctorDetailFields.addEventListener('click', (event) => {
       const link = event.target.closest('[data-social-preview]');
       if (!link || !el.doctorDetailFields.contains(link)) return;
-      // Allow modified / non-primary clicks to open the real profile in a new tab.
+      // Plain click → leftmost preview pane. Modified clicks → real site in a new tab.
       if (event.defaultPrevented) return;
       if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       event.preventDefault();
