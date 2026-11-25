@@ -711,6 +711,27 @@ td.empty {
   word-break: break-all;
 }
 
+.detail-homepage dt {
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent-deep);
+}
+
+.detail-homepage dt svg {
+  display: block;
+}
+
+.detail-homepage-url {
+  color: var(--accent);
+  word-break: break-word;
+}
+
+.detail-homepage-url.detail-link-long {
+  font-size: 0.78rem;
+  line-height: 1.35;
+  word-break: break-all;
+}
+
 .detail-socials dd.detail-social-list {
   display: flex;
   flex-wrap: wrap;

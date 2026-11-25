@@ -150,10 +150,15 @@ function socialIconForKey(key) {
   return SOCIAL_ICON_BY_KEY[k] || null;
 }
 
-function renderSocialIconLink({ href, label, icon, display }) {
+function renderSocialIconLink({ href, label, icon }) {
   const safeHref = href || '#';
-  const longClass = icon === 'homepage' && text(display).length >= 42 ? ' detail-link-long' : '';
-  return `<a class="detail-social-link${longClass}" href="${escapeHtml(safeHref)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}">${socialIconSvg(icon)}<span class="detail-social-sr">${escapeHtml(label)}</span></a>`;
+  return `<a class="detail-social-link" href="${escapeHtml(safeHref)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}">${socialIconSvg(icon)}<span class="detail-social-sr">${escapeHtml(label)}</span></a>`;
+}
+
+function renderHomepageRow({ href, display }) {
+  const safeHref = href || '#';
+  const longClass = text(display).length > 30 ? ' detail-link-long' : '';
+  return `<div class="detail-homepage"><dt>${socialIconSvg('homepage')}<span class="detail-social-sr">Homepage</span></dt><dd><a href="${escapeHtml(safeHref)}" target="_blank" rel="noopener noreferrer" class="detail-homepage-url${longClass}">${escapeHtml(display)}</a></dd></div>`;
 }
 
 let loadingTimer = null;
@@ -734,14 +739,20 @@ function openDoctorDetail(doc) {
     if (def.kind === 'yesno') display = formatYesNo(picked.value);
 
     // Social / profile links: collect into an icon strip (only when a value exists).
+    // Homepage keeps a visible URL row (smaller font when length > 30).
     if (def.kind === 'social' || def.kind === 'openalex') {
       if (!display) continue;
       const href = hrefForField(def.kind === 'openalex' ? 'openalex' : 'link', picked.value);
       if (!href) continue;
+      const icon = def.icon || socialIconForKey(picked.key) || 'homepage';
+      if (icon === 'homepage') {
+        rows.push(renderHomepageRow({ href, display }));
+        continue;
+      }
       socialLinks.push({
         href,
         label: def.label,
-        icon: def.icon || socialIconForKey(picked.key) || 'homepage',
+        icon,
         display,
       });
       continue;
