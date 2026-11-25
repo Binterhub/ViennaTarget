@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Datenquellen und rechtliche Hinweise · NeoTarget</title>
+    <title>Impressum · Datenquellen und rechtliche Hinweise · NeoTarget</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -47,7 +47,7 @@
       }
 
       .header-inner {
-        max-width: 42rem;
+        max-width: 44rem;
         margin: 0 auto;
       }
 
@@ -67,7 +67,7 @@
       }
 
       .legal-page {
-        max-width: 42rem;
+        max-width: 44rem;
         margin: 0 auto;
         padding: 1.75rem 1.25rem 3.5rem;
       }
@@ -85,41 +85,120 @@
         text-decoration: underline;
       }
 
+      .legal-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem 1rem;
+        margin: 0 0 1.35rem;
+        padding: 0;
+        list-style: none;
+        font-size: 0.88rem;
+      }
+
+      .legal-nav a {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .legal-nav a:hover {
+        text-decoration: underline;
+      }
+
       .legal-card {
         background: var(--surface);
         border: 1px solid var(--border);
         border-radius: var(--radius);
         box-shadow: 0 1px 2px rgba(21, 36, 40, 0.06);
-        padding: 1.35rem 1.4rem 1.5rem;
+        padding: 1.4rem 1.45rem 1.6rem;
+        margin-bottom: 1.25rem;
       }
 
-      .legal-card h2 {
-        margin: 0 0 0.95rem;
+      .legal-card > h2 {
+        margin: 0 0 0.85rem;
         font-family: var(--detail-serif);
-        font-size: 1.4rem;
+        font-size: 1.45rem;
         font-weight: 700;
         color: var(--accent-deep);
         line-height: 1.25;
       }
 
       .legal-card h3 {
-        margin: 1.5rem 0 0.85rem;
+        margin: 1.55rem 0 0.65rem;
         font-family: var(--detail-serif);
-        font-size: 1.18rem;
+        font-size: 1.12rem;
         font-weight: 700;
         color: var(--accent-deep);
         line-height: 1.3;
       }
 
+      .legal-card h3:first-of-type {
+        margin-top: 1.15rem;
+      }
+
+      .legal-lead {
+        margin: 0 0 0.35rem;
+        font-size: 0.95rem;
+        line-height: 1.55;
+        color: var(--muted);
+      }
+
       .legal-card p {
         margin: 0;
-        font-size: 1.05rem;
+        font-size: 1.02rem;
         line-height: 1.7;
         color: var(--ink);
       }
 
       .legal-card p + p {
-        margin-top: 0.95rem;
+        margin-top: 0.85rem;
+      }
+
+      .legal-address {
+        margin: 0.35rem 0 0;
+        font-size: 1.02rem;
+        line-height: 1.65;
+        color: var(--ink);
+      }
+
+      .legal-dl {
+        margin: 0.55rem 0 0;
+        display: grid;
+        gap: 0.45rem 1rem;
+      }
+
+      .legal-dl div {
+        display: grid;
+        grid-template-columns: minmax(8rem, 38%) 1fr;
+        gap: 0.35rem 0.85rem;
+        padding: 0.35rem 0;
+        border-bottom: 1px solid #e4eeec;
+      }
+
+      .legal-dl dt {
+        margin: 0;
+        font-size: 0.78rem;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 600;
+      }
+
+      .legal-dl dd {
+        margin: 0;
+        font-size: 0.98rem;
+        color: var(--ink);
+        word-break: break-word;
+      }
+
+      .legal-card a {
+        color: var(--accent);
+      }
+
+      .legal-copy {
+        margin-top: 1.25rem !important;
+        font-size: 0.92rem !important;
+        color: var(--muted) !important;
       }
 
       .site-footer {
@@ -134,20 +213,171 @@
       .site-footer p {
         margin: 0;
       }
+
+      @media (max-width: 560px) {
+        .legal-dl div {
+          grid-template-columns: 1fr;
+        }
+      }
     </style>
   </head>
   <body>
     <header class="site-header">
       <div class="header-inner">
         <p class="brand">NeoTarget</p>
-        <h1>Datenquellen und rechtliche Hinweise</h1>
+        <h1>Impressum · Datenquellen und rechtliche Hinweise</h1>
       </div>
     </header>
 
     <main class="legal-page">
       <a class="legal-back" href="javascript:history.length>1?history.back():location.href='/'">← Zurück</a>
-      <article class="legal-card">
-        <h2>Datenquellen und rechtliche Hinweise</h2>
+
+      <nav aria-label="Abschnitte">
+        <ul class="legal-nav">
+          <li><a href="#impressum">Impressum</a></li>
+          <li><a href="#datentransparenz">Datentransparenz und rechtliche Hinweise</a></li>
+        </ul>
+      </nav>
+
+      <article class="legal-card" id="impressum">
+        <h2>Impressum</h2>
+        <p class="legal-lead">
+          Informationen gemäß §&nbsp;5 E-Commerce-Gesetz (ECG), §&nbsp;14 Unternehmensgesetzbuch (UGB)
+          sowie Offenlegung gemäß §&nbsp;25 Mediengesetz (MedienG).
+        </p>
+
+        <h3>Medieninhaber, Herausgeber und Diensteanbieter</h3>
+        <p class="legal-address">
+          EVOLANTIS IT-Solutions GmbH<br />
+          Carl-Appel-Straße 5/502<br />
+          1100 Wien, Österreich
+        </p>
+        <dl class="legal-dl">
+          <div>
+            <dt>Telefon</dt>
+            <dd><a href="tel:+4319346149">+43 1 9346 149</a></dd>
+          </div>
+          <div>
+            <dt>E-Mail</dt>
+            <dd><a href="mailto:vienna@evolantis.com">vienna@evolantis.com</a></dd>
+          </div>
+          <div>
+            <dt>Website</dt>
+            <dd><a href="https://www.evolantis.com" target="_blank" rel="noopener noreferrer">https://www.evolantis.com</a></dd>
+          </div>
+        </dl>
+
+        <h3>Unternehmensdaten</h3>
+        <dl class="legal-dl">
+          <div>
+            <dt>Rechtsform</dt>
+            <dd>Gesellschaft mit beschränkter Haftung (GmbH)</dd>
+          </div>
+          <div>
+            <dt>Firmensitz</dt>
+            <dd>Wien, Österreich</dd>
+          </div>
+          <div>
+            <dt>Firmenbuchnummer</dt>
+            <dd>FN 302673h</dd>
+          </div>
+          <div>
+            <dt>Firmenbuchgericht</dt>
+            <dd>Handelsgericht Wien</dd>
+          </div>
+          <div>
+            <dt>UID-Nummer</dt>
+            <dd>ATU64785913</dd>
+          </div>
+          <div>
+            <dt>Geschäftsführer</dt>
+            <dd>Dipl.-Ing. Peter Binter</dd>
+          </div>
+          <div>
+            <dt>Gesellschafter</dt>
+            <dd>Dipl.-Ing. Peter Binter (75&nbsp;%), Contessa Binter (25&nbsp;%)</dd>
+          </div>
+          <div>
+            <dt>Prokura</dt>
+            <dd>Contessa Binter</dd>
+          </div>
+        </dl>
+
+        <h3>Unternehmensgegenstand</h3>
+        <p>
+          Entwicklung, Betrieb und Bereitstellung von Softwarelösungen, Informationssystemen und
+          Datenbanken sowie Beratungsdienstleistungen mit Schwerpunkt auf der Pharmaindustrie, den
+          Life Sciences und dem Gesundheitswesen.
+        </p>
+
+        <h3>Gewerberechtliche Angaben</h3>
+        <dl class="legal-dl">
+          <div>
+            <dt>Kammerzugehörigkeit</dt>
+            <dd>Wirtschaftskammer Wien</dd>
+          </div>
+          <div>
+            <dt>Fachgruppe</dt>
+            <dd>Unternehmensberatung, Buchhaltung und Informationstechnologie (UBIT)</dd>
+          </div>
+          <div>
+            <dt>Gewerbebehörde</dt>
+            <dd>Magistrat der Stadt Wien</dd>
+          </div>
+          <div>
+            <dt>Anwendbare Rechtsvorschriften</dt>
+            <dd>
+              Gewerbeordnung 1994 (GewO), abrufbar unter
+              <a href="https://www.ris.bka.gv.at" target="_blank" rel="noopener noreferrer">https://www.ris.bka.gv.at</a>
+            </dd>
+          </div>
+        </dl>
+
+        <h3>Offenlegung und grundlegende Richtung</h3>
+        <p>
+          EvoEdge ist eine von der EVOLANTIS IT-Solutions GmbH entwickelte und betriebene Informations-
+          und Analyseplattform für Fachkreise der Pharma- und Gesundheitsindustrie.
+        </p>
+        <p>
+          Die Plattform dient der strukturierten Erfassung, Verknüpfung, Aufbereitung und Analyse von
+          Informationen über Angehörige medizinischer Fachberufe, Arzneimittel, medizinische
+          Einrichtungen, wissenschaftliche Aktivitäten und wirtschaftliche Zusammenhänge im
+          Gesundheitswesen.
+        </p>
+        <p>
+          Die EVOLANTIS IT-Solutions GmbH verfolgt mit der Entwicklung, dem Betrieb und der
+          kommerziellen Bereitstellung dieser Informationsdienste eigenwirtschaftliche Interessen.
+        </p>
+
+        <h3>Datenqualität und externe Inhalte</h3>
+        <p>
+          Die bereitgestellten Informationen werden aus öffentlich zugänglichen, lizenzierten oder
+          anderweitig rechtmäßig verfügbaren Datenquellen gewonnen und teilweise mittels
+          automatisierter und KI-gestützter Verfahren verarbeitet.
+        </p>
+        <p>
+          Die Inhalte dienen der beruflichen Information und Marktanalyse. Sie ersetzen keine
+          medizinische, pharmazeutische oder rechtliche Beratung.
+        </p>
+        <p>
+          Weiterführende Informationen zur Datenherkunft, Aktualisierungsmethodik, Einbindung
+          externer Inhalte und zu Korrekturmöglichkeiten finden sich unter
+          <a href="#datentransparenz">„Datentransparenz und rechtliche Hinweise“</a>.
+        </p>
+
+        <h3>Urheberrecht</h3>
+        <p>
+          Die Rechte an selbst erstellten Inhalten, Softwarekomponenten, Datenbankstrukturen und
+          grafischen Elementen liegen, soweit nicht anders angegeben, bei der EVOLANTIS IT-Solutions
+          GmbH. Rechte Dritter bleiben unberührt.
+        </p>
+        <p class="legal-copy">© 2026 EVOLANTIS IT-Solutions GmbH</p>
+      </article>
+
+      <article class="legal-card" id="datentransparenz">
+        <h2>Datentransparenz und rechtliche Hinweise</h2>
+
+        <h3>Personenbilder / Hotlinking</h3>
         <p>
           Personenbilder werden mittels Inline Linking (Hotlinking) unmittelbar von öffentlich
           zugänglichen Originalquellen eingebunden, ohne dass eine eigene Speicherung der Bilddateien
@@ -156,22 +386,6 @@
           Schutzmaßnahmen umgangen werden. Die Originalquelle wird kenntlich gemacht.
           Datenschutzrechtliche Bestimmungen und der Bildnisschutz gemäß §&nbsp;78 UrhG bleiben davon
           unberührt. Bei berechtigten Einwänden wird die Bildverknüpfung entfernt.
-        </p>
-        <h3>Betreiber und Offenlegung</h3>
-        <p>
-          EvoEdge ist eine von der Evolantis IT-Solutions GmbH entwickelte und betriebene
-          Informationsplattform für Fachkreise der Pharma- und Gesundheitsindustrie.
-        </p>
-        <p>
-          Die Plattform dient der strukturierten Erfassung, Verknüpfung und Analyse öffentlich
-          zugänglicher sowie gegebenenfalls lizenzierter Daten. Evolantis verfolgt mit dem Betrieb und
-          der kommerziellen Bereitstellung dieser Informationen eigenwirtschaftliche Interessen.
-        </p>
-        <p>
-          Geschäftliche Beziehungen zu pharmazeutischen Unternehmen begründen keine bevorzugte
-          Darstellung einzelner Personen, Produkte oder Organisationen. Die Aufbereitung der Daten
-          erfolgt nach definierten methodischen Kriterien und unter Berücksichtigung der jeweiligen
-          Quellen.
         </p>
       </article>
     </main>
