@@ -210,11 +210,11 @@ class DataMatcherClient {
       } catch {
         // ignore parse errors
       }
-      const error = new Error(
-        detail
-          ? `${this.statusMessage(response.status, 'Ärztesuche')} (${detail})`
-          : this.statusMessage(response.status, 'Ärztesuche')
-      );
+      // Keep upstream detail off the Error message (client-facing); retain on .detail for ops.
+      if (detail) {
+        console.warn(`DataMatcher search failed (${response.status}): ${detail.slice(0, 300)}`);
+      }
+      const error = new Error(this.statusMessage(response.status, 'Ärztesuche'));
       error.status = response.status;
       error.code = 'SEARCH_FAILED';
       error.detail = detail;
