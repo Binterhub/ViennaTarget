@@ -286,9 +286,69 @@ body {
   width: 100%;
 }
 
+.chart-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.35rem 0.15rem;
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radius);
+}
+
+.chart-toggle:hover,
+.chart-toggle:focus-visible {
+  background: var(--accent-soft);
+  outline: none;
+}
+
+.chart-toggle-title {
+  min-width: 0;
+}
+
+.chart-toggle-hint {
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.chart-body {
+  display: none;
+  margin-top: 0.35rem;
+}
+
+.chart-wrap.is-expanded {
+  max-width: min(40rem, 100%);
+}
+
+.chart-wrap.is-expanded .chart-body {
+  display: block;
+}
+
+.chart-wrap.is-expanded .chart-filter-hint {
+  margin-bottom: 0.55rem;
+}
+
 .chart-wrap canvas {
   cursor: pointer;
   max-height: 14rem;
+  width: 100% !important;
+}
+
+.chart-wrap.is-expanded canvas {
+  max-height: 26rem;
 }
 
 .filter-form {

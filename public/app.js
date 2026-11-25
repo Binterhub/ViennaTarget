@@ -19,6 +19,7 @@ const state = {
   page: 1,
   pageSize: 50,
   chart: null,
+  chartExpanded: false,
   fetchedAt: null,
   focus: FOCUS_ZUSATZFACH,
   focusOnly: true,
@@ -32,6 +33,9 @@ const el = {
   statCities: document.getElementById('stat-cities'),
   statFiltered: document.getElementById('stat-filtered'),
   chart: document.getElementById('city-chart'),
+  chartWrap: document.getElementById('chart-wrap'),
+  chartToggle: document.getElementById('chart-toggle'),
+  chartToggleHint: document.getElementById('chart-toggle-hint'),
   filterName: document.getElementById('filter-name'),
   filterEvoid: document.getElementById('filter-evoid'),
   filterPostal: document.getElementById('filter-postal'),
@@ -605,6 +609,45 @@ function filterByCityFromChart(cityLabel) {
   if (results) results.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+function chartBarMetrics(expanded) {
+  if (expanded) {
+    return { barPercentage: 0.92, categoryPercentage: 0.92, maxBarThickness: 32 };
+  }
+  return { barPercentage: 0.45, categoryPercentage: 0.65, maxBarThickness: 8 };
+}
+
+function applyChartExpandedUi() {
+  const expanded = Boolean(state.chartExpanded);
+  if (el.chartWrap) el.chartWrap.classList.toggle('is-expanded', expanded);
+  if (el.chartToggle) el.chartToggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+  if (el.chartToggleHint) el.chartToggleHint.textContent = expanded ? 'Zuklappen' : 'Aufklappen';
+}
+
+function syncChartBarMetrics() {
+  if (!state.chart) return;
+  const metrics = chartBarMetrics(state.chartExpanded);
+  const ds = state.chart.data.datasets[0];
+  ds.barPercentage = metrics.barPercentage;
+  ds.categoryPercentage = metrics.categoryPercentage;
+  ds.maxBarThickness = metrics.maxBarThickness;
+  state.chart.options.maintainAspectRatio = !state.chartExpanded;
+  state.chart.update();
+  // Layout class may change canvas box — resize after paint.
+  requestAnimationFrame(() => {
+    if (state.chart) state.chart.resize();
+  });
+}
+
+function setChartExpanded(expanded) {
+  state.chartExpanded = Boolean(expanded);
+  applyChartExpandedUi();
+  syncChartBarMetrics();
+}
+
+function toggleChartExpanded() {
+  setChartExpanded(!state.chartExpanded);
+}
+
 function renderChart(list) {
   const top = topCities(list, 10);
   const labels = top.map(([name]) => name);
@@ -613,17 +656,20 @@ function renderChart(list) {
   const cities = new Set(list.map((d) => text(d.city).trim()).filter(Boolean));
   el.statCities.textContent = String(cities.size);
 
+  const metrics = chartBarMetrics(state.chartExpanded);
+  applyChartExpandedUi();
+
   if (state.chart) {
     state.chart.data.labels = labels;
     state.chart.data.datasets[0].data = values;
-    state.chart.data.datasets[0].barPercentage = 0.55;
-    state.chart.data.datasets[0].categoryPercentage = 0.7;
-    state.chart.data.datasets[0].maxBarThickness = 12;
+    state.chart.data.datasets[0].barPercentage = metrics.barPercentage;
+    state.chart.data.datasets[0].categoryPercentage = metrics.categoryPercentage;
+    state.chart.data.datasets[0].maxBarThickness = metrics.maxBarThickness;
     state.chart.update();
     return;
   }
 
-  if (typeof Chart === 'undefined') return;
+  if (typeof Chart === 'undefined' || !el.chart) return;
 
   state.chart = new Chart(el.chart, {
     type: 'bar',
@@ -635,16 +681,16 @@ function renderChart(list) {
           data: values,
           backgroundColor: '#0a5c5a',
           borderRadius: 2,
-          barPercentage: 0.55,
-          categoryPercentage: 0.7,
-          maxBarThickness: 12,
+          barPercentage: metrics.barPercentage,
+          categoryPercentage: metrics.categoryPercentage,
+          maxBarThickness: metrics.maxBarThickness,
         },
       ],
     },
     options: {
       indexAxis: 'y',
       responsive: true,
-      maintainAspectRatio: true,
+      maintainAspectRatio: !state.chartExpanded,
       layout: {
         padding: { top: 2, right: 6, bottom: 2, left: 0 },
       },
@@ -682,7 +728,7 @@ function renderChart(list) {
         y: {
           ticks: {
             autoSkip: false,
-            font: { size: 11 },
+            font: { size: 12 },
             callback(value) {
               const label = this.getLabelForValue(value);
               return label.length > 28 ? `${label.slice(0, 26)}…` : label;

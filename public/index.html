@@ -60,10 +60,23 @@
             <p class="stat-value" id="stat-filtered">–</p>
           </article>
         </div>
-        <div class="chart-wrap">
-          <h2 class="section-title">Top 10 Orte (aktuelle Treffer)</h2>
-          <p class="focus-note">Balken anklicken, um nach Ort zu filtern (sortiert nach Nachname).</p>
-          <canvas id="city-chart" height="100" aria-label="Balkendiagramm Orte – Klick filtert nach Ort"></canvas>
+        <div class="chart-wrap" id="chart-wrap">
+          <button
+            type="button"
+            id="chart-toggle"
+            class="chart-toggle"
+            aria-expanded="false"
+            aria-controls="city-chart-body"
+          >
+            <span class="chart-toggle-title">Top 10 Orte (aktuelle Treffer)</span>
+            <span class="chart-toggle-hint" id="chart-toggle-hint">Aufklappen</span>
+          </button>
+          <div id="city-chart-body" class="chart-body">
+            <p class="focus-note chart-filter-hint">
+              Balken anklicken, um nach Ort zu filtern (sortiert nach Nachname). Überschrift erneut klicken zum Zuklappen.
+            </p>
+            <canvas id="city-chart" height="100" aria-label="Balkendiagramm Orte – Klick filtert nach Ort"></canvas>
+          </div>
         </div>
       </section>
 
