@@ -74,8 +74,9 @@ const DETAIL_FIELD_DEFS = [
   { keys: ['additionalspecialization', 'additionalSpecialization', 'AdditionalSpecialization'], label: 'Zusatzfach' },
   { keys: ['city', 'City'], label: 'Ort' },
   { keys: ['postalcode', 'postalCode', 'plz', 'zip', 'zipcode', 'zipCode'], label: 'Postleitzahl' },
-  { keys: ['country', 'Country'], label: 'Land' },
-  { keys: ['countrycode', 'countryCode', 'CountryCode'], label: 'Ländercode' },
+  // Land / Ländercode omitted from detail panel (Austria-wide context).
+  { keys: ['country', 'Country'], label: 'Land', headerOnly: true },
+  { keys: ['countrycode', 'countryCode', 'CountryCode'], label: 'Ländercode', headerOnly: true },
   { keys: ['gender', 'geschlecht', 'sex', 'Geschlecht'], label: 'Geschlecht' },
   { keys: ['orcid', 'ORCID', 'Orcid'], label: 'ORCID', kind: 'social' },
   { keys: ['openalexid', 'openAlexId', 'OpenAlexId', 'openalex'], label: 'OpenAlex ID', kind: 'openalex' },
