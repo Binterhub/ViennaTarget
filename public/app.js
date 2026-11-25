@@ -677,8 +677,11 @@ function openDoctorDetail(doc) {
       if (!display) continue;
       const href = hrefForField(def.kind === 'openalex' ? 'openalex' : 'link', picked.value);
       if (!href && !display) continue;
+      const isHomepage = def.keys.some((k) => String(k).toLocaleLowerCase('en-US') === 'homepage');
+      const longClass =
+        isHomepage && display.length >= 42 ? ' class="detail-link-long"' : '';
       const valueHtml = href
-        ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(display)}</a>`
+        ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer"${longClass}>${escapeHtml(display)}</a>`
         : escapeHtml(display);
       rows.push(`<div><dt>${escapeHtml(def.label)}</dt><dd>${valueHtml}</dd></div>`);
       continue;
