@@ -150,6 +150,52 @@ function socialIconForKey(key) {
   return SOCIAL_ICON_BY_KEY[k] || null;
 }
 
+/** Infer network from URL host — API sometimes stores LinkedIn under facebook/homepage. */
+function socialIconFromUrl(url) {
+  const raw = text(url).trim().toLocaleLowerCase('en-US');
+  if (!raw) return null;
+  if (raw.includes('linkedin.com')) return 'linkedin';
+  if (raw.includes('researchgate.net')) return 'researchgate';
+  if (raw.includes('facebook.com') || raw.includes('fb.com') || raw.includes('fb.me')) return 'facebook';
+  if (raw.includes('instagram.com')) return 'instagram';
+  if (raw.includes('orcid.org')) return 'orcid';
+  if (raw.includes('openalex.org')) return 'openalex';
+  if (raw.includes('youtube.com') || raw.includes('youtu.be')) return 'youtube';
+  if (raw.includes('xing.com') && !raw.includes('profile-images.xing.com')) return 'xing';
+  if (raw.includes('tiktok.com')) return 'tiktok';
+  if (/(?:^|\.)x\.com(?:\/|$)/.test(raw) || raw.includes('twitter.com')) return 'x';
+  return null;
+}
+
+function socialLabelForIcon(icon) {
+  switch (icon) {
+    case 'linkedin':
+      return 'LinkedIn';
+    case 'researchgate':
+      return 'ResearchGate';
+    case 'facebook':
+      return 'Facebook';
+    case 'instagram':
+      return 'Instagram';
+    case 'orcid':
+      return 'ORCID';
+    case 'openalex':
+      return 'OpenAlex';
+    case 'youtube':
+      return 'YouTube';
+    case 'xing':
+      return 'Xing';
+    case 'tiktok':
+      return 'TikTok';
+    case 'x':
+      return 'X';
+    case 'homepage':
+      return 'Homepage';
+    default:
+      return icon || 'Profile';
+  }
+}
+
 function renderSocialIconLink({ href, label, icon }) {
   const safeHref = href || '#';
   return `<a class="detail-social-link" href="${escapeHtml(safeHref)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}">${socialIconSvg(icon)}<span class="detail-social-sr">${escapeHtml(label)}</span></a>`;
@@ -159,6 +205,52 @@ function renderHomepageRow({ href, display }) {
   const safeHref = href || '#';
   const longClass = text(display).length > 30 ? ' detail-link-long' : '';
   return `<div class="detail-homepage"><dt>${socialIconSvg('homepage')}<span class="detail-social-sr">Homepage</span></dt><dd><a href="${escapeHtml(safeHref)}" target="_blank" rel="noopener noreferrer" class="detail-homepage-url${longClass}">${escapeHtml(display)}</a></dd></div>`;
+}
+
+function collectSocialLinksFromDoc(doc) {
+  const byIcon = new Map();
+  const mark = (href, icon, label, display) => {
+    if (!href || !icon || icon === 'homepage') return;
+    if (byIcon.has(icon)) return;
+    byIcon.set(icon, {
+      href,
+      icon,
+      label: label || socialLabelForIcon(icon),
+      display: display || href,
+    });
+  };
+
+  for (const def of DETAIL_FIELD_DEFS) {
+    if (def.kind !== 'social' && def.kind !== 'openalex') continue;
+    const picked = pickDoctorField(doc, def.keys);
+    if (!picked.key) continue;
+    const display = text(picked.value).trim();
+    if (!display) continue;
+    const href = hrefForField(def.kind === 'openalex' ? 'openalex' : 'link', picked.value);
+    if (!href) continue;
+    const fromUrl = socialIconFromUrl(href);
+    const icon = fromUrl || def.icon || socialIconForKey(picked.key);
+    if (!icon || icon === 'homepage') continue;
+    mark(href, icon, socialLabelForIcon(icon), display);
+  }
+
+  // Sweep every string field for known profile hosts (covers misfiled LinkedIn/RG URLs).
+  for (const [key, value] of Object.entries(doc || {})) {
+    if (value === null || typeof value === 'object') continue;
+    const display = text(value).trim();
+    if (!display) continue;
+    const href = hrefForField('link', value);
+    if (!href) continue;
+    const icon = socialIconFromUrl(href);
+    if (!icon) continue;
+    // Skip photo CDN URLs that only happen to live on a social host.
+    if (key.toLocaleLowerCase('en-US').includes('photo') && !/\/in\//i.test(href) && !/profile\//i.test(href)) {
+      continue;
+    }
+    mark(href, icon, socialLabelForIcon(icon), display);
+  }
+
+  return Array.from(byIcon.values());
 }
 
 let loadingTimer = null;
@@ -726,7 +818,7 @@ function openDoctorDetail(doc) {
 
   const usedKeys = new Set();
   const rows = [];
-  const socialLinks = [];
+  const socialLinks = collectSocialLinksFromDoc(doc);
 
   for (const def of DETAIL_FIELD_DEFS) {
     const picked = pickDoctorField(doc, def.keys);
@@ -737,30 +829,25 @@ function openDoctorDetail(doc) {
     let display = text(picked.value).trim();
     if (def.kind === 'yesno') display = formatYesNo(picked.value);
 
-    // Social / profile links: collect into an icon strip (only when a value exists).
-    // Homepage keeps a visible URL row (smaller font when length > 30).
+    // Social / profile links are rendered as icons below (and skipped here),
+    // except a true personal homepage URL (not a LinkedIn/RG/etc. profile).
     if (def.kind === 'social' || def.kind === 'openalex') {
       if (!display) continue;
       const href = hrefForField(def.kind === 'openalex' ? 'openalex' : 'link', picked.value);
       if (!href) continue;
-      const icon = def.icon || socialIconForKey(picked.key) || 'homepage';
+      const fromUrl = socialIconFromUrl(href);
+      const icon = fromUrl || def.icon || socialIconForKey(picked.key) || 'homepage';
       if (icon === 'homepage') {
         rows.push(renderHomepageRow({ href, display }));
-        continue;
       }
-      socialLinks.push({
-        href,
-        label: def.label,
-        icon,
-        display,
-      });
       continue;
     }
 
+    // Hide empty / null / blank detail rows (VPNR, h-Index, …).
+    if (!display) continue;
+
     let valueHtml;
-    if (!display) {
-      valueHtml = '<span class="doctor-detail-empty">–</span>';
-    } else if (def.kind === 'link') {
+    if (def.kind === 'link') {
       const href = hrefForField('link', picked.value);
       valueHtml = href
         ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(display)}</a>`
@@ -772,7 +859,7 @@ function openDoctorDetail(doc) {
     rows.push(`<div${rowClass}><dt>${escapeHtml(def.label)}</dt><dd>${valueHtml}</dd></div>`);
   }
 
-  // Any additional API fields not in the known map.
+  // Any additional API fields not in the known map (skip social keys — handled via icons).
   const extras = Object.keys(doc)
     .filter((k) => !usedKeys.has(k.toLocaleLowerCase('en-US')))
     .sort(compareDe);
@@ -780,25 +867,9 @@ function openDoctorDetail(doc) {
     const value = doc[key];
     if (value !== null && typeof value === 'object') continue;
     const display = text(value).trim();
-    // Hide empty social/profile-like extras (Facebook, LinkedIn, X, …).
-    if (!display && SOCIAL_EXTRA_KEY_RE.test(key)) continue;
-    if (SOCIAL_EXTRA_KEY_RE.test(key)) {
-      const href = hrefForField('link', value);
-      if (!href) continue;
-      socialLinks.push({
-        href,
-        label: key,
-        icon: socialIconForKey(key) || 'homepage',
-        display,
-      });
-      continue;
-    }
-    if (!display) {
-      rows.push(
-        `<div><dt>${escapeHtml(key)}</dt><dd><span class="doctor-detail-empty">–</span></dd></div>`
-      );
-      continue;
-    }
+    if (!display) continue;
+    if (SOCIAL_EXTRA_KEY_RE.test(key)) continue;
+    if (socialIconFromUrl(display)) continue;
     rows.push(`<div><dt>${escapeHtml(key)}</dt><dd>${escapeHtml(display)}</dd></div>`);
   }
 
