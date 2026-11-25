@@ -174,25 +174,29 @@
 
     <div id="doctor-detail" class="doctor-detail" hidden>
       <div class="doctor-detail-backdrop" data-close-detail tabindex="-1" aria-hidden="true"></div>
-      <aside
-        class="doctor-detail-panel"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="doctor-detail-title"
-      >
-        <header class="doctor-detail-header">
-          <a id="doctor-detail-photo" class="doctor-detail-photo" hidden target="_blank" rel="noopener noreferrer"></a>
-          <div class="doctor-detail-heading">
-            <p class="doctor-detail-kicker">Personendetails</p>
-            <h2 id="doctor-detail-title">–</h2>
-            <p id="doctor-detail-sub" class="doctor-detail-sub"></p>
-          </div>
+      <div class="doctor-detail-shell">
+        <div class="doctor-detail-toolbar">
           <button type="button" id="doctor-detail-close" class="btn btn-secondary" aria-label="Details schließen">
             Schließen
           </button>
-        </header>
-        <dl id="doctor-detail-fields" class="doctor-detail-fields"></dl>
-      </aside>
+        </div>
+        <aside
+          class="doctor-detail-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="doctor-detail-title"
+        >
+          <header class="doctor-detail-header">
+            <a id="doctor-detail-photo" class="doctor-detail-photo" hidden target="_blank" rel="noopener noreferrer"></a>
+            <div class="doctor-detail-heading">
+              <p class="doctor-detail-kicker">Personendetails</p>
+              <h2 id="doctor-detail-title">–</h2>
+              <p id="doctor-detail-sub" class="doctor-detail-sub"></p>
+            </div>
+          </header>
+          <dl id="doctor-detail-fields" class="doctor-detail-fields"></dl>
+        </aside>
+      </div>
     </div>
 
     <footer class="site-footer">

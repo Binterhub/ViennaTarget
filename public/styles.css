@@ -587,24 +587,52 @@ td.empty {
   backdrop-filter: blur(1px);
 }
 
-.doctor-detail-panel {
+.doctor-detail-shell {
   position: relative;
   z-index: 1;
   width: min(28rem, 100%);
   height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  animation: detail-in 0.2s ease-out;
+}
+
+.doctor-detail-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.85rem;
+  background: rgba(4, 46, 45, 0.92);
+  border-left: 1px solid #031f1e;
+  border-bottom: 1px solid rgba(245, 255, 254, 0.12);
+}
+
+.doctor-detail-toolbar .btn {
+  background: transparent;
+  border-color: rgba(245, 255, 254, 0.35);
+  color: #f5fffe;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.88rem;
+}
+
+.doctor-detail-toolbar .btn:hover:not(:disabled) {
+  background: rgba(245, 255, 254, 0.12);
+}
+
+.doctor-detail-panel {
   overflow: auto;
   background: #fff;
   border-left: 1px solid var(--border);
   box-shadow: -12px 0 36px rgba(6, 61, 60, 0.16);
   padding: 1.1rem 1.15rem 1.5rem;
-  animation: detail-in 0.2s ease-out;
 }
 
 .doctor-detail-header {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr;
   align-items: start;
-  gap: 0.75rem;
+  gap: 0.85rem;
   margin-bottom: 0.95rem;
 }
 
@@ -639,8 +667,8 @@ td.empty {
 
 .doctor-detail-photo {
   display: block;
-  width: 4.5rem;
-  height: 4.5rem;
+  width: 9rem;
+  height: 9rem;
   flex-shrink: 0;
   border-radius: var(--radius);
   overflow: hidden;
@@ -662,12 +690,13 @@ td.empty {
 
 @media (max-width: 560px) {
   .doctor-detail-header {
-    grid-template-columns: auto 1fr;
+    grid-template-columns: 1fr;
+    justify-items: start;
   }
 
-  .doctor-detail-header .btn {
-    grid-column: 1 / -1;
-    justify-self: stretch;
+  .doctor-detail-photo {
+    width: min(9rem, 42vw);
+    height: min(9rem, 42vw);
   }
 }
 
