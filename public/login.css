@@ -24,20 +24,19 @@ body.login-page {
   min-height: 100vh;
   font-family: var(--font);
   color: var(--ink);
-  /* Full-bleed hero: clearer left for the form, busy right stays visible. */
-  background-color: #d7eceb;
+  /* Show full hero (incl. right icons): contain, not aggressive cover crop. */
+  background-color: #cfe8e6;
   background-image:
     linear-gradient(
       105deg,
-      rgba(238, 244, 243, 0.94) 0%,
-      rgba(238, 244, 243, 0.88) 28%,
-      rgba(238, 244, 243, 0.45) 48%,
-      rgba(238, 244, 243, 0.08) 62%,
-      transparent 78%
+      rgba(238, 244, 243, 0.9) 0%,
+      rgba(238, 244, 243, 0.72) 22%,
+      rgba(238, 244, 243, 0.28) 40%,
+      transparent 58%
     ),
     url("/assets/login-hero-evoedge.jpg");
-  background-size: cover;
-  background-position: left center;
+  background-size: contain;
+  background-position: center center;
   background-repeat: no-repeat;
 }
 
@@ -234,14 +233,14 @@ body.login-page {
 
 @media (max-width: 720px) {
   body.login-page {
-    background-position: 35% center;
+    background-size: contain;
+    background-position: center top;
     background-image:
       linear-gradient(
         180deg,
-        rgba(238, 244, 243, 0.92) 0%,
-        rgba(238, 244, 243, 0.88) 42%,
-        rgba(238, 244, 243, 0.55) 70%,
-        rgba(238, 244, 243, 0.2) 100%
+        rgba(238, 244, 243, 0.55) 0%,
+        rgba(238, 244, 243, 0.82) 48%,
+        rgba(238, 244, 243, 0.94) 100%
       ),
       url("/assets/login-hero-evoedge.jpg");
   }
