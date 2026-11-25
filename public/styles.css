@@ -879,6 +879,48 @@ td.empty {
   min-width: 0;
 }
 
+.has-source-tip {
+  position: relative;
+  cursor: help;
+}
+
+.has-source-tip::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 0.35rem);
+  z-index: 5;
+  padding: 0.28rem 0.5rem;
+  border-radius: 4px;
+  background: #042e2d;
+  color: #f5fffe;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(6, 61, 60, 0.28);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(2px);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+
+.has-source-tip:hover::after,
+.has-source-tip:focus-within::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.doctor-detail-heading.has-source-tip::after {
+  bottom: auto;
+  top: calc(100% + 0.35rem);
+}
+
+.doctor-detail-fields > div.has-source-tip::after {
+  left: auto;
+  right: 0;
+}
+
 .doctor-detail-kicker {
   margin: 0;
   font-size: 0.75rem;

@@ -76,6 +76,8 @@ const el = {
   socialPreviewCopy: document.getElementById('social-preview-copy'),
 };
 
+const OEAK_SOURCE_TIP = 'Quelle: ÖÄK';
+
 /** Preferred display order / labels for known API person fields (case-insensitive lookup). */
 const DETAIL_FIELD_DEFS = [
   { keys: ['evoid', 'evoId', 'EVOID'], label: 'EVO-ID', compact: true },
@@ -83,9 +85,9 @@ const DETAIL_FIELD_DEFS = [
   { keys: ['title', 'Title'], label: 'Titel', headerOnly: true },
   { keys: ['firstname', 'firstName', 'FirstName'], label: 'Vorname', headerOnly: true },
   { keys: ['lastname', 'lastName', 'LastName'], label: 'Nachname', headerOnly: true },
-  { keys: ['specialization', 'Specialization'], label: 'Hauptfach' },
-  { keys: ['additionalspecialization', 'additionalSpecialization', 'AdditionalSpecialization'], label: 'Zusatzfach' },
-  { keys: ['city', 'City'], label: 'Ort' },
+  { keys: ['specialization', 'Specialization'], label: 'Hauptfach', sourceOeak: true },
+  { keys: ['additionalspecialization', 'additionalSpecialization', 'AdditionalSpecialization'], label: 'Zusatzfach', sourceOeak: true },
+  { keys: ['city', 'City'], label: 'Ort', sourceOeak: true },
   { keys: ['postalcode', 'postalCode', 'plz', 'zip', 'zipcode', 'zipCode'], label: 'Postleitzahl' },
   // Land / Ländercode omitted from detail panel (Austria-wide context).
   { keys: ['country', 'Country'], label: 'Land', headerOnly: true },
@@ -105,9 +107,13 @@ const DETAIL_FIELD_DEFS = [
   { keys: ['externalphoto', 'externalPhoto', 'ExternalPhoto', 'photo', 'image'], label: 'Foto', headerOnly: true },
   { keys: ['vpnr', 'vpNr', 'VpNr', 'VPN R', 'vp_nr'], label: 'VPNR' },
   { keys: ['hindex', 'hIndex', 'HIndex', 'h_index'], label: 'h-Index' },
-  { keys: ['kasse', 'Kasse'], label: 'Kasse', kind: 'yesno' },
+  { keys: ['kasse', 'Kasse'], label: 'Kasse', kind: 'yesno', sourceOeak: true },
   { keys: ['wahlarzt', 'WahlArzt', 'wahlarztflag'], label: 'Wahlarzt', kind: 'yesno' },
 ];
+
+function oeakTipAttrs() {
+  return ` title="${OEAK_SOURCE_TIP}" data-tip="${OEAK_SOURCE_TIP}"`;
+}
 
 const SOCIAL_EXTRA_KEY_RE =
   /^(facebook|linkedin|instagram|twitter|x|xing|youtube|tiktok|homepage|website|orcid|openalex|researchgate)/i;
@@ -1014,8 +1020,12 @@ function openDoctorDetail(doc) {
     } else {
       valueHtml = escapeHtml(display);
     }
-    const rowClass = def.compact ? ' class="detail-evoid"' : '';
-    rows.push(`<div${rowClass}><dt>${escapeHtml(def.label)}</dt><dd>${valueHtml}</dd></div>`);
+    const classes = [];
+    if (def.compact) classes.push('detail-evoid');
+    if (def.sourceOeak) classes.push('has-source-tip');
+    const rowClass = classes.length ? ` class="${classes.join(' ')}"` : '';
+    const tip = def.sourceOeak ? oeakTipAttrs() : '';
+    rows.push(`<div${rowClass}${tip}><dt>${escapeHtml(def.label)}</dt><dd>${valueHtml}</dd></div>`);
   }
 
   // Any additional API fields not in the known map (skip social keys — handled via icons).
