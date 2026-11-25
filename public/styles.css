@@ -630,6 +630,27 @@ td.empty {
   background: rgba(255, 255, 255, 0.65);
 }
 
+.site-footer p {
+  margin: 0;
+}
+
+.footer-legal {
+  margin-top: 0.45rem !important;
+}
+
+.footer-legal a,
+.login-legal a {
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.footer-legal a:hover,
+.login-legal a:hover {
+  color: var(--accent);
+}
+
 #doctors-table tbody tr.doctor-row {
   cursor: pointer;
 }

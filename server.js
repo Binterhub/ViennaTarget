@@ -211,6 +211,11 @@ app.get('/login', (req, res) => {
   res.sendFile(path.join(publicDir, 'login.html'));
 });
 
+// Public legal notice (linked from login + app footer)
+app.get(['/datenquellen', '/datenquellen.html'], (_req, res) => {
+  res.sendFile(path.join(publicDir, 'datenquellen.html'));
+});
+
 // Protect app shell + authenticated static assets
 app.get('/', requireAuth, (_req, res) => {
   res.sendFile(path.join(publicDir, 'index.html'));
