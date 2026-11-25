@@ -589,6 +589,17 @@ td.empty {
   color: var(--accent);
 }
 
+#doctors-table th[data-sort='title'],
+#doctors-table th[data-sort='firstname'] {
+  font-size: 0.82rem;
+}
+
+#doctors-table td.cell-title,
+#doctors-table td.cell-firstname {
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+
 #doctors-table th[data-sort='specialization'],
 #doctors-table th[data-sort='additionalspecialization'] {
   font-size: 0.78rem;

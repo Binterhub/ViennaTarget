@@ -71,7 +71,7 @@ const DETAIL_FIELD_DEFS = [
   { keys: ['title', 'Title'], label: 'Titel', headerOnly: true },
   { keys: ['firstname', 'firstName', 'FirstName'], label: 'Vorname', headerOnly: true },
   { keys: ['lastname', 'lastName', 'LastName'], label: 'Nachname', headerOnly: true },
-  { keys: ['specialization', 'Specialization'], label: 'Hauptfachgebiet' },
+  { keys: ['specialization', 'Specialization'], label: 'Hauptfach' },
   { keys: ['additionalspecialization', 'additionalSpecialization', 'AdditionalSpecialization'], label: 'Zusatzfach' },
   { keys: ['city', 'City'], label: 'Ort' },
   { keys: ['postalcode', 'postalCode', 'plz', 'zip', 'zipcode', 'zipCode'], label: 'Postleitzahl' },
@@ -718,7 +718,7 @@ function exportFilteredXlsx() {
       Titel: text(d.title),
       Vorname: text(d.firstname),
       Nachname: text(d.lastname),
-      Hauptfachgebiet: text(d.specialization),
+      Hauptfach: text(d.specialization),
       Zusatzfach: text(d.additionalspecialization),
       Ort: text(d.city),
       Land: text(d.country),
@@ -951,8 +951,8 @@ function renderTable() {
       const lastname = escapeHtml(text(d.lastname));
       const cells = [
         `<td class="cell-evoid">${escapeHtml(text(d.evoid))}</td>`,
-        `<td>${escapeHtml(text(d.title))}</td>`,
-        `<td>${escapeHtml(text(d.firstname))}</td>`,
+        `<td class="cell-title">${escapeHtml(text(d.title))}</td>`,
+        `<td class="cell-firstname">${escapeHtml(text(d.firstname))}</td>`,
         `<td class="cell-lastname"><button type="button" class="lastname-link" data-open-doctor="${id}">${lastname || '–'}</button></td>`,
         `<td class="cell-specialty">${escapeHtml(text(d.specialization))}</td>`,
         `<td class="cell-specialty">${escapeHtml(text(d.additionalspecialization))}</td>`,
