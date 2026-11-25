@@ -705,13 +705,12 @@ function openDoctorDetail(doc) {
     .filter(Boolean);
   const title = titleParts.join(' ') || 'Person';
   el.doctorDetailTitle.textContent = title;
-  el.doctorDetailSub.textContent = [
-    text(doc.specialization),
-    text(doc.additionalspecialization),
-    text(doc.city),
-  ]
-    .filter(Boolean)
-    .join(' · ');
+  // Hauptfach / Zusatzfach live in the body fields — header only shows Ort when present.
+  const city = text(doc.city).trim();
+  if (el.doctorDetailSub) {
+    el.doctorDetailSub.textContent = city;
+    el.doctorDetailSub.hidden = !city;
+  }
 
   const photo = pickDoctorField(doc, ['externalphoto', 'externalPhoto', 'ExternalPhoto', 'photo', 'image']);
   const photoUrl = hrefForField('link', photo.value);
