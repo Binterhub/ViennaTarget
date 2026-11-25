@@ -77,7 +77,7 @@ body {
   background:
     linear-gradient(145deg, #042e2d 0%, var(--accent-deep) 40%, var(--accent) 78%, #1a7a76 100%);
   color: #f2faf9;
-  padding: 0.55rem 1.15rem 0.6rem;
+  padding: 0.4rem 1rem;
   border-bottom: 2px solid #031f1e;
 }
 
@@ -90,7 +90,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.65rem;
+  gap: 0.5rem;
 }
 
 .brand {
@@ -98,9 +98,9 @@ body {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.15rem 0.2rem;
-  line-height: 1.3;
-  max-width: min(48rem, 100%);
+  gap: 0.1rem 0.15rem;
+  line-height: 1.2;
+  max-width: min(52rem, calc(100% - 9rem));
 }
 
 .brand-home {
@@ -121,9 +121,9 @@ body {
 
 .brand-logo {
   display: block;
-  height: clamp(1.55rem, 2.8vw, 2rem);
+  height: clamp(1.35rem, 2.4vw, 1.75rem);
   width: auto;
-  max-width: min(11.5rem, 42vw);
+  max-width: min(10.5rem, 38vw);
   object-fit: contain;
 }
 
@@ -148,17 +148,29 @@ body {
   display: inline;
   font-family: var(--font);
   font-weight: 400;
-  font-size: clamp(0.68rem, 1.15vw, 0.82rem);
+  font-size: clamp(0.65rem, 1.1vw, 0.78rem);
   letter-spacing: 0.04em;
   opacity: 0.68;
-  vertical-align: 0.06em;
 }
 
-.brand-meta::before {
+.brand-meta::before,
+.brand-focus::before {
   content: "·";
-  margin: 0 0.45em;
+  margin: 0 0.4em;
   opacity: 0.55;
   letter-spacing: 0;
+  font-weight: 400;
+}
+
+.brand-focus {
+  display: inline;
+  margin: 0;
+  font-family: var(--font);
+  font-weight: 600;
+  font-size: clamp(0.78rem, 1.35vw, 0.95rem);
+  letter-spacing: 0.01em;
+  opacity: 0.95;
+  line-height: 1.2;
 }
 
 .header-actions {
@@ -173,8 +185,8 @@ body {
   background: transparent;
   border: 1px solid rgba(245, 255, 254, 0.35);
   color: #f5fffe;
-  padding: 0.3rem 0.65rem;
-  font-size: 0.88rem;
+  padding: 0.22rem 0.55rem;
+  font-size: 0.82rem;
   font-weight: 600;
   text-decoration: none;
   border-radius: var(--radius);
@@ -189,22 +201,12 @@ body {
   background: transparent;
   border-color: rgba(245, 255, 254, 0.35);
   color: #f5fffe;
-  padding: 0.3rem 0.65rem;
-  font-size: 0.88rem;
+  padding: 0.22rem 0.55rem;
+  font-size: 0.82rem;
 }
 
 .btn-ghost:hover:not(:disabled) {
   background: rgba(245, 255, 254, 0.12);
-}
-
-.site-header h1 {
-  margin: 0.15rem 0 0;
-  font-family: var(--font);
-  font-weight: 600;
-  font-size: clamp(0.95rem, 1.6vw, 1.08rem);
-  letter-spacing: 0.01em;
-  opacity: 0.95;
-  line-height: 1.25;
 }
 
 .subtitle {
