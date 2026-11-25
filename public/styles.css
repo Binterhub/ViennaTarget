@@ -974,6 +974,22 @@ td.empty {
   text-decoration: none;
 }
 
+.doctor-detail-photo.has-source-tip {
+  overflow: visible;
+}
+
+.doctor-detail-photo.has-source-tip img {
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.doctor-detail-photo.has-source-tip::after {
+  left: 0;
+  right: auto;
+  bottom: auto;
+  top: calc(100% + 0.35rem);
+}
+
 .doctor-detail-photo[hidden] {
   display: none !important;
 }

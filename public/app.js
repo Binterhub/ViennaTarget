@@ -981,12 +981,26 @@ function openDoctorDetail(doc) {
     el.doctorDetailPhoto.hidden = false;
     el.doctorDetailPhoto.href = photoUrl;
     el.doctorDetailPhoto.innerHTML = `<img src="${escapeHtml(photoUrl)}" alt="Foto von ${escapeHtml(title)}" loading="lazy" referrerpolicy="no-referrer" />`;
-    // Broken / 404 photos: hide container entirely (no alt-text stub).
+    const photoHost = hostFromHref(photoUrl);
+    if (photoHost) {
+      const tip = sourceTipText(photoHost);
+      el.doctorDetailPhoto.classList.add('has-source-tip');
+      el.doctorDetailPhoto.title = tip;
+      el.doctorDetailPhoto.setAttribute('data-tip', tip);
+    } else {
+      el.doctorDetailPhoto.classList.remove('has-source-tip');
+      el.doctorDetailPhoto.removeAttribute('title');
+      el.doctorDetailPhoto.removeAttribute('data-tip');
+    }
+    // Broken / 404 photos: hide container entirely (no alt-text stub / no tip).
     const img = el.doctorDetailPhoto.querySelector('img');
     if (img) {
       const hideBrokenPhoto = () => {
         el.doctorDetailPhoto.hidden = true;
         el.doctorDetailPhoto.removeAttribute('href');
+        el.doctorDetailPhoto.classList.remove('has-source-tip');
+        el.doctorDetailPhoto.removeAttribute('title');
+        el.doctorDetailPhoto.removeAttribute('data-tip');
         el.doctorDetailPhoto.innerHTML = '';
       };
       img.addEventListener('error', hideBrokenPhoto, { once: true });
@@ -995,6 +1009,9 @@ function openDoctorDetail(doc) {
   } else if (el.doctorDetailPhoto) {
     el.doctorDetailPhoto.hidden = true;
     el.doctorDetailPhoto.removeAttribute('href');
+    el.doctorDetailPhoto.classList.remove('has-source-tip');
+    el.doctorDetailPhoto.removeAttribute('title');
+    el.doctorDetailPhoto.removeAttribute('data-tip');
     el.doctorDetailPhoto.innerHTML = '';
   }
 
