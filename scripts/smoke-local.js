@@ -82,8 +82,8 @@ async function main() {
   if (!appHtml.includes('datadominance-app-hero.jpg')) {
     fail('app page missing short post-login hero');
   }
-  if (!appHtml.includes('Neonatologie und Pädiatrische Intensivmedizin')) {
-    fail('app page missing focus Zusatzfach copy');
+  if (!appHtml.includes('Fokus: Poractant alfa')) {
+    fail('app page missing Fokus: Poractant alfa label');
   }
   ok('authenticated app shell + short hero');
 
