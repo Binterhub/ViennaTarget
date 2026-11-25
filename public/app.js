@@ -1260,6 +1260,13 @@ function resetFiltersToFocus() {
 }
 
 function bindEvents() {
+  applyChartExpandedUi();
+  if (el.chartToggle) {
+    el.chartToggle.addEventListener('click', () => {
+      toggleChartExpanded();
+    });
+  }
+
   const onFilterChange = () => {
     state.page = 1;
     refreshView();
