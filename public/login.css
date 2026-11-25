@@ -100,18 +100,53 @@ body.login-page {
   color: var(--muted);
 }
 
+.password-wrap {
+  position: relative;
+  display: grid;
+}
+
 .login-field input {
   font: inherit;
   color: var(--ink);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 0.65rem 0.75rem;
+  padding: 0.65rem 2.6rem 0.65rem 0.75rem;
   background: #fff;
+  width: 100%;
 }
 
 .login-field input:focus {
   outline: 2px solid #8cbcb8;
   outline-offset: 1px;
+}
+
+.toggle-password {
+  position: absolute;
+  top: 50%;
+  right: 0.35rem;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.toggle-password:hover,
+.toggle-password:focus-visible {
+  color: var(--accent-deep);
+  background: var(--accent-soft);
+  outline: none;
+}
+
+.toggle-password[aria-pressed='true'] {
+  color: var(--accent);
 }
 
 .login-error {

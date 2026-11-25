@@ -34,15 +34,50 @@
         <form id="login-form" class="login-form" autocomplete="current-password">
           <label class="login-field">
             <span>Passwort</span>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              autofocus
-              minlength="1"
-              placeholder="Passwort eingeben"
-            />
+            <div class="password-wrap">
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                autofocus
+                minlength="1"
+                placeholder="Passwort eingeben"
+                autocomplete="current-password"
+              />
+              <button
+                type="button"
+                id="toggle-password"
+                class="toggle-password"
+                aria-label="Passwort anzeigen"
+                aria-pressed="false"
+                title="Passwort anzeigen"
+              >
+                <svg class="icon-eye" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+                  <path
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12s-3.5 6.5-9.5 6.5S2.5 12 2.5 12z"
+                  />
+                  <circle cx="12" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="1.8" />
+                </svg>
+                <svg class="icon-eye-off" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" hidden>
+                  <path
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12s-3.5 6.5-9.5 6.5S2.5 12 2.5 12z"
+                  />
+                  <circle cx="12" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="1.8" />
+                  <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M4 4l16 16" />
+                </svg>
+              </button>
+            </div>
           </label>
           <p id="login-error" class="login-error" role="alert" hidden></p>
           <button type="submit" id="login-submit" class="login-submit">Anmelden</button>
