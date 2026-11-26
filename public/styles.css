@@ -1334,6 +1334,12 @@ td.empty {
   height: 1.2rem;
 }
 
+/* ResearchGate “RG” wordmark is denser — keep readable padding inside the tile */
+.detail-social-link .detail-social-svg--researchgate {
+  width: 1.28rem;
+  height: 1.28rem;
+}
+
 .detail-social-link:hover,
 .detail-social-link:focus-visible {
   transform: translateY(-1px);
@@ -1378,16 +1384,18 @@ td.empty {
   color: #000;
 }
 
+/* ResearchGate: solid brand tile + white “RG” (official favicon style) */
 .detail-social-link[data-social-icon='researchgate'] {
-  color: #00ccbb;
-  background: #e8faf8;
-  border-color: #a8ebe4;
+  color: #fff;
+  background: #00ccbb;
+  border-color: #00ccbb;
+  padding: 0;
 }
 .detail-social-link[data-social-icon='researchgate']:hover,
 .detail-social-link[data-social-icon='researchgate']:focus-visible {
-  background: #d4f6f2;
+  background: #00a99c;
   border-color: #00a99c;
-  color: #008f84;
+  color: #fff;
 }
 
 .detail-social-link[data-social-icon='orcid'] {
