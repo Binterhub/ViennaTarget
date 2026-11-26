@@ -85,19 +85,10 @@ body.login-page {
 
 .login-brand .brand-logo {
   display: block;
-  height: clamp(2rem, 5vw, 2.55rem);
+  height: clamp(3rem, 7.5vw, 3.825rem);
   width: auto;
-  max-width: min(14rem, 70vw);
+  max-width: min(21rem, 85vw);
   object-fit: contain;
-}
-
-.login-brand .brand-sep {
-  font-family: var(--display);
-  font-size: clamp(0.95rem, 2.4vw, 1.2rem);
-  font-weight: 400;
-  letter-spacing: 0;
-  opacity: 0.45;
-  color: var(--accent-deep);
 }
 
 .login-brand .brand-tagline {
