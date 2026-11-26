@@ -1328,23 +1328,30 @@ td.empty {
   height: 1.35rem;
 }
 
+/* LinkedIn “in” glyph needs slightly more optical room than boxed logos */
+.detail-social-link .detail-social-svg--linkedin {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
 .detail-social-link:hover,
 .detail-social-link:focus-visible {
   transform: translateY(-1px);
   outline: none;
 }
 
-/* Real brand colors for Profile icons */
+/* LinkedIn: solid brand tile + white “in” (official app-icon look) */
 .detail-social-link[data-social-icon='linkedin'] {
-  color: #0a66c2;
-  background: #eef5fb;
-  border-color: #c5daf0;
+  color: #fff;
+  background: #0a66c2;
+  border-color: #0a66c2;
+  padding: 0;
 }
 .detail-social-link[data-social-icon='linkedin']:hover,
 .detail-social-link[data-social-icon='linkedin']:focus-visible {
-  background: #dcebff;
-  border-color: #0a66c2;
-  color: #004182;
+  background: #004182;
+  border-color: #004182;
+  color: #fff;
 }
 
 .detail-social-link[data-social-icon='facebook'] {
