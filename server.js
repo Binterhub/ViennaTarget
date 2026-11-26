@@ -130,8 +130,8 @@ async function loadDoctors(_opts = {}) {
 
   try {
     const data = await refreshPromise;
-    // Keep meta snapshot only for authenticated /api/meta — never served as doctors response.
-    cache.set(data);
+    // Do not retain doctor payloads in MemoryCache — every /api/doctors is live.
+    cache.clear();
     return { ...data, fromCache: false, stale: false };
   } finally {
     refreshPromise = null;
@@ -139,6 +139,8 @@ async function loadDoctors(_opts = {}) {
 }
 
 app.get('/api/doctors', apiLimiter, requireAuth, async (_req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.setHeader('Pragma', 'no-cache');
   try {
     const data = await loadDoctors();
     res.json({

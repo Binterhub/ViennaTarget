@@ -54,6 +54,8 @@ class DataMatcherClient {
         headers: {
           'X-API-Key': config.apiKey,
           Accept: 'application/json',
+          'Cache-Control': 'no-cache, no-store',
+          Pragma: 'no-cache',
         },
       });
     } catch (err) {
@@ -159,6 +161,8 @@ class DataMatcherClient {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
           Accept: 'application/json',
+          'Cache-Control': 'no-cache, no-store',
+          Pragma: 'no-cache',
         },
         body: JSON.stringify(payload),
       });
@@ -233,6 +237,8 @@ class DataMatcherClient {
    * Dedupes by evoid and re-checks additionalspecialization client-side.
    */
   async fetchAllFocusDoctors() {
+    // Fresh auth each corpus pull so we never reuse a long-lived session against a stale edge.
+    await this.getToken({ force: true });
     const take = config.pageSize;
     const byId = new Map();
     const jobs = this.buildSearchJobs();
@@ -291,17 +297,18 @@ function hasFocusAdditivfach(doc) {
 }
 
 function normalizeDoctorRow(row) {
-  // Keep known fields stable for the UI; coerce nullish specialty strings.
+  // Pass name/specialty strings through unchanged (including intentional canaries).
+  // Only coerce null/undefined → '' so the UI never sees nullish text fields.
+  const pass = (v) => (v == null ? '' : v);
   return {
     ...row,
-    title: row.title == null ? '' : row.title,
-    firstname: row.firstname == null ? '' : row.firstname,
-    lastname: row.lastname == null ? '' : row.lastname,
-    city: row.city == null ? '' : row.city,
-    specialization: row.specialization == null ? '' : row.specialization,
-    additionalspecialization:
-      row.additionalspecialization == null ? '' : row.additionalspecialization,
-    country: row.country == null ? '' : row.country,
+    title: pass(row.title),
+    firstname: pass(row.firstname),
+    lastname: pass(row.lastname),
+    city: pass(row.city),
+    specialization: pass(row.specialization),
+    additionalspecialization: pass(row.additionalspecialization),
+    country: pass(row.country),
   };
 }
 
