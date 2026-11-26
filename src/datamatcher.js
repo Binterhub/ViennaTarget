@@ -11,39 +11,18 @@ const OPTIONAL_GENDER_KEYS = ['gender', 'geschlecht', 'sex', 'Geschlecht'];
  * additional supported field (specialization / additionalspecialization / lastname).
  * Success bodies are often a raw JSON array instead of { results, resultCount }.
  */
-const AUSTRIA_SPECIALIZATION_SEEDS = [
-  'Allgemeinmedizin',
-  'Kinder- und Jugendheilkunde',
-  'Innere Medizin',
-  'Frauenheilkunde und Geburtshilfe',
-  'Anästhesiologie und Intensivmedizin',
-  'Orthopädie und Traumatologie',
-  'Neurologie',
-  'Psychiatrie und Psychotherapeutische Medizin',
-  'Haut- und Geschlechtskrankheiten',
-  'Augenheilkunde und Optometrie',
-  'Urologie',
-  'Radiologie',
-  'Neurochirurgie',
-  'Herzchirurgie',
-  'Thoraxchirurgie',
-  'Allgemeinchirurgie und Viszeralchirurgie',
-  'Nuklearmedizin',
-  'Strahlentherapie-Radioonkologie',
-  'Medizinische Genetik',
-  'Transfusionsmedizin',
-  'Pharmakologie und Toxikologie',
-  'Arbeitsmedizin',
-  'Kinder- und Jugendchirurgie',
-  'Kinder- und Jugendpsychiatrie',
-  'Lungenkrankheiten',
-  'Rheumatologie',
-  'Gastroenterologie und Hepatologie',
-  'Kardiologie',
-  'Nephrologie',
-  'Endokrinologie und Stoffwechselerkrankungen',
-  'Hämatologie und internistische Onkologie',
+/** Alternate spellings of the Fokus Additivfach (kept for matching only). */
+const FOCUS_ADDITIVFACH_ALIASES = [
+  'Neonatologie und Pädiatrische Intensivmedizin',
+  'Neonatologie und pädiatrische Intensivmedizin',
+  'Neonatologie und pädriatrische Intensivmedizin',
 ];
+
+/**
+ * @deprecated Kept exported for scripts/tests; no longer used for corpus pulls.
+ * Full Hauptfach seed pulls were loading ~35k HCPs — Fokus scope uses Additivfach only.
+ */
+const AUSTRIA_SPECIALIZATION_SEEDS = [];
 
 class DataMatcherClient {
   constructor() {
@@ -141,8 +120,9 @@ class DataMatcherClient {
   }
 
   /**
-   * Build filter groups that work after the DB/API drift.
-   * Country alone is rejected — always pair with specialization or Zusatzfach.
+   * Fokus-only search jobs: Zusatzfach / Additivfach Neonatologie und Pädiatrische Intensivmedizin.
+   * Do NOT seed every Hauptfach — that pulls the full ~35k Austria corpus.
+   * Country alone is rejected by upstream; pair country + additionalspecialization.
    */
   buildSearchJobs() {
     const country = config.country;
@@ -154,18 +134,14 @@ class DataMatcherClient {
         label: 'focus',
         payload: [{ country, additionalspecialization: focus }],
       });
-      // Also without country in case country coupling regresses again.
-      jobs.push({
-        label: 'focus-nocountry',
-        payload: [{ additionalspecialization: focus }],
-      });
-    }
-
-    for (const specialization of AUSTRIA_SPECIALIZATION_SEEDS) {
-      jobs.push({
-        label: `spec:${specialization}`,
-        payload: [{ country, specialization }],
-      });
+      // Typo / alternate casing variants seen in older data.
+      for (const alias of FOCUS_ADDITIVFACH_ALIASES) {
+        if (alias === focus) continue;
+        jobs.push({
+          label: `focus-alias:${alias}`,
+          payload: [{ country, additionalspecialization: alias }],
+        });
+      }
     }
 
     return jobs;
@@ -253,8 +229,8 @@ class DataMatcherClient {
   }
 
   /**
-   * Austria-wide pull via specialization + Fokus-Zusatzfach jobs (dedupe by evoid).
-   * Avoids broken country-only filter after upstream DB change.
+   * Pull only HCPs with Fokus Additivfach (Zusatzfach) Neonatologie und Pädiatrische Intensivmedizin.
+   * Dedupes by evoid and re-checks additionalspecialization client-side.
    */
   async fetchAllFocusDoctors() {
     const take = config.pageSize;
@@ -266,16 +242,16 @@ class DataMatcherClient {
       try {
         await this.collectAllForPayload(job.payload, take, byId);
       } catch (err) {
-        // Skip broken filter variants; keep going so partial corpus still loads.
+        // Skip broken filter variants; keep going so partial Fokus set still loads.
         errors.push(`${job.label}: ${err.message || err}`);
       }
     }
 
-    const doctors = Array.from(byId.values());
+    const doctors = Array.from(byId.values()).filter(hasFocusAdditivfach);
     if (doctors.length === 0) {
       const error = new Error(
         errors[0] ||
-          'Keine Ärztedaten von der DataMatcherAPI erhalten (Filter nach DB-Änderung prüfen).'
+          'Keine Fokus-HCPs (Additivfach Neonatologie und Pädiatrische Intensivmedizin) von der DataMatcherAPI erhalten.'
       );
       error.code = 'SEARCH_FAILED';
       error.status = 502;
@@ -295,6 +271,23 @@ class DataMatcherClient {
       upstreamNotes: errors.length ? errors.slice(0, 5) : undefined,
     };
   }
+}
+
+function normalizeAdditivfachPart(value) {
+  return String(value || '')
+    .trim()
+    .toLocaleLowerCase('de-AT')
+    .replace(/\s+/g, ' ');
+}
+
+function hasFocusAdditivfach(doc) {
+  const raw = doc && doc.additionalspecialization != null ? String(doc.additionalspecialization) : '';
+  if (!raw.trim()) return false;
+  const aliases = FOCUS_ADDITIVFACH_ALIASES.map(normalizeAdditivfachPart);
+  return raw
+    .split(',')
+    .map((part) => normalizeAdditivfachPart(part))
+    .some((part) => aliases.some((alias) => part === alias || part.includes(alias)));
 }
 
 function normalizeDoctorRow(row) {
@@ -361,6 +354,8 @@ module.exports = {
   DataMatcherClient,
   detectOptionalFields,
   normalizeDoctorRow,
+  hasFocusAdditivfach,
+  FOCUS_ADDITIVFACH_ALIASES,
   AUSTRIA_SPECIALIZATION_SEEDS,
   OPTIONAL_POSTAL_KEYS,
   OPTIONAL_GENDER_KEYS,
