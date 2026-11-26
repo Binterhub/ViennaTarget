@@ -193,6 +193,11 @@ app.get(['/datenquellen', '/datenquellen.html'], (_req, res) => {
   res.sendFile(path.join(publicDir, 'datenquellen.html'));
 });
 
+// Public privacy policy (linked from login + app footer)
+app.get(['/datenschutz', '/datenschutz.html'], (_req, res) => {
+  res.sendFile(path.join(publicDir, 'datenschutz.html'));
+});
+
 // Public Use Cases page (linked from app header)
 app.get(['/usecases', '/usecases.html'], (_req, res) => {
   res.sendFile(path.join(publicDir, 'usecases.html'));

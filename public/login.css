@@ -226,6 +226,12 @@ body.login-page {
   color: var(--accent);
 }
 
+.footer-legal-sep {
+  margin: 0 0.35rem;
+  color: #9bb0ad;
+  font-size: 0.8rem;
+}
+
 @keyframes rise {
   from {
     opacity: 0;
