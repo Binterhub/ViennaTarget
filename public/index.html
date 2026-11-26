@@ -16,44 +16,6 @@
     <script src="/app.js" defer></script>
   </head>
   <body>
-    <!-- Far-left profile pane (sibling of detail, not inside the right dock). -->
-    <div id="social-preview" class="social-preview" hidden>
-      <div class="social-preview-toolbar">
-        <button type="button" id="social-preview-close" class="btn btn-secondary" aria-label="Profilpane schließen">
-          Schließen
-        </button>
-      </div>
-      <aside
-        class="social-preview-panel"
-        role="complementary"
-        aria-labelledby="social-preview-title"
-      >
-        <div id="social-preview-icon" class="social-preview-icon" aria-hidden="true"></div>
-        <p class="social-preview-kicker">Profil</p>
-        <h2 id="social-preview-title" class="social-preview-title">–</h2>
-        <p id="social-preview-host" class="social-preview-host"></p>
-        <p id="social-preview-url" class="social-preview-url"></p>
-        <div class="social-preview-actions">
-          <a
-            id="social-preview-open"
-            class="btn btn-primary social-preview-open"
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            In neuem Tab öffnen
-          </a>
-          <button type="button" id="social-preview-copy" class="btn btn-secondary">
-            Link kopieren
-          </button>
-        </div>
-        <p class="social-preview-note">
-          Externe Profile werden nicht eingebettet (X-Frame-Options / Anbieter-ToS).
-          Der echte Inhalt öffnet sich nur im neuen Browser-Tab.
-        </p>
-      </aside>
-    </div>
-
     <header class="site-header">
       <div class="header-inner">
         <div class="header-top">
@@ -258,6 +220,44 @@
           <dl id="doctor-detail-fields" class="doctor-detail-fields"></dl>
         </aside>
       </div>
+    </div>
+
+    <!-- Link/profile preview: rightmost, to the right of Detail. -->
+    <div id="social-preview" class="social-preview" hidden>
+      <div class="social-preview-toolbar">
+        <button type="button" id="social-preview-close" class="btn btn-secondary" aria-label="Preview schließen">
+          Schließen
+        </button>
+      </div>
+      <aside
+        class="social-preview-panel"
+        role="complementary"
+        aria-labelledby="social-preview-title"
+      >
+        <div id="social-preview-icon" class="social-preview-icon" aria-hidden="true"></div>
+        <p class="social-preview-kicker">Preview</p>
+        <h2 id="social-preview-title" class="social-preview-title">–</h2>
+        <p id="social-preview-host" class="social-preview-host"></p>
+        <p id="social-preview-url" class="social-preview-url"></p>
+        <div class="social-preview-actions">
+          <a
+            id="social-preview-open"
+            class="btn btn-primary social-preview-open"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            In neuem Tab öffnen
+          </a>
+          <button type="button" id="social-preview-copy" class="btn btn-secondary">
+            Link kopieren
+          </button>
+        </div>
+        <p class="social-preview-note">
+          Externe Profile werden nicht eingebettet (X-Frame-Options / Anbieter-ToS).
+          Der echte Inhalt öffnet sich nur im neuen Browser-Tab.
+        </p>
+      </aside>
     </div>
 
     <footer class="site-footer">
