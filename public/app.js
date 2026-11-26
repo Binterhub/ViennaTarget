@@ -239,10 +239,19 @@ function renderSocialIconLink({ href, label, icon }) {
   return `<a class="detail-social-link${tipClass}" href="${escapeHtml(safeHref)}" data-social-preview data-social-icon="${escapeHtml(safeIcon)}" data-social-label="${escapeHtml(label)}" target="_blank" rel="noopener noreferrer"${tip} aria-label="${escapeHtml(label)}">${socialIconSvg(safeIcon)}<span class="detail-social-sr">${escapeHtml(label)}</span></a>`;
 }
 
+function truncateUrlLabel(value, max = 30) {
+  const full = text(value);
+  if (full.length <= max) return full;
+  return `${full.slice(0, max)}...`;
+}
+
 function renderHomepageRow({ href, display }) {
   const safeHref = href || '#';
-  const longClass = text(display).length > 30 ? ' detail-link-long' : '';
-  return `<div class="detail-homepage"><dt>${socialIconSvg('homepage')}<span class="detail-social-sr">Homepage</span></dt><dd><a href="${escapeHtml(safeHref)}" data-social-preview data-social-icon="homepage" data-social-label="Homepage" target="_blank" rel="noopener noreferrer" class="detail-homepage-url${longClass}">${escapeHtml(display)}</a></dd></div>`;
+  const fullLabel = text(display) || safeHref;
+  const shortLabel = truncateUrlLabel(fullLabel, 30);
+  const longClass = fullLabel.length > 30 ? ' detail-link-long' : '';
+  // Visible text is truncated; href + title keep the full URL for click/tooltip.
+  return `<div class="detail-homepage"><dt>${socialIconSvg('homepage')}<span class="detail-social-sr">Homepage</span></dt><dd><a href="${escapeHtml(safeHref)}" title="${escapeHtml(fullLabel)}" data-tip="${escapeHtml(fullLabel)}" data-social-preview data-social-icon="homepage" data-social-label="Homepage" target="_blank" rel="noopener noreferrer" class="detail-homepage-url${longClass}">${escapeHtml(shortLabel)}</a></dd></div>`;
 }
 
 function collectSocialLinksFromDoc(doc) {

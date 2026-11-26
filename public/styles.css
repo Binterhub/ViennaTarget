@@ -1274,7 +1274,6 @@ td.empty {
 .doctor-detail-fields a.detail-link-long {
   font-size: 0.78rem;
   line-height: 1.35;
-  word-break: break-all;
 }
 
 .detail-homepage dt {
@@ -1289,13 +1288,14 @@ td.empty {
 
 .detail-homepage-url {
   color: var(--accent);
-  word-break: break-word;
+  word-break: normal;
+  overflow-wrap: normal;
 }
 
 .detail-homepage-url.detail-link-long {
   font-size: 0.78rem;
   line-height: 1.35;
-  word-break: break-all;
+  white-space: nowrap;
 }
 
 .detail-socials dd.detail-social-list {
