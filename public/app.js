@@ -97,6 +97,7 @@ const DETAIL_FIELD_DEFS = [
   { keys: ['specialization', 'Specialization'], label: 'Hauptfach', sourceTip: 'ÖÄK' },
   { keys: ['additionalspecialization', 'additionalSpecialization', 'AdditionalSpecialization'], label: 'Zusatzfach', sourceTip: 'ÖÄK' },
   { keys: ['city', 'City'], label: 'Ort', sourceTip: 'ÖÄK' },
+  { keys: ['workstation', 'Workstation', 'workStation', 'dienstort', 'Dienstort'], label: 'DIENSTORT' },
   { keys: ['postalcode', 'postalCode', 'plz', 'zip', 'zipcode', 'zipCode'], label: 'Postleitzahl' },
   // Land / Ländercode omitted from detail panel (Austria-wide context).
   { keys: ['country', 'Country'], label: 'Land', headerOnly: true },
@@ -353,6 +354,13 @@ function showBanner(message, type = 'warn') {
 function text(value) {
   if (value === null || value === undefined) return '';
   return String(value);
+}
+
+/** Friendly labels for leftover API keys shown in the detail pane. */
+function labelForExtraField(key) {
+  const k = text(key).toLocaleLowerCase('en-US');
+  if (k === 'workstation' || k === 'dienstort') return 'DIENSTORT';
+  return text(key);
 }
 
 function normalize(value) {
@@ -945,6 +953,7 @@ function exportFilteredXlsx() {
       Hauptfach: text(d.specialization),
       Zusatzfach: text(d.additionalspecialization),
       Ort: text(d.city),
+      DIENSTORT: text(d.workstation),
       Land: text(d.country),
     };
     if (state.fields.postalCode) {
@@ -1243,7 +1252,9 @@ function openDoctorDetail(doc) {
     if (!display) continue;
     if (SOCIAL_EXTRA_KEY_RE.test(key)) continue;
     if (socialIconFromUrl(display)) continue;
-    rows.push(`<div><dt>${escapeHtml(key)}</dt><dd>${escapeHtml(display)}</dd></div>`);
+    rows.push(
+      `<div><dt>${escapeHtml(labelForExtraField(key))}</dt><dd>${escapeHtml(display)}</dd></div>`
+    );
   }
 
   if (socialLinks.length) {
