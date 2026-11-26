@@ -102,11 +102,15 @@ app.post('/api/logout', (req, res) => {
   res.json({ success: true });
 });
 
-async function loadDoctors({ force = false } = {}) {
+/**
+ * Always fetch Fokus HCPs live from DataMatcherAPI.
+ * No TTL/memory cache hit and no stale-cache fallback on error.
+ * Concurrent requests still share one in-flight promise (not a stored cache).
+ */
+async function loadDoctors(_opts = {}) {
   if (!hasApiCredentials()) {
     if (config.useMockData) {
       const payload = getMockPayload();
-      cache.set(payload);
       return { ...payload, fromCache: false, stale: false };
     }
     const error = new Error(
@@ -117,35 +121,26 @@ async function loadDoctors({ force = false } = {}) {
     throw error;
   }
 
-  if (!force) {
-    const hit = cache.get();
-    if (hit) return { ...hit, fromCache: true, stale: false };
-  }
-
   if (refreshPromise) {
     const data = await refreshPromise;
     return { ...data, fromCache: false, stale: false };
   }
 
-  refreshPromise = (async () => {
-    const payload = await client.fetchAllFocusDoctors();
-    cache.set(payload);
-    return payload;
-  })();
+  refreshPromise = (async () => client.fetchAllFocusDoctors())();
 
   try {
     const data = await refreshPromise;
+    // Keep meta snapshot only for authenticated /api/meta — never served as doctors response.
+    cache.set(data);
     return { ...data, fromCache: false, stale: false };
   } finally {
     refreshPromise = null;
   }
 }
 
-app.get('/api/doctors', apiLimiter, requireAuth, async (req, res) => {
-  const force = String(req.query.refresh || '') === '1';
-
+app.get('/api/doctors', apiLimiter, requireAuth, async (_req, res) => {
   try {
-    const data = await loadDoctors({ force });
+    const data = await loadDoctors();
     res.json({
       success: true,
       doctors: data.doctors,
@@ -154,7 +149,7 @@ app.get('/api/doctors', apiLimiter, requireAuth, async (req, res) => {
       fields: data.fields,
       focus: data.focus || config.focusAdditionalSpecialization,
       country: data.country || config.country,
-      fromCache: data.fromCache,
+      fromCache: false,
       stale: false,
       warning: data.upstreamNotes && data.upstreamNotes.length
         ? `Teilweise Filterübersprungen nach API/DB-Änderung (${data.upstreamNotes.length}).`
@@ -162,25 +157,6 @@ app.get('/api/doctors', apiLimiter, requireAuth, async (req, res) => {
       error: null,
     });
   } catch (err) {
-    const stale = cache.getStale();
-    if (stale) {
-      return res.status(200).json({
-        success: true,
-        doctors: stale.doctors,
-        total: stale.total,
-        fetchedAt: stale.fetchedAt,
-        fields: stale.fields,
-        focus: stale.focus || config.focusAdditionalSpecialization,
-        country: stale.country || config.country,
-        fromCache: true,
-        stale: true,
-        warning:
-          err.message ||
-          'Aktuelle Daten konnten nicht geladen werden. Es werden zwischengespeicherte Daten angezeigt.',
-        error: null,
-      });
-    }
-
     const status = err.status || (err.code === 'NOT_CONFIGURED' ? 503 : 502);
     res.status(status).json({
       success: false,

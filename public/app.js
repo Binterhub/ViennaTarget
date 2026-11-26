@@ -1366,7 +1366,8 @@ async function loadDoctors({ refresh = false } = {}) {
   }
 
   try {
-    const url = refresh ? '/api/doctors?refresh=1' : '/api/doctors';
+    // Server always pulls live from DataMatcher (no response cache).
+    const url = '/api/doctors';
     const res = await fetch(url, { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
 
     if (res.status === 401) {
