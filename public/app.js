@@ -44,6 +44,11 @@ const el = {
   fieldGender: document.getElementById('field-gender'),
   thPostal: document.getElementById('th-postal'),
   btnReset: document.getElementById('btn-reset'),
+  moreFiltersToggle: document.getElementById('more-filters-toggle'),
+  moreFiltersPanel: document.getElementById('more-filters-panel'),
+  moreFiltersHint: document.getElementById('more-filters-hint'),
+  presenceChecks: () =>
+    Array.from(document.querySelectorAll('input[name="presence"][type="checkbox"]')),
   btnLogout: document.getElementById('btn-logout'),
   btnExportXlsx: document.getElementById('btn-export-xlsx'),
   lastUpdated: document.getElementById('last-updated'),
@@ -494,7 +499,91 @@ function matchesFilters(doc) {
 
   if (state.focusOnly && !hasFocusZusatzfach(doc)) return false;
 
+  const selectedPresence = getSelectedPresenceFilters();
+  if (selectedPresence.length > 0) {
+    // OR across selected presence signals; AND with other filters above.
+    if (!selectedPresence.some((key) => doctorHasPresence(doc, key))) return false;
+  }
+
   return true;
+}
+
+function getSelectedPresenceFilters() {
+  return el
+    .presenceChecks()
+    .filter((input) => input.checked)
+    .map((input) => input.value);
+}
+
+function fieldNonEmpty(doc, keys) {
+  for (const key of keys) {
+    if (!Object.prototype.hasOwnProperty.call(doc, key)) continue;
+    const raw = text(doc[key]).trim();
+    if (raw) return raw;
+  }
+  return '';
+}
+
+/** Presence for Weitere Filter — uses API fields; LinkedIn/RG also via URL host scan. */
+function doctorHasPresence(doc, kind) {
+  switch (kind) {
+    case 'facebook': {
+      const v = fieldNonEmpty(doc, ['facebook', 'Facebook']);
+      if (v && socialIconFromUrl(v) !== 'linkedin') return true;
+      return doctorUrlMentions(doc, ['facebook.com', 'fb.com', 'fb.me']);
+    }
+    case 'x': {
+      const v = fieldNonEmpty(doc, ['x', 'X', 'twitter', 'Twitter']);
+      if (v) return true;
+      return doctorUrlMentions(doc, ['x.com', 'twitter.com']);
+    }
+    case 'linkedin': {
+      const v = fieldNonEmpty(doc, ['linkedin', 'LinkedIn', 'linkedIn']);
+      if (v) return true;
+      return doctorUrlMentions(doc, ['linkedin.com']);
+    }
+    case 'researchgate': {
+      const v = fieldNonEmpty(doc, ['researchgate', 'ResearchGate', 'researchGate']);
+      if (v) return true;
+      return doctorUrlMentions(doc, ['researchgate.net']);
+    }
+    case 'orcid': {
+      const v = fieldNonEmpty(doc, ['orcid', 'ORCID', 'Orcid']);
+      if (v) return true;
+      return doctorUrlMentions(doc, ['orcid.org']);
+    }
+    case 'openalex': {
+      const v = fieldNonEmpty(doc, ['openalexid', 'openAlexId', 'OpenAlexId', 'openalex']);
+      if (v) return true;
+      return doctorUrlMentions(doc, ['openalex.org']);
+    }
+    case 'kasse': {
+      const raw = fieldNonEmpty(doc, ['kasse', 'Kasse']);
+      if (!raw) return false;
+      const n = raw.toLocaleLowerCase('de-AT');
+      return ['yes', 'y', 'true', '1', 'ja', 'j'].includes(n);
+    }
+    default:
+      return false;
+  }
+}
+
+function doctorUrlMentions(doc, needles) {
+  const blob = [
+    doc.facebook,
+    doc.homepage,
+    doc.linkedin,
+    doc.researchgate,
+    doc.x,
+    doc.twitter,
+    doc.orcid,
+    doc.openalexid,
+    doc.openalex,
+    doc.externalphoto,
+  ]
+    .map((v) => text(v).toLocaleLowerCase('en-US'))
+    .join(' ');
+  return needles.some((n) => blob.includes(n));
 }
 
 /** Title “power” ranks — lower number = higher power (Prim. first). */
@@ -1362,12 +1451,23 @@ function resetFiltersToFocus() {
   el.filterGender.value = '';
   el.filterCity.value = '';
   el.filterCity.dataset.exact = '';
+  el.presenceChecks().forEach((input) => {
+    input.checked = false;
+  });
+  setMoreFiltersExpanded(false);
   selectFocusZusatzfach();
   state.sortKey = 'title';
   state.sortDir = 'asc';
   state.page = 1;
   updateSortHeaders();
   refreshView();
+}
+
+function setMoreFiltersExpanded(expanded) {
+  const open = Boolean(expanded);
+  if (el.moreFiltersToggle) el.moreFiltersToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  if (el.moreFiltersPanel) el.moreFiltersPanel.hidden = !open;
+  if (el.moreFiltersHint) el.moreFiltersHint.textContent = open ? 'Zuklappen' : 'Aufklappen';
 }
 
 function bindEvents() {
@@ -1378,10 +1478,22 @@ function bindEvents() {
     });
   }
 
+  if (el.moreFiltersToggle) {
+    setMoreFiltersExpanded(false);
+    el.moreFiltersToggle.addEventListener('click', () => {
+      const open = el.moreFiltersToggle.getAttribute('aria-expanded') === 'true';
+      setMoreFiltersExpanded(!open);
+    });
+  }
+
   const onFilterChange = () => {
     state.page = 1;
     refreshView();
   };
+
+  el.presenceChecks().forEach((input) => {
+    input.addEventListener('change', onFilterChange);
+  });
 
   ['input', 'change'].forEach((evt) => {
     el.filterName.addEventListener(evt, onFilterChange);

@@ -139,6 +139,32 @@
               </select>
             </label>
           </div>
+          <div class="more-filters" id="more-filters">
+            <button
+              type="button"
+              id="more-filters-toggle"
+              class="more-filters-toggle"
+              aria-expanded="false"
+              aria-controls="more-filters-panel"
+            >
+              <span>Weitere Filter</span>
+              <span class="more-filters-hint" id="more-filters-hint">Aufklappen</span>
+            </button>
+            <div id="more-filters-panel" class="more-filters-panel" hidden>
+              <p class="more-filters-note">
+                Präsenzfilter (ODER): HCP erscheint, wenn mindestens eines der gewählten Signale vorhanden ist.
+              </p>
+              <div class="presence-checks" role="group" aria-label="Präsenzfilter">
+                <label class="presence-check"><input type="checkbox" name="presence" value="linkedin" /> LinkedIn</label>
+                <label class="presence-check"><input type="checkbox" name="presence" value="facebook" /> Facebook</label>
+                <label class="presence-check"><input type="checkbox" name="presence" value="researchgate" /> ResearchGate</label>
+                <label class="presence-check"><input type="checkbox" name="presence" value="x" /> X</label>
+                <label class="presence-check"><input type="checkbox" name="presence" value="orcid" /> ORCID</label>
+                <label class="presence-check"><input type="checkbox" name="presence" value="openalex" /> OpenAlex</label>
+                <label class="presence-check"><input type="checkbox" name="presence" value="kasse" /> Kassen</label>
+              </div>
+            </div>
+          </div>
           <div class="filter-actions">
             <button type="button" id="btn-reset" class="btn btn-secondary btn-compact">Filter zurücksetzen (Fokus)</button>
             <p class="meta" id="last-updated">Letzte Aktualisierung: –</p>
