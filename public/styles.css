@@ -1282,8 +1282,11 @@ td.empty {
   color: var(--accent-deep);
 }
 
-.detail-homepage dt svg {
+.detail-homepage dt .detail-social-svg {
   display: block;
+  width: 1.15rem;
+  height: 1.15rem;
+  color: var(--accent-deep);
 }
 
 .detail-homepage-url {
@@ -1302,29 +1305,161 @@ td.empty {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 .detail-social-link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.05rem;
-  height: 2.05rem;
-  border-radius: 6px;
+  width: 2.55rem;
+  height: 2.55rem;
+  border-radius: 8px;
   border: 1px solid var(--border);
-  background: #f4f8f7;
+  background: #f7faf9;
   color: var(--accent-deep);
   text-decoration: none;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
+}
+
+.detail-social-link .detail-social-svg {
+  display: block;
+  width: 1.35rem;
+  height: 1.35rem;
 }
 
 .detail-social-link:hover,
 .detail-social-link:focus-visible {
+  transform: translateY(-1px);
+  outline: none;
+}
+
+/* Real brand colors for Profile icons */
+.detail-social-link[data-social-icon='linkedin'] {
+  color: #0a66c2;
+  background: #eef5fb;
+  border-color: #c5daf0;
+}
+.detail-social-link[data-social-icon='linkedin']:hover,
+.detail-social-link[data-social-icon='linkedin']:focus-visible {
+  background: #dcebff;
+  border-color: #0a66c2;
+  color: #004182;
+}
+
+.detail-social-link[data-social-icon='facebook'] {
+  color: #1877f2;
+  background: #eef4ff;
+  border-color: #c5d9fb;
+}
+.detail-social-link[data-social-icon='facebook']:hover,
+.detail-social-link[data-social-icon='facebook']:focus-visible {
+  background: #dceaff;
+  border-color: #1877f2;
+  color: #0d65d9;
+}
+
+.detail-social-link[data-social-icon='x'] {
+  color: #0f1419;
+  background: #f2f3f4;
+  border-color: #d0d4d8;
+}
+.detail-social-link[data-social-icon='x']:hover,
+.detail-social-link[data-social-icon='x']:focus-visible {
+  background: #e6e8ea;
+  border-color: #0f1419;
+  color: #000;
+}
+
+.detail-social-link[data-social-icon='researchgate'] {
+  color: #00ccbb;
+  background: #e8faf8;
+  border-color: #a8ebe4;
+}
+.detail-social-link[data-social-icon='researchgate']:hover,
+.detail-social-link[data-social-icon='researchgate']:focus-visible {
+  background: #d4f6f2;
+  border-color: #00a99c;
+  color: #008f84;
+}
+
+.detail-social-link[data-social-icon='orcid'] {
+  color: #a6ce39;
+  background: #f5fae8;
+  border-color: #d7e9a3;
+}
+.detail-social-link[data-social-icon='orcid']:hover,
+.detail-social-link[data-social-icon='orcid']:focus-visible {
+  background: #eaf5d0;
+  border-color: #8fb82a;
+  color: #6f9620;
+}
+
+.detail-social-link[data-social-icon='openalex'] {
+  color: #e56b2e;
+  background: #fff4ee;
+  border-color: #f3c9b0;
+}
+.detail-social-link[data-social-icon='openalex']:hover,
+.detail-social-link[data-social-icon='openalex']:focus-visible {
+  background: #ffe8db;
+  border-color: #e56b2e;
+  color: #c4531c;
+}
+
+.detail-social-link[data-social-icon='instagram'] {
+  color: #e4405f;
+  background: #fff0f3;
+  border-color: #f5c2cd;
+}
+.detail-social-link[data-social-icon='instagram']:hover,
+.detail-social-link[data-social-icon='instagram']:focus-visible {
+  background: #ffe2e9;
+  border-color: #e4405f;
+  color: #c13584;
+}
+
+.detail-social-link[data-social-icon='youtube'] {
+  color: #ff0000;
+  background: #fff0f0;
+  border-color: #f5bcbc;
+}
+.detail-social-link[data-social-icon='youtube']:hover,
+.detail-social-link[data-social-icon='youtube']:focus-visible {
+  background: #ffe0e0;
+  border-color: #ff0000;
+  color: #cc0000;
+}
+
+.detail-social-link[data-social-icon='xing'] {
+  color: #006567;
+  background: #e8f4f4;
+  border-color: #a8d4d5;
+}
+.detail-social-link[data-social-icon='xing']:hover,
+.detail-social-link[data-social-icon='xing']:focus-visible {
+  background: #d5ecec;
+  border-color: #006567;
+  color: #004c4e;
+}
+
+.detail-social-link[data-social-icon='tiktok'] {
+  color: #111111;
+  background: #f3f3f3;
+  border-color: #d2d2d2;
+}
+.detail-social-link[data-social-icon='tiktok']:hover,
+.detail-social-link[data-social-icon='tiktok']:focus-visible {
+  background: #e8e8e8;
+  border-color: #111;
+  color: #000;
+}
+
+.detail-social-link[data-social-icon='homepage']:hover,
+.detail-social-link[data-social-icon='homepage']:focus-visible {
   background: var(--accent-soft);
   border-color: #9fc4c1;
   color: var(--accent);
-  outline: none;
 }
 
 .detail-social-sr {
