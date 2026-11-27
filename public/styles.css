@@ -894,6 +894,12 @@ td.empty {
   font-size: 0.78rem;
 }
 
+#doctors-table th[data-sort='hindex'] {
+  font-size: 0.82rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
 #doctors-table td.cell-specialty {
   font-size: 0.72rem;
   line-height: 1.25;
@@ -901,6 +907,17 @@ td.empty {
   padding-bottom: 0.35rem;
   max-width: 14rem;
   color: var(--muted);
+}
+
+#doctors-table td.cell-hindex {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+#doctors-table td.cell-hindex strong {
+  font-weight: 700;
+  color: var(--ink, #1a1a1a);
 }
 
 .doctor-detail[hidden] {

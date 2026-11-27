@@ -27,6 +27,8 @@ const state = {
   focus: FOCUS_ZUSATZFACH,
   focusOnly: true,
   openEvoid: null,
+  /** When h-Index presence filter is on: { sortKey, sortDir } to restore later. */
+  sortBeforeHindex: null,
 };
 
 const el = {
@@ -43,6 +45,9 @@ const el = {
   fieldPostal: document.getElementById('field-postal'),
   fieldGender: document.getElementById('field-gender'),
   thPostal: document.getElementById('th-postal'),
+  thZusatzfach: document.getElementById('th-zusatzfach'),
+  thCity: document.getElementById('th-city'),
+  thHindex: document.getElementById('th-hindex'),
   btnReset: document.getElementById('btn-reset'),
   moreFiltersToggle: document.getElementById('more-filters-toggle'),
   moreFiltersPanel: document.getElementById('more-filters-panel'),
@@ -693,6 +698,38 @@ function sortValue(doc, key) {
   return doc[key];
 }
 
+function hindexNumber(doc) {
+  const raw = fieldNonEmpty(doc, ['hindex', 'hIndex', 'HIndex', 'h_index']);
+  if (!raw) return null;
+  const n = Number(String(raw).replace(',', '.'));
+  return Number.isFinite(n) ? n : null;
+}
+
+function isHindexFilterActive() {
+  return getSelectedPresenceFilters().includes('hindex');
+}
+
+function syncHindexColumnMode() {
+  const active = isHindexFilterActive();
+  if (el.thZusatzfach) el.thZusatzfach.hidden = active;
+  if (el.thCity) el.thCity.hidden = active;
+  if (el.thHindex) el.thHindex.hidden = !active;
+
+  if (active) {
+    // Entering h-Index mode: remember prior sort and switch to numeric desc once.
+    if (!state.sortBeforeHindex) {
+      state.sortBeforeHindex = { sortKey: state.sortKey, sortDir: state.sortDir };
+      state.sortKey = 'hindex';
+      state.sortDir = 'desc';
+    }
+  } else if (state.sortBeforeHindex) {
+    state.sortKey = state.sortBeforeHindex.sortKey;
+    state.sortDir = state.sortBeforeHindex.sortDir;
+    state.sortBeforeHindex = null;
+  }
+  updateSortHeaders();
+}
+
 function sortDoctors(list) {
   const { sortKey, sortDir } = state;
   const dir = sortDir === 'asc' ? 1 : -1;
@@ -702,6 +739,13 @@ function sortDoctors(list) {
       // asc = highest power first (Prim. → … → Mag.)
       cmp = titlePowerRank(a.title) - titlePowerRank(b.title);
       if (cmp === 0) cmp = compareDe(a.title, b.title);
+    } else if (sortKey === 'hindex') {
+      const na = hindexNumber(a);
+      const nb = hindexNumber(b);
+      if (na == null && nb == null) cmp = 0;
+      else if (na == null) cmp = 1;
+      else if (nb == null) cmp = -1;
+      else cmp = na - nb;
     } else {
       cmp = compareDe(sortValue(a, sortKey), sortValue(b, sortKey));
     }
@@ -1353,7 +1397,8 @@ function renderTable() {
   el.pagePrev.disabled = state.page <= 1;
   el.pageNext.disabled = state.page >= pages;
 
-  const colCount = state.fields.postalCode ? 8 : 7;
+  const hindexMode = isHindexFilterActive();
+  const colCount = 5 + (hindexMode ? 1 : 2) + (state.fields.postalCode ? 1 : 0);
 
   if (pageRows.length === 0) {
     el.tbody.innerHTML = `<tr><td colspan="${colCount}" class="empty">Keine Einträge gefunden.</td></tr>`;
@@ -1370,9 +1415,16 @@ function renderTable() {
         `<td class="cell-firstname">${escapeHtml(text(d.firstname))}</td>`,
         `<td class="cell-lastname"><button type="button" class="lastname-link" data-open-doctor="${id}">${lastname || '–'}</button></td>`,
         `<td class="cell-specialty">${escapeHtml(text(d.specialization))}</td>`,
-        `<td class="cell-specialty">${escapeHtml(text(d.additionalspecialization))}</td>`,
-        `<td>${escapeHtml(text(d.city))}</td>`,
       ];
+      if (hindexMode) {
+        const hi = hindexNumber(d);
+        cells.push(
+          `<td class="cell-hindex">${hi == null ? '–' : `<strong>${escapeHtml(String(hi))}</strong>`}</td>`
+        );
+      } else {
+        cells.push(`<td class="cell-specialty">${escapeHtml(text(d.additionalspecialization))}</td>`);
+        cells.push(`<td>${escapeHtml(text(d.city))}</td>`);
+      }
       if (state.fields.postalCode) {
         cells.push(`<td>${escapeHtml(text(getPostal(d)))}</td>`);
       }
@@ -1392,6 +1444,7 @@ function escapeHtml(value) {
 }
 
 function refreshView() {
+  syncHindexColumnMode();
   state.filtered = sortDoctors(state.doctors.filter(matchesFilters));
   renderChart(state.filtered.length ? state.filtered : state.doctors);
   renderTable();
@@ -1524,6 +1577,7 @@ function resetFiltersToFocus() {
   });
   setMoreFiltersExpanded(false);
   selectFocusZusatzfach();
+  state.sortBeforeHindex = null;
   state.sortKey = 'title';
   state.sortDir = 'asc';
   state.page = 1;
@@ -1598,13 +1652,15 @@ function bindEvents() {
 
   document.querySelectorAll('#doctors-table th[data-sort]').forEach((th) => {
     th.addEventListener('click', () => {
+      if (th.hidden) return;
       const key = th.getAttribute('data-sort');
       if (key === 'postal' && !state.fields.postalCode) return;
       if (state.sortKey === key) {
         state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
       } else {
         state.sortKey = key;
-        state.sortDir = 'asc';
+        // h-Index defaults to highest first; other columns to A→Z / asc.
+        state.sortDir = key === 'hindex' ? 'desc' : 'asc';
       }
       updateSortHeaders();
       refreshView();
