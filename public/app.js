@@ -4,6 +4,9 @@
 const FOCUS_ZUSATZFACH = 'Neonatologie und Pädiatrische Intensivmedizin';
 /** Visible product focus label in the UI (not the raw Zusatzfach string). */
 const FOCUS_LABEL = 'Fokus: Poractant alfa';
+/** Official BASG/AGES Arzneispezialitätenregister Fachinformation (Curosurf / Poractant alfa). */
+const PRODUKTINFO_FACHINFO_URL =
+  'https://medikamente.basg.gv.at/documents/1-20927__DOTC_FACH_INFO.pdf';
 
 // Live API spelling; also accept earlier typo variant in UI matching.
 const FOCUS_ZUSATZFACH_ALIASES = [
@@ -55,6 +58,7 @@ const el = {
   presenceChecks: () =>
     Array.from(document.querySelectorAll('input[name="presence"][type="checkbox"]')),
   btnLogout: document.getElementById('btn-logout'),
+  btnProduktinfo: document.getElementById('btn-produktinfo'),
   btnExportXlsx: document.getElementById('btn-export-xlsx'),
   lastUpdated: document.getElementById('last-updated'),
   resultsSummary: document.getElementById('results-summary'),
@@ -191,6 +195,9 @@ function socialIconSvg(name) {
       return `<svg ${common}><path fill="currentColor" d="M18.188 0c-.376 0-.703.152-.915.407L9.39 11.769l5.875 10.82a1.1 1.1 0 0 0 .941.547h3.313c.269 0 .49-.112.641-.293a.932.932 0 0 0 .146-.754L13.75 11.77l7.25-10.584A.98.98 0 0 0 20.844 0h-2.656zM5.656 4.5c-.269 0-.49.112-.641.293a.932.932 0 0 0-.146.754L7.5 11.25 3.844 17.5a.98.98 0 0 0 .156.984c.151.181.372.293.641.293h2.656c.376 0 .703-.152.915-.407L12 11.25 8.344 5.25A1.1 1.1 0 0 0 7.403 4.5H5.656z"/></svg>`;
     case 'tiktok':
       return `<svg ${common}><path fill="currentColor" d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.95-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>`;
+    case 'fachinfo':
+      // Document / SmPC mark for BASG Fachinformation.
+      return `<svg ${common}><path fill="currentColor" d="M7 2.5h7.1L19.5 8v13.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1zm6.5.8v4.7h4.6L13.5 3.3zM9 12.25h6v1.35H9v-1.35zm0 3.1h6v1.35H9v-1.35zm0-6.2h3.4v1.35H9V9.15z"/></svg>`;
     case 'homepage':
     default:
       return `<svg ${common}><path fill="currentColor" d="M12 3.172 3.172 12H5.5v7.5a1 1 0 0 0 1 1H10v-5h4v5h3.5a1 1 0 0 0 1-1V12h2.328L12 3.172z"/></svg>`;
@@ -243,6 +250,8 @@ function socialLabelForIcon(icon) {
       return 'X';
     case 'homepage':
       return 'Homepage';
+    case 'fachinfo':
+      return 'Produktinformation';
     case 'sv':
       return 'Sachverständiger';
     default:
@@ -1142,11 +1151,9 @@ function closeSocialPreview() {
   if (!el.socialPreview) return;
   el.socialPreview.hidden = true;
   setSocialPreviewLayoutOpen(false);
-  if (el.doctorDetailFields) {
-    el.doctorDetailFields.querySelectorAll('[data-social-preview].is-active').forEach((node) => {
-      node.classList.remove('is-active');
-    });
-  }
+  document.querySelectorAll('[data-social-preview].is-active').forEach((node) => {
+    node.classList.remove('is-active');
+  });
 }
 
 function hostFromHref(href) {
@@ -1190,12 +1197,10 @@ function openSocialPreview({ href, icon, label }) {
   el.socialPreview.hidden = false;
   setSocialPreviewLayoutOpen(true);
 
-  if (el.doctorDetailFields) {
-    el.doctorDetailFields.querySelectorAll('[data-social-preview]').forEach((node) => {
-      const match = node.getAttribute('href') === href;
-      node.classList.toggle('is-active', match);
-    });
-  }
+  document.querySelectorAll('[data-social-preview]').forEach((node) => {
+    const match = node.getAttribute('href') === href;
+    node.classList.toggle('is-active', match);
+  });
 }
 
 async function copySocialPreviewLink() {
@@ -1696,20 +1701,26 @@ function bindEvents() {
       copySocialPreviewLink();
     });
   }
-  if (el.doctorDetailFields) {
-    el.doctorDetailFields.addEventListener('click', (event) => {
-      const link = event.target.closest('[data-social-preview]');
-      if (!link || !el.doctorDetailFields.contains(link)) return;
-      // Plain click → leftmost preview pane. Modified clicks → real site in a new tab.
-      if (event.defaultPrevented) return;
-      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-      event.preventDefault();
-      openSocialPreview({
-        href: link.getAttribute('href'),
-        icon: link.getAttribute('data-social-icon'),
-        label: link.getAttribute('data-social-label'),
-      });
+  function onSocialPreviewClick(event) {
+    const link = event.target.closest('[data-social-preview]');
+    if (!link) return;
+    // Plain click → preview pane. Modified clicks → real target in a new tab.
+    if (event.defaultPrevented) return;
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    openSocialPreview({
+      href: link.getAttribute('href') || PRODUKTINFO_FACHINFO_URL,
+      icon: link.getAttribute('data-social-icon'),
+      label: link.getAttribute('data-social-label'),
     });
+  }
+
+  if (el.doctorDetailFields) {
+    el.doctorDetailFields.addEventListener('click', onSocialPreviewClick);
+  }
+  if (el.btnProduktinfo) {
+    el.btnProduktinfo.href = PRODUKTINFO_FACHINFO_URL;
+    el.btnProduktinfo.addEventListener('click', onSocialPreviewClick);
   }
   document.addEventListener('keydown', (event) => {
     if (event.key !== 'Escape') return;
