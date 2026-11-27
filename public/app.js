@@ -238,6 +238,8 @@ function socialLabelForIcon(icon) {
       return 'X';
     case 'homepage':
       return 'Homepage';
+    case 'sv':
+      return 'Sachverständiger';
     default:
       return icon || 'Profile';
   }
@@ -255,12 +257,14 @@ function renderSocialIconLink({ href, label, icon }) {
 const SV_TOOLTIP_MAIN = 'Allgemein beeideter und gerichtlich zertifizierter Sachverständiger';
 const SV_TOOLTIP_SOURCE = 'Quelle: Bundesministerium für Justiz (BMJ)';
 const SV_TOOLTIP = `${SV_TOOLTIP_MAIN}\n${SV_TOOLTIP_SOURCE}`;
+/** Official JustizOnline Sachverständigenliste (BMJ). */
+const SV_LIST_URL = 'https://justizonline.gv.at/jop/web/sachverstaendigensuche';
 
-/** Free circular SV mark in the Profile icon row when expertwitness=Yes. */
+/** Clickable circular SV mark → right-hand preview pane (like other profile icons). */
 function renderSvProfileBadge() {
   const tip = escapeHtml(SV_TOOLTIP);
-  const label = escapeHtml(`${SV_TOOLTIP_MAIN}. ${SV_TOOLTIP_SOURCE}`);
-  return `<span class="detail-sv-badge has-source-tip" data-social-icon="sv" title="${tip}" data-tip="${tip}" aria-label="${label}" role="img"><img class="detail-sv-badge-img" src="/assets/sv-logo.png" alt="SV" width="128" height="128" /><span class="detail-social-sr">SV</span></span>`;
+  const label = escapeHtml(SV_TOOLTIP_MAIN);
+  return `<a class="detail-sv-badge has-source-tip" href="${escapeHtml(SV_LIST_URL)}" data-social-preview data-social-icon="sv" data-social-label="${label}" target="_blank" rel="noopener noreferrer" title="${tip}" data-tip="${tip}" aria-label="${label}"><img class="detail-sv-badge-img" src="/assets/sv-logo.png" alt="SV" width="128" height="128" /><span class="detail-social-sr">SV</span></a>`;
 }
 
 function truncateUrlLabel(value, max = 30) {
@@ -1110,7 +1114,10 @@ function openSocialPreview({ href, icon, label }) {
   const host = hostFromHref(href);
 
   if (el.socialPreviewIcon) {
-    el.socialPreviewIcon.innerHTML = socialIconSvg(kind);
+    el.socialPreviewIcon.innerHTML =
+      kind === 'sv'
+        ? `<img class="social-preview-sv-img" src="/assets/sv-logo.png" alt="SV" width="128" height="128" />`
+        : socialIconSvg(kind);
   }
   if (el.socialPreviewTitle) {
     el.socialPreviewTitle.textContent = network;

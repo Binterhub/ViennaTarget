@@ -1046,6 +1046,14 @@ td.empty {
   height: 1.55rem;
 }
 
+.social-preview-sv-img {
+  display: block;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 .social-preview-kicker {
   margin: 0.35rem 0 0;
   font-size: 0.75rem;
@@ -1206,10 +1214,12 @@ td.empty {
   border-radius: 50%;
   background: transparent;
   box-shadow: none;
-  cursor: help;
+  cursor: pointer;
   flex-shrink: 0;
   overflow: visible;
   transform: none;
+  text-decoration: none;
+  color: inherit;
 }
 
 .detail-sv-badge:hover,
@@ -1218,6 +1228,11 @@ td.empty {
   outline: none;
   background: transparent;
   border: 0;
+}
+
+.detail-sv-badge.is-active {
+  outline: 2px solid #8cbcb8;
+  outline-offset: 2px;
 }
 
 .detail-sv-badge-img {
