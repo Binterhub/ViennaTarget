@@ -614,6 +614,12 @@ function doctorHasPresence(doc, kind) {
       const n = raw.toLocaleLowerCase('de-AT');
       return ['yes', 'y', 'true', '1', 'ja', 'j'].includes(n);
     }
+    case 'hindex': {
+      const raw = fieldNonEmpty(doc, ['hindex', 'hIndex', 'HIndex', 'h_index']);
+      if (!raw) return false;
+      const n = Number(String(raw).replace(',', '.'));
+      return Number.isFinite(n) && n > 0;
+    }
     default:
       return false;
   }
