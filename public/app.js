@@ -268,16 +268,14 @@ function renderSocialIconLink({ href, label, icon }) {
   return `<a class="detail-social-link${tipClass}" href="${escapeHtml(safeHref)}" data-social-preview data-social-icon="${escapeHtml(safeIcon)}" data-social-label="${escapeHtml(label)}" target="_blank" rel="noopener noreferrer"${tip} aria-label="${escapeHtml(label)}">${socialIconSvg(safeIcon)}<span class="detail-social-sr">${escapeHtml(label)}</span></a>`;
 }
 
-const SV_TOOLTIP_MAIN = 'Allgemein beeideter und gerichtlich zertifizierter Sachverständiger';
-const SV_TOOLTIP_SOURCE = 'Quelle: Bundesministerium für Justiz (BMJ)';
-const SV_TOOLTIP = `${SV_TOOLTIP_MAIN}\n${SV_TOOLTIP_SOURCE}`;
+const SV_TOOLTIP = 'Quelle: BMJ';
 /** Official JustizOnline Sachverständigenliste (BMJ). */
 const SV_LIST_URL = 'https://justizonline.gv.at/jop/web/sachverstaendigensuche';
 
 /** Clickable circular SV mark → right-hand preview pane (like other profile icons). */
 function renderSvProfileBadge() {
   const tip = escapeHtml(SV_TOOLTIP);
-  const label = escapeHtml(SV_TOOLTIP_MAIN);
+  const label = 'Sachverständiger';
   return `<a class="detail-sv-badge has-source-tip" href="${escapeHtml(SV_LIST_URL)}" data-social-preview data-social-icon="sv" data-social-label="${label}" target="_blank" rel="noopener noreferrer" title="${tip}" data-tip="${tip}" aria-label="${label}"><img class="detail-sv-badge-img" src="/assets/sv-logo.png" alt="SV" width="128" height="128" /><span class="detail-social-sr">SV</span></a>`;
 }
 
