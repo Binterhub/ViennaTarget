@@ -119,6 +119,12 @@ const DETAIL_FIELD_DEFS = [
   { keys: ['hindex', 'hIndex', 'HIndex', 'h_index'], label: 'h-Index', sourceTip: 'Scopus' },
   { keys: ['kasse', 'Kasse'], label: 'Kasse', kind: 'yesno', sourceTip: 'ÖÄK' },
   { keys: ['wahlarzt', 'WahlArzt', 'wahlarztflag'], label: 'Wahlarzt', kind: 'yesno' },
+  {
+    keys: ['expertwitness', 'expertWitness', 'ExpertWitness', 'sv', 'SV'],
+    label: 'SV',
+    kind: 'yesno',
+    sourceTip: 'Allgemein beeideter und gerichtlich zertifizierter Sachverständiger',
+  },
 ];
 
 function sourceTipText(sourceLabel) {
@@ -581,6 +587,13 @@ function doctorHasPresence(doc, kind) {
     }
     case 'kasse': {
       const raw = fieldNonEmpty(doc, ['kasse', 'Kasse']);
+      if (!raw) return false;
+      const n = raw.toLocaleLowerCase('de-AT');
+      return ['yes', 'y', 'true', '1', 'ja', 'j'].includes(n);
+    }
+    case 'sv': {
+      // DataMatcher: expertwitness Yes/No — court-sworn expert witness (Sachverständiger).
+      const raw = fieldNonEmpty(doc, ['expertwitness', 'expertWitness', 'ExpertWitness', 'sv', 'SV']);
       if (!raw) return false;
       const n = raw.toLocaleLowerCase('de-AT');
       return ['yes', 'y', 'true', '1', 'ja', 'j'].includes(n);
