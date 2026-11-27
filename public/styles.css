@@ -1183,55 +1183,41 @@ td.empty {
   font-weight: 600;
 }
 
-.doctor-detail-title-row {
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
-  margin-top: 0.15rem;
-  min-width: 0;
-}
-
 .doctor-detail-header h2 {
-  margin: 0;
+  margin: 0.15rem 0 0;
   font-family: var(--detail-serif);
   font-size: 1.32rem;
   font-weight: 700;
   color: var(--accent-deep);
   line-height: 1.2;
   letter-spacing: -0.01em;
-  min-width: 0;
 }
 
-.doctor-detail-sv {
-  display: block;
-  width: 1.85rem;
-  height: 1.85rem;
-  flex-shrink: 0;
-  object-fit: contain;
+.detail-sv-badge {
   cursor: help;
+  background: #f7faf9;
+  border-color: var(--border);
+  color: var(--accent-deep);
 }
 
-.doctor-detail-sv[hidden] {
-  display: none !important;
+.detail-sv-badge:hover,
+.detail-sv-badge:focus-visible {
+  transform: translateY(-1px);
+  background: #eef5f3;
+  border-color: #9fc4c1;
 }
 
-.doctor-detail-sv.has-source-tip {
-  position: relative;
+.detail-sv-badge-img {
+  display: block;
+  width: 1.35rem;
+  height: 1.35rem;
+  object-fit: contain;
 }
 
-.doctor-detail-sv.has-source-tip::after {
-  left: 50%;
-  right: auto;
-  bottom: calc(100% + 0.35rem);
-  transform: translate(-50%, 2px);
+.detail-sv-badge.has-source-tip::after {
   white-space: normal;
   max-width: 16rem;
   text-align: center;
-}
-
-.doctor-detail-sv.has-source-tip:hover::after,
-.doctor-detail-sv.has-source-tip:focus-visible::after {
-  transform: translate(-50%, 0);
 }
 
 .doctor-detail-sub {

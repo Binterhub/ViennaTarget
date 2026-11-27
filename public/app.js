@@ -64,7 +64,6 @@ const el = {
   doctorDetail: document.getElementById('doctor-detail'),
   doctorDetailTitle: document.getElementById('doctor-detail-title'),
   doctorDetailSub: document.getElementById('doctor-detail-sub'),
-  doctorDetailSv: document.getElementById('doctor-detail-sv'),
   doctorDetailPhoto: document.getElementById('doctor-detail-photo'),
   doctorDetailFields: document.getElementById('doctor-detail-fields'),
   doctorDetailClose: document.getElementById('doctor-detail-close'),
@@ -251,6 +250,14 @@ function renderSocialIconLink({ href, label, icon }) {
   const tipClass = sourceLabel ? ' has-source-tip' : '';
   const tip = sourceLabel ? sourceTipAttrs(sourceLabel) : ` title="${escapeHtml(label)}"`;
   return `<a class="detail-social-link${tipClass}" href="${escapeHtml(safeHref)}" data-social-preview data-social-icon="${escapeHtml(safeIcon)}" data-social-label="${escapeHtml(label)}" target="_blank" rel="noopener noreferrer"${tip} aria-label="${escapeHtml(label)}">${socialIconSvg(safeIcon)}<span class="detail-social-sr">${escapeHtml(label)}</span></a>`;
+}
+
+const SV_TOOLTIP = 'Allgemein beeideter und gerichtlich zertifizierter Sachverständiger';
+
+/** Non-link badge in the Profile icon row when expertwitness=Yes. */
+function renderSvProfileBadge() {
+  const tip = escapeHtml(SV_TOOLTIP);
+  return `<span class="detail-social-link detail-sv-badge has-source-tip" data-social-icon="sv" title="${tip}" data-tip="${tip}" aria-label="${tip}" role="img"><img class="detail-sv-badge-img" src="/assets/sv-logo.png" alt="SV" width="128" height="128" /><span class="detail-social-sr">SV</span></span>`;
 }
 
 function truncateUrlLabel(value, max = 30) {
@@ -1174,22 +1181,6 @@ function openDoctorDetail(doc) {
     el.doctorDetailSub.hidden = !city;
   }
 
-  if (el.doctorDetailSv) {
-    const isSv = doctorHasPresence(doc, 'sv');
-    el.doctorDetailSv.hidden = !isSv;
-    if (isSv) {
-      el.doctorDetailSv.classList.add('has-source-tip');
-      el.doctorDetailSv.title =
-        'Allgemein beeideter und gerichtlich zertifizierter Sachverständiger';
-      el.doctorDetailSv.setAttribute(
-        'data-tip',
-        'Allgemein beeideter und gerichtlich zertifizierter Sachverständiger'
-      );
-    } else {
-      el.doctorDetailSv.classList.remove('has-source-tip');
-    }
-  }
-
   const photo = pickDoctorField(doc, ['externalphoto', 'externalPhoto', 'ExternalPhoto', 'photo', 'image']);
   const photoUrl = hrefForField('link', photo.value);
   if (photoUrl && el.doctorDetailPhoto) {
@@ -1293,8 +1284,12 @@ function openDoctorDetail(doc) {
     );
   }
 
-  if (socialLinks.length) {
-    const icons = socialLinks.map((s) => renderSocialIconLink(s)).join('');
+  const isSv = doctorHasPresence(doc, 'sv');
+  if (socialLinks.length || isSv) {
+    const icons = [
+      ...socialLinks.map((s) => renderSocialIconLink(s)),
+      ...(isSv ? [renderSvProfileBadge()] : []),
+    ].join('');
     rows.push(
       `<div class="detail-socials"><dt>Profile</dt><dd class="detail-social-list">${icons}</dd></div>`
     );
