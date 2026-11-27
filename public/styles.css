@@ -1194,30 +1194,55 @@ td.empty {
 }
 
 .detail-sv-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.85rem;
+  height: 2.85rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none;
   cursor: help;
-  background: #f7faf9;
-  border-color: var(--border);
-  color: var(--accent-deep);
+  flex-shrink: 0;
+  overflow: visible;
+  transform: none;
 }
 
 .detail-sv-badge:hover,
 .detail-sv-badge:focus-visible {
-  transform: translateY(-1px);
-  background: #eef5f3;
-  border-color: #9fc4c1;
+  transform: scale(1.06);
+  outline: none;
+  background: transparent;
+  border: 0;
 }
 
 .detail-sv-badge-img {
   display: block;
-  width: 1.35rem;
-  height: 1.35rem;
-  object-fit: contain;
+  width: 2.85rem;
+  height: 2.85rem;
+  border-radius: 50%;
+  object-fit: cover;
+  pointer-events: none;
 }
 
 .detail-sv-badge.has-source-tip::after {
-  white-space: normal;
-  max-width: 16rem;
+  left: 50%;
+  right: auto;
+  bottom: calc(100% + 0.4rem);
+  transform: translate(-50%, 2px);
+  white-space: pre-line;
+  max-width: 18rem;
   text-align: center;
+  line-height: 1.35;
+}
+
+.detail-sv-badge.has-source-tip:hover::after,
+.detail-sv-badge.has-source-tip:focus-visible::after {
+  transform: translate(-50%, 0);
 }
 
 .doctor-detail-sub {

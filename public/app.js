@@ -252,12 +252,15 @@ function renderSocialIconLink({ href, label, icon }) {
   return `<a class="detail-social-link${tipClass}" href="${escapeHtml(safeHref)}" data-social-preview data-social-icon="${escapeHtml(safeIcon)}" data-social-label="${escapeHtml(label)}" target="_blank" rel="noopener noreferrer"${tip} aria-label="${escapeHtml(label)}">${socialIconSvg(safeIcon)}<span class="detail-social-sr">${escapeHtml(label)}</span></a>`;
 }
 
-const SV_TOOLTIP = 'Allgemein beeideter und gerichtlich zertifizierter Sachverständiger';
+const SV_TOOLTIP_MAIN = 'Allgemein beeideter und gerichtlich zertifizierter Sachverständiger';
+const SV_TOOLTIP_SOURCE = 'Quelle: Bundesministerium für Justiz (BMJ)';
+const SV_TOOLTIP = `${SV_TOOLTIP_MAIN}\n${SV_TOOLTIP_SOURCE}`;
 
-/** Non-link badge in the Profile icon row when expertwitness=Yes. */
+/** Free circular SV mark in the Profile icon row when expertwitness=Yes. */
 function renderSvProfileBadge() {
   const tip = escapeHtml(SV_TOOLTIP);
-  return `<span class="detail-social-link detail-sv-badge has-source-tip" data-social-icon="sv" title="${tip}" data-tip="${tip}" aria-label="${tip}" role="img"><img class="detail-sv-badge-img" src="/assets/sv-logo.png" alt="SV" width="128" height="128" /><span class="detail-social-sr">SV</span></span>`;
+  const label = escapeHtml(`${SV_TOOLTIP_MAIN}. ${SV_TOOLTIP_SOURCE}`);
+  return `<span class="detail-sv-badge has-source-tip" data-social-icon="sv" title="${tip}" data-tip="${tip}" aria-label="${label}" role="img"><img class="detail-sv-badge-img" src="/assets/sv-logo.png" alt="SV" width="128" height="128" /><span class="detail-social-sr">SV</span></span>`;
 }
 
 function truncateUrlLabel(value, max = 30) {
