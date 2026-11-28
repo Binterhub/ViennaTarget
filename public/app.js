@@ -276,18 +276,22 @@ function normalizeOrcid(value) {
   return m ? m[1].toUpperCase() : '';
 }
 
+/** Cache resolved OpenAlex A-ids without polluting doctor objects (no UI leak). */
+const openAlexIdByDoc = new WeakMap();
+
 /**
  * Prefer a real OpenAlex A-id. Some API rows store a display name in openalexid;
- * fall back to ORCID → OpenAlex lookup and cache on the doctor object.
+ * fall back to ORCID → OpenAlex lookup and cache per doctor object.
  */
 async function resolveOpenAlexAuthorId(doc) {
   if (!doc) return '';
-  if (doc._resolvedOpenAlexId) return doc._resolvedOpenAlexId;
+  const cached = openAlexIdByDoc.get(doc);
+  if (cached) return cached;
 
   const picked = pickDoctorField(doc, ['openalexid', 'openAlexId', 'OpenAlexId', 'openalex']);
   const direct = openAlexAuthorId(picked.value);
   if (direct) {
-    doc._resolvedOpenAlexId = direct;
+    openAlexIdByDoc.set(doc, direct);
     return direct;
   }
 
@@ -302,11 +306,15 @@ async function resolveOpenAlexAuthorId(doc) {
     if (!res.ok) return '';
     const data = await res.json();
     const id = openAlexAuthorId(data && data.id);
-    if (id) doc._resolvedOpenAlexId = id;
+    if (id) openAlexIdByDoc.set(doc, id);
     return id || '';
   } catch {
     return '';
   }
+}
+
+function resolvedOpenAlexAuthorId(doc) {
+  return (doc && openAlexIdByDoc.get(doc)) || '';
 }
 
 /** Official OpenAlex awards tab for an author (Excel HYPERLINK shape). */
@@ -378,10 +386,10 @@ function collectSocialLinksFromDoc(doc) {
     const picked = pickDoctorField(doc, def.keys);
     if (!picked.key) continue;
     const display = text(picked.value).trim();
-    if (!display && !(def.kind === 'openalex' && doc._resolvedOpenAlexId)) continue;
+    if (!display && !(def.kind === 'openalex' && resolvedOpenAlexAuthorId(doc))) continue;
 
     if (def.kind === 'openalex') {
-      const authorId = doc._resolvedOpenAlexId || openAlexAuthorId(display);
+      const authorId = resolvedOpenAlexAuthorId(doc) || openAlexAuthorId(display);
       const href = openAlexProfileUrl(authorId);
       // Skip non-id placeholders (e.g. a display name stored in openalexid).
       if (!href) continue;
@@ -1412,6 +1420,7 @@ async function openDoctorDetail(doc) {
 
   // Any additional API fields not in the known map (skip social keys — handled via icons).
   const extras = Object.keys(doc)
+    .filter((k) => !k.startsWith('_'))
     .filter((k) => !usedKeys.has(k.toLocaleLowerCase('en-US')))
     .sort(compareDe);
   for (const key of extras) {
