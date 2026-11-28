@@ -1419,8 +1419,31 @@ td.empty {
 .detail-socials dd.detail-social-list {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
+}
+
+.detail-social-with-awards {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.12rem;
+}
+
+.detail-openalex-awards {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+  text-decoration: none;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.detail-openalex-awards:hover,
+.detail-openalex-awards:focus-visible {
+  text-decoration: underline;
+  color: var(--accent-deep);
 }
 
 .detail-social-link {

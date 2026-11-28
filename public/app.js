@@ -259,13 +259,34 @@ function socialLabelForIcon(icon) {
   }
 }
 
-function renderSocialIconLink({ href, label, icon }) {
+/** Extract OpenAlex author id (A…) from a raw id or openalex.org URL. */
+function openAlexAuthorId(value) {
+  const raw = text(value).trim();
+  if (!raw) return '';
+  const fromUrl = raw.match(/openalex\.org\/(?:authors\/)?(A\d+)/i);
+  if (fromUrl) return fromUrl[1];
+  const bare = raw.match(/^(?:authors\/)?(A\d+)$/i);
+  return bare ? bare[1] : '';
+}
+
+/** Official OpenAlex awards tab for an author (Excel HYPERLINK shape). */
+function openAlexAwardsUrl(value) {
+  const id = openAlexAuthorId(value);
+  return id ? `https://openalex.org/authors/${encodeURIComponent(id)}?tab=awards` : '';
+}
+
+function renderSocialIconLink({ href, label, icon, display }) {
   const safeHref = href || '#';
   const safeIcon = icon || 'homepage';
   const sourceLabel = SOCIAL_SOURCE_TIP_BY_ICON[safeIcon] || '';
   const tipClass = sourceLabel ? ' has-source-tip' : '';
   const tip = sourceLabel ? sourceTipAttrs(sourceLabel) : ` title="${escapeHtml(label)}"`;
-  return `<a class="detail-social-link${tipClass}" href="${escapeHtml(safeHref)}" data-social-preview data-social-icon="${escapeHtml(safeIcon)}" data-social-label="${escapeHtml(label)}" target="_blank" rel="noopener noreferrer"${tip} aria-label="${escapeHtml(label)}">${socialIconSvg(safeIcon)}<span class="detail-social-sr">${escapeHtml(label)}</span></a>`;
+  const main = `<a class="detail-social-link${tipClass}" href="${escapeHtml(safeHref)}" data-social-preview data-social-icon="${escapeHtml(safeIcon)}" data-social-label="${escapeHtml(label)}" target="_blank" rel="noopener noreferrer"${tip} aria-label="${escapeHtml(label)}">${socialIconSvg(safeIcon)}<span class="detail-social-sr">${escapeHtml(label)}</span></a>`;
+  if (safeIcon !== 'openalex') return main;
+  const awardsHref = openAlexAwardsUrl(display || href);
+  if (!awardsHref) return main;
+  // Plain new-tab link (no preview pane) — next line under the OpenAlex icon.
+  return `<span class="detail-social-with-awards">${main}<a class="detail-openalex-awards" href="${escapeHtml(awardsHref)}" target="_blank" rel="noopener noreferrer" title="OpenAlex Awards">Awards</a></span>`;
 }
 
 const SV_TOOLTIP = 'Quelle: BMJ';
