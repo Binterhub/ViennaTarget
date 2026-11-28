@@ -288,36 +288,42 @@ function normalizeOrcid(value) {
 
 /** Cache resolved OpenAlex A-ids without polluting doctor objects (no UI leak). */
 const openAlexIdByDoc = new WeakMap();
+/** Cache { id, hasAwards } from OpenAlex author payload (awards_count). */
+const openAlexMetaByDoc = new WeakMap();
 
 /**
  * Prefer a real OpenAlex A-id. Some API rows store a display name in openalexid;
  * fall back to ORCID → OpenAlex lookup and cache per doctor object.
+ * Always loads the author record so awards_count can gate the Awards link.
  */
 async function resolveOpenAlexAuthorId(doc) {
   if (!doc) return '';
-  const cached = openAlexIdByDoc.get(doc);
-  if (cached) return cached;
+  const cachedMeta = openAlexMetaByDoc.get(doc);
+  if (cachedMeta && cachedMeta.id) {
+    openAlexIdByDoc.set(doc, cachedMeta.id);
+    return cachedMeta.id;
+  }
+  const cachedId = openAlexIdByDoc.get(doc);
+  if (cachedId && cachedMeta && cachedMeta.id === cachedId) return cachedId;
 
   const picked = pickDoctorField(doc, ['openalexid', 'openAlexId', 'OpenAlexId', 'openalex']);
   const direct = openAlexAuthorId(picked.value);
-  if (direct) {
-    openAlexIdByDoc.set(doc, direct);
-    return direct;
-  }
-
   const orcid = normalizeOrcid(pickDoctorField(doc, ['orcid', 'ORCID', 'Orcid']).value);
-  if (!orcid) return '';
+  const lookup = direct || (orcid ? `https://orcid.org/${orcid}` : '');
+  if (!lookup) return '';
 
   try {
-    const res = await fetch(
-      `https://api.openalex.org/authors/${encodeURIComponent(`https://orcid.org/${orcid}`)}`,
-      { headers: { Accept: 'application/json' } }
-    );
+    const res = await fetch(`https://api.openalex.org/authors/${encodeURIComponent(lookup)}`, {
+      headers: { Accept: 'application/json' },
+    });
     if (!res.ok) return '';
     const data = await res.json();
     const id = openAlexAuthorId(data && data.id);
-    if (id) openAlexIdByDoc.set(doc, id);
-    return id || '';
+    if (!id) return '';
+    const hasAwards = Number(data && data.awards_count) > 0;
+    openAlexMetaByDoc.set(doc, { id, hasAwards });
+    openAlexIdByDoc.set(doc, id);
+    return id;
   } catch {
     return '';
   }
@@ -325,6 +331,11 @@ async function resolveOpenAlexAuthorId(doc) {
 
 function resolvedOpenAlexAuthorId(doc) {
   return (doc && openAlexIdByDoc.get(doc)) || '';
+}
+
+function resolvedOpenAlexHasAwards(doc) {
+  const meta = doc && openAlexMetaByDoc.get(doc);
+  return !!(meta && meta.hasAwards);
 }
 
 /** Official OpenAlex awards tab for an author (Excel HYPERLINK shape). */
@@ -412,7 +423,7 @@ function sortSocialLinksForProfile(links) {
   });
 }
 
-function renderSocialIconLink({ href, label, icon, display }) {
+function renderSocialIconLink({ href, label, icon, display, showAwards }) {
   const safeHref = href || '#';
   const safeIcon = icon || 'homepage';
   const sourceLabel = SOCIAL_SOURCE_TIP_BY_ICON[safeIcon] || '';
@@ -420,8 +431,8 @@ function renderSocialIconLink({ href, label, icon, display }) {
   const tip = sourceLabel ? sourceTipAttrs(sourceLabel) : ` title="${escapeHtml(label)}"`;
   const main = `<a class="detail-social-link${tipClass}" href="${escapeHtml(safeHref)}" data-social-preview data-social-icon="${escapeHtml(safeIcon)}" data-social-label="${escapeHtml(label)}" target="_blank" rel="noopener noreferrer"${tip} aria-label="${escapeHtml(label)}">${socialIconSvg(safeIcon)}<span class="detail-social-sr">${escapeHtml(label)}</span></a>`;
 
-  // Awards stay under OpenAlex only.
-  if (safeIcon === 'openalex') {
+  // Awards under OpenAlex only when OpenAlex reports awards_count > 0.
+  if (safeIcon === 'openalex' && showAwards) {
     const awardsHref = openAlexAwardsUrl(display || href);
     if (!awardsHref) return main;
     return `<span class="detail-social-with-awards">${main}<a class="detail-openalex-awards" href="${escapeHtml(awardsHref)}" target="_blank" rel="noopener noreferrer" title="OpenAlex Awards">Awards</a></span>`;
@@ -1526,8 +1537,14 @@ async function openDoctorDetail(doc) {
   const isSv = doctorHasPresence(doc, 'sv');
   if (socialLinks.length || isSv) {
     const ordered = sortSocialLinksForProfile(socialLinks);
+    const openAlexHasAwards = resolvedOpenAlexHasAwards(doc);
     const icons = [
-      ...ordered.map((s) => renderSocialIconLink(s)),
+      ...ordered.map((s) =>
+        renderSocialIconLink({
+          ...s,
+          showAwards: s.icon === 'openalex' && openAlexHasAwards,
+        })
+      ),
       ...(isSv ? [renderSvProfileBadge()] : []),
     ].join('');
     rows.push(
