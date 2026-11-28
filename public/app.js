@@ -357,8 +357,8 @@ function formatFffAmount(amount) {
 }
 
 /**
- * FFF block below Profile: one clear readable line per grant (with amount).
- * No tiny „FFF“ label — amount(s) are visible on the line itself.
+ * FFF block below Profile: compact grant line.
+ * Format: FWF (dark blue) · title · amount — no program/prose dump.
  */
 function renderFffBlock(projects) {
   const list = (projects || []).filter((p) => p && p.url);
@@ -366,12 +366,15 @@ function renderFffBlock(projects) {
   const lines = list
     .map((p) => {
       const amount = formatFffAmount(p.amount);
-      const parts = [amount, p.program, p.title, p.grantId || p.grantDoi].filter(Boolean);
-      const line = parts.join(' · ');
-      const tip = [p.title, p.program, amount ? `Dotierung: ${amount}` : '', p.grantDoi || p.grantId]
+      const title = text(p.title).trim();
+      const rest = [title, amount].filter(Boolean).join(' · ');
+      const tip = [title, p.program, amount ? `Dotierung: ${amount}` : '', p.grantDoi || p.grantId]
         .filter(Boolean)
         .join(' · ');
-      return `<a class="detail-fff-line" href="${escapeHtml(p.url)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(tip)}">${escapeHtml(line)}</a>`;
+      const body = rest
+        ? `<span class="detail-fff-brand">FWF</span><span class="detail-fff-sep"> · </span><span class="detail-fff-rest">${escapeHtml(rest)}</span>`
+        : `<span class="detail-fff-brand">FWF</span>`;
+      return `<a class="detail-fff-line" href="${escapeHtml(p.url)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(tip)}">${body}</a>`;
     })
     .join('');
   const amountsSummary = list

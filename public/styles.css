@@ -1475,17 +1475,38 @@ td.empty {
 .detail-fff-line {
   display: block;
   font-size: 0.88rem;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.35;
-  color: var(--accent-deep);
+  color: var(--ink);
   text-decoration: none;
   word-break: break-word;
+}
+
+.detail-fff-brand {
+  color: #232871;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.detail-fff-sep {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.detail-fff-rest {
+  color: var(--ink);
+  font-weight: 500;
 }
 
 .detail-fff-line:hover,
 .detail-fff-line:focus-visible {
   text-decoration: underline;
-  color: var(--accent);
+}
+
+.detail-fff-line:hover .detail-fff-brand,
+.detail-fff-line:focus-visible .detail-fff-brand {
+  color: #1a1f5c;
 }
 
 .detail-social-link {
