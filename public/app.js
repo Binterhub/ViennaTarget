@@ -351,7 +351,10 @@ async function fetchFffProjects(orcid) {
   }
 }
 
-/** Short FFF labels → FWF Forschungsradar project detail (topic, Dotierung, keywords). */
+/**
+ * One FFF link per grant for this person (Evo-ID / ORCID).
+ * Multiple fundings → multiple links stacked under ORCID.
+ */
 function renderFffLinks(projects) {
   if (!projects || !projects.length) return '';
   const multi = projects.length > 1;
@@ -363,10 +366,33 @@ function renderFffLinks(projects) {
           ? ''
           : `Dotierung: €${Number(p.amount).toLocaleString('de-AT')}`;
       const tip = [p.title, p.program, amount, p.grantId || p.grantDoi].filter(Boolean).join(' · ');
+      // Distinguish grants when a person has more than one FFF funding.
       const label = multi && (p.grantId || p.grantDoi) ? `FFF ${p.grantId || p.grantDoi}` : 'FFF';
       return `<a class="detail-fff-link" href="${escapeHtml(p.url)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(tip)}">${escapeHtml(label)}</a>`;
     })
     .join('');
+}
+
+/** Profile icon order: ORCID (+ FFF under it) → OpenAlex (+ Awards) → others. */
+const PROFILE_ICON_ORDER = [
+  'orcid',
+  'openalex',
+  'linkedin',
+  'researchgate',
+  'facebook',
+  'x',
+  'instagram',
+  'youtube',
+  'xing',
+  'tiktok',
+];
+
+function sortSocialLinksForProfile(links) {
+  return links.slice().sort((a, b) => {
+    const ia = PROFILE_ICON_ORDER.indexOf(a.icon);
+    const ib = PROFILE_ICON_ORDER.indexOf(b.icon);
+    return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
+  });
 }
 
 function renderSocialIconLink({ href, label, icon, display, fffHtml }) {
@@ -376,18 +402,20 @@ function renderSocialIconLink({ href, label, icon, display, fffHtml }) {
   const tipClass = sourceLabel ? ' has-source-tip' : '';
   const tip = sourceLabel ? sourceTipAttrs(sourceLabel) : ` title="${escapeHtml(label)}"`;
   const main = `<a class="detail-social-link${tipClass}" href="${escapeHtml(safeHref)}" data-social-preview data-social-icon="${escapeHtml(safeIcon)}" data-social-label="${escapeHtml(label)}" target="_blank" rel="noopener noreferrer"${tip} aria-label="${escapeHtml(label)}">${socialIconSvg(safeIcon)}<span class="detail-social-sr">${escapeHtml(label)}</span></a>`;
-  if (safeIcon !== 'openalex') return main;
-  const awardsHref = openAlexAwardsUrl(display || href);
-  const extras = [];
-  if (awardsHref) {
-    extras.push(
-      `<a class="detail-openalex-awards" href="${escapeHtml(awardsHref)}" target="_blank" rel="noopener noreferrer" title="OpenAlex Awards">Awards</a>`
-    );
+
+  // FFF grant links stack under ORCID (one link per funding for this person).
+  if (safeIcon === 'orcid' && fffHtml) {
+    return `<span class="detail-social-with-awards detail-orcid-with-fff">${main}${fffHtml}</span>`;
   }
-  if (fffHtml) extras.push(fffHtml);
-  if (!extras.length) return main;
-  // Awards + FFF sit on the next lines under the OpenAlex icon.
-  return `<span class="detail-social-with-awards">${main}${extras.join('')}</span>`;
+
+  // Awards stay under OpenAlex only.
+  if (safeIcon === 'openalex') {
+    const awardsHref = openAlexAwardsUrl(display || href);
+    if (!awardsHref) return main;
+    return `<span class="detail-social-with-awards">${main}<a class="detail-openalex-awards" href="${escapeHtml(awardsHref)}" target="_blank" rel="noopener noreferrer" title="OpenAlex Awards">Awards</a></span>`;
+  }
+
+  return main;
 }
 
 const SV_TOOLTIP = 'Quelle: BMJ';
@@ -1490,18 +1518,19 @@ async function openDoctorDetail(doc) {
   }
 
   const isSv = doctorHasPresence(doc, 'sv');
-  const hasOpenAlex = socialLinks.some((s) => s.icon === 'openalex');
+  const hasOrcid = socialLinks.some((s) => s.icon === 'orcid');
   if (socialLinks.length || isSv || fffHtml) {
+    const ordered = sortSocialLinksForProfile(socialLinks);
     const icons = [
-      ...socialLinks.map((s) =>
+      ...ordered.map((s) =>
         renderSocialIconLink({
           ...s,
-          fffHtml: s.icon === 'openalex' ? fffHtml : '',
+          fffHtml: s.icon === 'orcid' ? fffHtml : '',
         })
       ),
       ...(isSv ? [renderSvProfileBadge()] : []),
-      // No OpenAlex icon: still surface FFF beside other profile marks.
-      ...(!hasOpenAlex && fffHtml
+      // ORCID missing but FFF hits exist: still show grant links in the profile row.
+      ...(!hasOrcid && fffHtml
         ? [`<span class="detail-social-with-awards detail-fff-only">${fffHtml}</span>`]
         : []),
     ].join('');

@@ -82,7 +82,8 @@ async function findProjectsByOrcid(orcidRaw) {
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },
-      body: JSON.stringify({ q: `"${orcid}"`, limit: 50 }),
+      // High limit: one person can lead many FWF projects; we return all matches.
+      body: JSON.stringify({ q: `"${orcid}"`, limit: 100 }),
       signal: controller.signal,
     });
     if (!res.ok) {
@@ -92,9 +93,23 @@ async function findProjectsByOrcid(orcidRaw) {
     }
     const data = await res.json();
     const hits = Array.isArray(data.hits) ? data.hits : [];
-    const projects = hits
-      .map(mapProjectHit)
-      .filter((p) => p.principalInvestigator.orcid === orcid && p.url);
+    const seen = new Set();
+    const projects = [];
+    for (const hit of hits) {
+      const p = mapProjectHit(hit);
+      if (!p.url || p.principalInvestigator.orcid !== orcid) continue;
+      const key = p.grantDoi || p.id;
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      projects.push(p);
+    }
+    // Stable order: newest start date first, then grant id.
+    projects.sort((a, b) => {
+      const da = a.startDate || '';
+      const db = b.startDate || '';
+      if (da !== db) return db.localeCompare(da);
+      return String(a.grantId || '').localeCompare(String(b.grantId || ''));
+    });
     return { orcid, projects, total: projects.length };
   } finally {
     clearTimeout(timer);
