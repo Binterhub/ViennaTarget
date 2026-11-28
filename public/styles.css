@@ -1089,6 +1089,13 @@ td.empty {
   object-fit: cover;
 }
 
+.social-preview-openalex-img {
+  display: block;
+  width: 1.7rem;
+  height: 1.7rem;
+  object-fit: contain;
+}
+
 .social-preview-kicker {
   margin: 0.35rem 0 0;
   font-size: 0.75rem;
@@ -1549,15 +1556,23 @@ td.empty {
 }
 
 .detail-social-link[data-social-icon='openalex'] {
-  color: #e56b2e;
-  background: #fff4ee;
-  border-color: #f3c9b0;
+  color: #111;
+  background: #fff;
+  border-color: #d0d4d8;
+  padding: 0.28rem;
 }
 .detail-social-link[data-social-icon='openalex']:hover,
 .detail-social-link[data-social-icon='openalex']:focus-visible {
-  background: #ffe8db;
-  border-color: #e56b2e;
-  color: #c4531c;
+  background: #f3f4f5;
+  border-color: #111;
+  color: #000;
+}
+
+.detail-social-link .detail-social-img--openalex {
+  display: block;
+  width: 1.35rem;
+  height: 1.35rem;
+  object-fit: contain;
 }
 
 .detail-social-link[data-social-icon='instagram'] {
