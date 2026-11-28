@@ -351,29 +351,40 @@ async function fetchFffProjects(orcid) {
   }
 }
 
-/**
- * One FFF link per grant for this person (Evo-ID / ORCID).
- * Multiple fundings → multiple links stacked under ORCID.
- */
-function renderFffLinks(projects) {
-  if (!projects || !projects.length) return '';
-  const multi = projects.length > 1;
-  return projects
-    .filter((p) => p && p.url)
-    .map((p) => {
-      const amount =
-        p.amount == null || Number.isNaN(Number(p.amount))
-          ? ''
-          : `Dotierung: €${Number(p.amount).toLocaleString('de-AT')}`;
-      const tip = [p.title, p.program, amount, p.grantId || p.grantDoi].filter(Boolean).join(' · ');
-      // Distinguish grants when a person has more than one FFF funding.
-      const label = multi && (p.grantId || p.grantDoi) ? `FFF ${p.grantId || p.grantDoi}` : 'FFF';
-      return `<a class="detail-fff-link" href="${escapeHtml(p.url)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(tip)}">${escapeHtml(label)}</a>`;
-    })
-    .join('');
+function formatFffAmount(amount) {
+  if (amount == null || Number.isNaN(Number(amount))) return '';
+  return `€${Number(amount).toLocaleString('de-AT')}`;
 }
 
-/** Profile icon order: ORCID (+ FFF under it) → OpenAlex (+ Awards) → others. */
+/**
+ * FFF block below Profile: one clear readable line per grant (with amount).
+ * No tiny „FFF“ label — amount(s) are visible on the line itself.
+ */
+function renderFffBlock(projects) {
+  const list = (projects || []).filter((p) => p && p.url);
+  if (!list.length) return '';
+  const lines = list
+    .map((p) => {
+      const amount = formatFffAmount(p.amount);
+      const parts = [amount, p.program, p.title, p.grantId || p.grantDoi].filter(Boolean);
+      const line = parts.join(' · ');
+      const tip = [p.title, p.program, amount ? `Dotierung: ${amount}` : '', p.grantDoi || p.grantId]
+        .filter(Boolean)
+        .join(' · ');
+      return `<a class="detail-fff-line" href="${escapeHtml(p.url)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(tip)}">${escapeHtml(line)}</a>`;
+    })
+    .join('');
+  const amountsSummary = list
+    .map((p) => formatFffAmount(p.amount))
+    .filter(Boolean)
+    .join(' · ');
+  const dtTip = amountsSummary
+    ? ` title="Dotierungen: ${escapeHtml(amountsSummary)}"`
+    : '';
+  return `<div class="detail-fff-block"${dtTip}><dt>Forschungsförderung</dt><dd class="detail-fff-list">${lines}</dd></div>`;
+}
+
+/** Profile icon order: ORCID → OpenAlex (+ Awards) → others. */
 const PROFILE_ICON_ORDER = [
   'orcid',
   'openalex',
@@ -395,18 +406,13 @@ function sortSocialLinksForProfile(links) {
   });
 }
 
-function renderSocialIconLink({ href, label, icon, display, fffHtml }) {
+function renderSocialIconLink({ href, label, icon, display }) {
   const safeHref = href || '#';
   const safeIcon = icon || 'homepage';
   const sourceLabel = SOCIAL_SOURCE_TIP_BY_ICON[safeIcon] || '';
   const tipClass = sourceLabel ? ' has-source-tip' : '';
   const tip = sourceLabel ? sourceTipAttrs(sourceLabel) : ` title="${escapeHtml(label)}"`;
   const main = `<a class="detail-social-link${tipClass}" href="${escapeHtml(safeHref)}" data-social-preview data-social-icon="${escapeHtml(safeIcon)}" data-social-label="${escapeHtml(label)}" target="_blank" rel="noopener noreferrer"${tip} aria-label="${escapeHtml(label)}">${socialIconSvg(safeIcon)}<span class="detail-social-sr">${escapeHtml(label)}</span></a>`;
-
-  // FFF grant links stack under ORCID (one link per funding for this person).
-  if (safeIcon === 'orcid' && fffHtml) {
-    return `<span class="detail-social-with-awards detail-orcid-with-fff">${main}${fffHtml}</span>`;
-  }
 
   // Awards stay under OpenAlex only.
   if (safeIcon === 'openalex') {
@@ -1395,7 +1401,7 @@ async function openDoctorDetail(doc) {
   await resolveOpenAlexAuthorId(doc);
   // FFF / FWF Forschungsradar projects for this ORCID (server proxy).
   const fffProjects = await fetchFffProjects(doctorOrcid(doc));
-  const fffHtml = renderFffLinks(fffProjects);
+  const fffBlock = renderFffBlock(fffProjects);
 
   const titleParts = [
     pickDoctorField(doc, ['title', 'Title']).value,
@@ -1518,26 +1524,18 @@ async function openDoctorDetail(doc) {
   }
 
   const isSv = doctorHasPresence(doc, 'sv');
-  const hasOrcid = socialLinks.some((s) => s.icon === 'orcid');
-  if (socialLinks.length || isSv || fffHtml) {
+  if (socialLinks.length || isSv) {
     const ordered = sortSocialLinksForProfile(socialLinks);
     const icons = [
-      ...ordered.map((s) =>
-        renderSocialIconLink({
-          ...s,
-          fffHtml: s.icon === 'orcid' ? fffHtml : '',
-        })
-      ),
+      ...ordered.map((s) => renderSocialIconLink(s)),
       ...(isSv ? [renderSvProfileBadge()] : []),
-      // ORCID missing but FFF hits exist: still show grant links in the profile row.
-      ...(!hasOrcid && fffHtml
-        ? [`<span class="detail-social-with-awards detail-fff-only">${fffHtml}</span>`]
-        : []),
     ].join('');
     rows.push(
       `<div class="detail-socials"><dt>Profile</dt><dd class="detail-social-list">${icons}</dd></div>`
     );
   }
+  // FFF sits below Profile (and the photo/header above) as its own readable block with amounts.
+  if (fffBlock) rows.push(fffBlock);
 
   el.doctorDetailFields.innerHTML = rows.join('') || '<div><dt>–</dt><dd class="doctor-detail-empty">Keine Felder</dd></div>';
   state.openEvoid = doctorKey(doc);
