@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Datenschutzerklärung · NeoTarget</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #eef4f3;
+        --surface: #ffffff;
+        --ink: #152428;
+        --muted: #4d6468;
+        --accent: #0a5c5a;
+        --accent-deep: #063d3c;
+        --border: #c5d6d4;
+        --radius: 6px;
+        --font: "DM Sans", "Segoe UI", sans-serif;
+        --detail-serif: "Source Serif 4", Georgia, serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: var(--font);
+        color: var(--ink);
+        background:
+          radial-gradient(1100px 480px at 8% -12%, #c5e0dc 0%, transparent 55%),
+          linear-gradient(180deg, #e8f1ef 0%, var(--bg) 40%, #e6eeec 100%);
+        line-height: 1.45;
+      }
+
+      .site-header {
+        position: relative;
+        background: linear-gradient(145deg, #042e2d 0%, var(--accent-deep) 40%, var(--accent) 78%, #1a7a76 100%);
+        color: #f2faf9;
+        padding: 0 1.15rem 0.55rem 0;
+        border-bottom: 2px solid #031f1e;
+        overflow: visible;
+      }
+
+      .header-inner {
+        max-width: 44rem;
+        margin: 0;
+        padding-left: 0;
+      }
+
+      .brand {
+        margin: 0;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.2rem 0.45rem;
+        line-height: 1.3;
+        max-width: min(48rem, 100%);
+        padding: 0.35rem 0.4rem 0.15rem clamp(11.75rem, 28vw, 15.25rem);
+      }
+
+      .brand-home {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 2;
+        display: inline-flex;
+        align-items: center;
+        box-sizing: border-box;
+        height: 100%;
+        color: inherit;
+        text-decoration: none;
+        background: #fff;
+        border-radius: 0 0 14px 0;
+        padding: 0.35rem 0.9rem 0.35rem 0.65rem;
+        line-height: 0;
+        box-shadow: 3px 3px 0 rgba(3, 31, 30, 0.16);
+      }
+
+      .brand-home:hover {
+        outline: 1px solid rgba(245, 255, 254, 0.55);
+        outline-offset: 1px;
+      }
+
+      .brand-logo {
+        display: block;
+        height: clamp(2.9rem, 5.4vw, 3.85rem);
+        width: auto;
+        max-width: min(21rem, 62vw);
+        object-fit: contain;
+      }
+
+      .brand-sep {
+        font-family: var(--detail-serif);
+        font-weight: 400;
+        font-size: clamp(0.85rem, 1.5vw, 1.05rem);
+        letter-spacing: 0;
+        opacity: 0.5;
+      }
+
+      .brand-tagline {
+        font-family: var(--font);
+        font-weight: 400;
+        font-size: clamp(0.7rem, 1.2vw, 0.86rem);
+        letter-spacing: 0.055em;
+        opacity: 0.78;
+      }
+
+      .site-header h1 {
+        margin: 0.3rem 0 0;
+        font-size: 0.98rem;
+        font-weight: 600;
+        opacity: 0.95;
+      }
+
+      .legal-page {
+        max-width: 44rem;
+        margin: 0 auto;
+        padding: 1.75rem 1.25rem 3.5rem;
+      }
+
+      .legal-back {
+        display: inline-block;
+        margin-bottom: 1.1rem;
+        color: var(--accent);
+        font-size: 0.92rem;
+        font-weight: 600;
+        text-decoration: none;
+      }
+
+      .legal-back:hover {
+        text-decoration: underline;
+      }
+
+      .legal-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem 1rem;
+        margin: 0 0 1.35rem;
+        padding: 0;
+        list-style: none;
+        font-size: 0.88rem;
+      }
+
+      .legal-nav a {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .legal-nav a:hover {
+        text-decoration: underline;
+      }
+
+      .legal-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: 0 1px 2px rgba(21, 36, 40, 0.06);
+        padding: 1.4rem 1.45rem 1.6rem;
+        margin-bottom: 1.25rem;
+      }
+
+      .legal-card > h2 {
+        margin: 0 0 0.85rem;
+        font-family: var(--detail-serif);
+        font-size: 1.45rem;
+        font-weight: 700;
+        color: var(--accent-deep);
+        line-height: 1.25;
+      }
+
+      .legal-card h3 {
+        margin: 1.55rem 0 0.65rem;
+        font-family: var(--detail-serif);
+        font-size: 1.12rem;
+        font-weight: 700;
+        color: var(--accent-deep);
+        line-height: 1.3;
+      }
+
+      .legal-card h3:first-of-type {
+        margin-top: 1.15rem;
+      }
+
+      .legal-lead {
+        margin: 0 0 0.35rem;
+        font-size: 0.95rem;
+        line-height: 1.55;
+        color: var(--muted);
+      }
+
+      .legal-card p {
+        margin: 0;
+        font-size: 1.02rem;
+        line-height: 1.7;
+        color: var(--ink);
+      }
+
+      .legal-card p + p,
+      .legal-card ul + p,
+      .legal-card p + ul {
+        margin-top: 0.85rem;
+      }
+
+      .legal-card ul {
+        margin: 0.55rem 0 0;
+        padding-left: 1.25rem;
+        font-size: 1.02rem;
+        line-height: 1.7;
+        color: var(--ink);
+      }
+
+      .legal-card li + li {
+        margin-top: 0.35rem;
+      }
+
+      .legal-principle {
+        margin-top: 1.25rem !important;
+        padding: 0.9rem 1rem;
+        border-left: 3px solid var(--accent);
+        background: #f3f9f8;
+        font-family: var(--detail-serif);
+        font-size: 1.05rem !important;
+        line-height: 1.55 !important;
+        color: var(--accent-deep) !important;
+      }
+
+      .legal-slogan-en {
+        margin-top: 1.35rem !important;
+        font-family: var(--detail-serif);
+        font-size: 1.02rem !important;
+        font-weight: 600;
+        color: var(--accent-deep) !important;
+      }
+
+      .legal-slogan-de {
+        margin-top: 0.45rem !important;
+        font-size: 0.98rem !important;
+        color: var(--muted) !important;
+      }
+
+      .legal-card a {
+        color: var(--accent);
+      }
+
+      .site-footer {
+        text-align: center;
+        padding: 1.25rem;
+        color: var(--muted);
+        font-size: 0.88rem;
+        border-top: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.65);
+      }
+
+      .site-footer p {
+        margin: 0;
+      }
+
+      .footer-legal {
+        margin-top: 0.45rem !important;
+      }
+
+      .footer-legal a {
+        color: var(--muted);
+        font-size: 0.82rem;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+
+      .footer-legal a:hover {
+        color: var(--accent);
+      }
+
+      .footer-legal-sep {
+        margin: 0 0.35rem;
+        color: #9bb0ad;
+        font-size: 0.82rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <p class="brand">
+          <a href="/" class="brand-home" aria-label="Zur Startseite">
+            <img class="brand-logo" src="/assets/evoedge-logo.jpg" alt="EvoEdge" width="1024" height="341" />
+          </a>
+          <span class="brand-sep"> – </span><span class="brand-tagline">Healthcare &amp; Pharma Intelligence</span>
+        </p>
+        <h1>Datenschutzerklärung</h1>
+      </div>
+    </header>
+
+    <main class="legal-page">
+      <a class="legal-back" href="javascript:history.length>1?history.back():location.href='/'">← Zurück</a>
+
+      <nav aria-label="Abschnitte">
+        <ul class="legal-nav">
+          <li><a href="#grundsaetze">1. Grundsätze</a></li>
+          <li><a href="#rechtsgrundlage">2. Rechtsgrundlage</a></li>
+          <li><a href="#datenumfang">3. Datenumfang</a></li>
+          <li><a href="#privatsphaere">4. Privatsphäre</a></li>
+          <li><a href="#anreicherung">5. Anreicherung</a></li>
+          <li><a href="#benachteiligung">6. Benachteiligung</a></li>
+          <li><a href="#weitergabe">7. Weitergabe</a></li>
+          <li><a href="#sicherheit">8. Sicherheit</a></li>
+          <li><a href="#rechte">9. Rechte</a></li>
+          <li><a href="#kontakt">10. Kontakt</a></li>
+        </ul>
+      </nav>
+
+      <article class="legal-card" id="datenschutz">
+        <h2>Datenschutzerklärung – Berufsbezogene Ärztedatenbank</h2>
+        <p class="legal-lead">Evolantis IT-Solutions GmbH | EvoEdge</p>
+
+        <h3 id="grundsaetze">1. Grundsätze der Datenverarbeitung</h3>
+        <p>
+          Die Evolantis IT-Solutions GmbH betreibt eine Datenbank zur strukturierten Erfassung, Aktualisierung, Anreicherung und Analyse öffentlich zugänglicher, ausschließlich berufsbezogener Informationen über Angehörige des ärztlichen Berufsstandes.
+        </p>
+        <p>
+          Oberster Grundsatz ist die konsequente Trennung zwischen beruflicher Tätigkeit und Privatsphäre. Die Verarbeitung erfolgt unter Wahrung der Persönlichkeitsrechte, der Menschenwürde und der informationellen Selbstbestimmung der betroffenen Personen.
+        </p>
+
+        <h3 id="rechtsgrundlage">2. Rechtsgrundlage</h3>
+        <p>
+          Die Verarbeitung erfolgt auf Grundlage der Verordnung (EU) 2016/679 (Datenschutz-Grundverordnung, DSGVO) und des österreichischen Datenschutzgesetzes (DSG).
+        </p>
+        <p>Maßgebliche Rechtsgrundlagen und Bestimmungen sind insbesondere:</p>
+        <ul>
+          <li>Art. 6 Abs. 1 lit. f DSGVO: Wahrung berechtigter Interessen.</li>
+          <li>Art. 5 DSGVO: Rechtmäßigkeit, Transparenz, Zweckbindung, Datenminimierung und Richtigkeit.</li>
+          <li>Erwägungsgrund 47 DSGVO: Berücksichtigung berechtigter Interessen und vernünftiger Erwartungen der betroffenen Personen.</li>
+          <li>§ 27 Ärztegesetz 1998: Gesetzlich vorgesehene Öffentlichkeit bestimmter berufsbezogener Ärztedaten.</li>
+          <li>§ 1 DSG: Grundrecht auf Datenschutz.</li>
+        </ul>
+        <p>
+          Das berechtigte Interesse besteht in der Bereitstellung qualitätsgesicherter berufsbezogener Informationen, der Analyse medizinischer Versorgungs- und Forschungsstrukturen sowie der Unterstützung zielgerichteter medizinisch-wissenschaftlicher Fachkommunikation und gesundheitswirtschaftlicher Analysen.
+        </p>
+        <p>
+          Die Verarbeitung setzt eine dokumentierte Interessenabwägung voraus. Die öffentliche Zugänglichkeit der Daten stellt dabei einen wesentlichen, jedoch nicht allein ausreichenden Rechtfertigungsgrund dar.
+        </p>
+
+        <h3 id="datenumfang">3. Datenumfang und Datenherkunft</h3>
+        <p>Erfasst und verarbeitet werden ausschließlich Informationen mit einem nachvollziehbaren beruflichen Sachbezug, insbesondere:</p>
+        <ul>
+          <li>Namen, akademische Grade und berufliche Identifikatoren;</li>
+          <li>Fachgebiete, Qualifikationen und berufliche Funktionen;</li>
+          <li>Ordinations- und Dienstorte sowie berufliche Kontaktdaten;</li>
+          <li>wissenschaftliche Publikationen und klinische Studien;</li>
+          <li>fachgesellschaftliche Tätigkeiten und berufliche Netzwerke;</li>
+          <li>Vortrags-, Forschungs- und Fortbildungsaktivitäten;</li>
+          <li>berufliche Medienpräsenz und veröffentlichte Transparenzinformationen.</li>
+        </ul>
+        <p>
+          Die Informationen stammen aus öffentlich zugänglichen Berufsregistern, institutionellen Websites, wissenschaftlichen Datenbanken, Fachmedien und anderen berufsbezogenen Informationsquellen.
+        </p>
+
+        <h3 id="privatsphaere">4. Schutz der Privatsphäre</h3>
+        <p>Die Erhebung, Speicherung und Analyse privater Informationen ist ausdrücklich ausgeschlossen.</p>
+        <p>
+          Ausgeschlossen sind sämtliche privaten Informationen, insbesondere private Kontakt-, Familien-, Gesundheits- und Vermögensdaten sowie Angaben zu politischen, religiösen oder weltanschaulichen Überzeugungen, ethnischer Herkunft, Gewerkschaftszugehörigkeit, sexueller Orientierung. Dies gilt ebenso für genetische und biometrische Identifikationsdaten sowie strafrechtlich relevante personenbezogene Daten gemäß Art. 9 und 10 DSGVO.
+        </p>
+        <p>
+          Besondere Kategorien personenbezogener Daten gemäß Art. 9 Abs. 1 DSGVO sowie Daten gemäß Art. 10 DSGVO sind grundsätzlich vom Verarbeitungsumfang ausgeschlossen – unabhängig von ihrer öffentlichen Zugänglichkeit.
+        </p>
+        <p>Auch die mittelbare Ableitung solcher Informationen durch Datenverknüpfung oder künstliche Intelligenz ist untersagt.</p>
+        <p>Patienten- und personenbezogene Behandlungsdaten werden nicht verarbeitet.</p>
+
+        <h3 id="anreicherung">5. Datenanreicherung und berufsbezogene Analysen</h3>
+        <p>
+          Die Anreicherung der Daten dient ausschließlich der Ergänzung, Validierung, Aktualisierung, Klassifikation und Analyse berufsbezogener Informationen.
+        </p>
+        <p>
+          Berufsbezogene Reihungen und Scoring-Verfahren können beispielsweise wissenschaftliche Aktivitäten, fachliche Spezialisierungen, institutionelle Funktionen, berufliche Ressourcen und indikationsbezogene Relevanz berücksichtigen.
+        </p>
+        <p>
+          Soweit diese Verfahren ein Profiling gemäß Art. 4 Z 4 DSGVO darstellen, unterliegen sie den entsprechenden datenschutzrechtlichen Anforderungen.
+        </p>
+        <p>
+          Sie stellen ausdrücklich keine Bewertung der ärztlichen Kompetenz, Behandlungsqualität, Persönlichkeit oder persönlichen Integrität dar.
+        </p>
+        <p>
+          Ausschließlich automatisierte Entscheidungen mit rechtlicher oder vergleichbar erheblicher Wirkung gemäß Art. 22 Abs. 1 DSGVO sind ausgeschlossen.
+        </p>
+
+        <h3 id="benachteiligung">6. Schutz vor Benachteiligung und Diskriminierung</h3>
+        <p>
+          Die Datenbank darf weder zur Diskriminierung oder Stigmatisierung noch zur beruflichen oder persönlichen Benachteiligung der erfassten Personen verwendet werden.
+        </p>
+        <p>
+          Insbesondere ist eine Verwendung als Grundlage nachteiliger berufsrechtlicher, disziplinarrechtlicher, arbeitsrechtlicher oder versicherungsrechtlicher Entscheidungen untersagt.
+        </p>
+        <p>
+          Die Datenbank ist weder ein Reputationsregister noch ein Instrument zur persönlichen Überwachung oder Bewertung von Ärzten.
+        </p>
+
+        <h3 id="weitergabe">7. Datenweitergabe und Nutzung</h3>
+        <p>
+          Die Daten können berechtigten Unternehmen der Pharmaindustrie, Medizintechnik, Gesundheitswirtschaft, Forschung und medizinischen Versorgung für die definierten Verarbeitungszwecke zugänglich gemacht werden. Zu den weiteren Empfängern können technische Dienstleister und Auftragsverarbeiter zählen.
+        </p>
+        <p>
+          Die Weitergabe unterliegt den datenschutzrechtlichen Anforderungen und zweckgebundenen vertraglichen Nutzungsbestimmungen.
+        </p>
+        <p>
+          Die Verfügbarkeit beruflicher Kontaktdaten begründet keine eigenständige Berechtigung zur werblichen Kontaktaufnahme. Insbesondere sind Art. 21 DSGVO und § 174 TKG 2021 zu beachten.
+        </p>
+        <p>Drittlandübermittlungen erfolgen ausschließlich unter Einhaltung der Art. 44–49 DSGVO.</p>
+
+        <h3 id="sicherheit">8. Datensicherheit und Datenqualität</h3>
+        <p>
+          Evolantis verpflichtet sich zur regelmäßigen Überprüfung der Datenqualität, Aktualität und Erforderlichkeit der gespeicherten Informationen.
+        </p>
+        <p>Nicht mehr erforderliche oder unrechtmäßig verarbeitete Daten werden gelöscht; unrichtige Daten werden berichtigt.</p>
+        <p>
+          Technische und organisatorische Schutzmaßnahmen erfolgen gemäß Art. 25 und Art. 32 DSGVO. Die Vertraulichkeit der Daten wird unter Berücksichtigung des § 6 DSG gewährleistet.
+        </p>
+
+        <h3 id="rechte">9. Rechte der betroffenen Personen</h3>
+        <p>
+          Betroffene Personen haben nach Maßgabe der gesetzlichen Voraussetzungen insbesondere das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung und Widerspruch gemäß Art. 15–21 DSGVO.
+        </p>
+        <p>
+          Gegen eine auf berechtigte Interessen gestützte Verarbeitung kann gemäß Art. 21 Abs. 1 DSGVO aus Gründen der besonderen persönlichen Situation jederzeit Widerspruch eingelegt werden. Gegen eine Verarbeitung zu Direktwerbezwecken besteht ein uneingeschränktes Widerspruchsrecht gemäß Art. 21 Abs. 2 und 3 DSGVO.
+        </p>
+        <p>Die Wahrnehmung dieser Rechte darf zu keiner Benachteiligung führen.</p>
+        <p>
+          Darüber hinaus besteht gemäß Art. 77 DSGVO und § 24 DSG ein Beschwerderecht bei der Österreichischen Datenschutzbehörde (www.dsb.gv.at).
+        </p>
+        <p>Die Informationspflichten gemäß Art. 12–14 DSGVO bleiben unberührt.</p>
+
+        <h3 id="kontakt">10. Verantwortlicher und Datenschutzkontakt</h3>
+        <p>Evolantis IT-Solutions GmbH</p>
+        <p>Anschrift: [Unternehmensanschrift]</p>
+        <p>Website: www.evolantis.com</p>
+        <p>Datenschutzkontakt: [E-Mail-Adresse]</p>
+
+        <h3>Unser Leitprinzip</h3>
+        <p class="legal-principle">
+          Die Datenbank beschreibt die berufliche Tätigkeit eines Menschen – nicht den Menschen als Privatperson.
+        </p>
+        <p class="legal-slogan-en">Professional Data Intelligence. Respect for Personal Privacy.</p>
+        <p class="legal-slogan-de">Berufsbezogene Datenintelligenz unter konsequenter Wahrung der Privatsphäre.</p>
+      </article>
+    </main>
+
+    <footer class="site-footer">
+      <p>NeoTarget · © Evolantis IT-Solutions GmbH</p>
+      <p class="footer-legal">
+        <a href="/datenquellen.html">Datenquellen und rechtliche Hinweise</a><span class="footer-legal-sep">·</span><a href="/datenschutz.html">Datenschutzerklärung</a>
+      </p>
+    </footer>
+  </body>
+</html>

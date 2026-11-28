@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NeoTarget Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/login.css" />
+    <script src="/login.js" defer></script>
+  </head>
+  <body class="login-page">
+    <div class="login-shell">
+      <section class="login-panel">
+        <p class="login-brand">
+          <a href="/" class="brand-home" aria-label="Zur Startseite">
+            <img class="brand-logo" src="/assets/evoedge-logo.jpg" alt="EvoEdge" width="1024" height="341" />
+          </a>
+          <span class="brand-tagline">Healthcare &amp; Pharma Intelligence</span>
+        </p>
+        <p class="login-lead">
+          <strong>Fokus: Poractant alfa</strong>.
+        </p>
+        <form id="login-form" class="login-form" autocomplete="current-password">
+          <label class="login-field">
+            <span>Passwort</span>
+            <div class="password-wrap">
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                autofocus
+                minlength="1"
+                placeholder="Passwort eingeben"
+                autocomplete="current-password"
+              />
+              <button
+                type="button"
+                id="toggle-password"
+                class="toggle-password"
+                aria-label="Passwort anzeigen"
+                aria-pressed="false"
+                title="Passwort anzeigen"
+              >
+                <svg class="icon-eye" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+                  <path
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12s-3.5 6.5-9.5 6.5S2.5 12 2.5 12z"
+                  />
+                  <circle cx="12" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="1.8" />
+                </svg>
+                <svg class="icon-eye-off" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" hidden>
+                  <path
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12s-3.5 6.5-9.5 6.5S2.5 12 2.5 12z"
+                  />
+                  <circle cx="12" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="1.8" />
+                  <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M4 4l16 16" />
+                </svg>
+              </button>
+            </div>
+          </label>
+          <p id="login-error" class="login-error" role="alert" hidden></p>
+          <button type="submit" id="login-submit" class="login-submit">Anmelden</button>
+        </form>
+        <p class="login-legal">
+          <a href="/datenquellen.html">Datenquellen und rechtliche Hinweise</a><span class="footer-legal-sep">·</span><a href="/datenschutz.html">Datenschutzerklärung</a>
+        </p>
+      </section>
+    </div>
+  </body>
+</html>

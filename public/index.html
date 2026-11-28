@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EvoEdge – Fokus: Poractant alfa</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="header-top">
+          <div class="brand">
+            <a href="/" class="brand-home" aria-label="Zur Startseite">
+              <img class="brand-logo" src="/assets/evoedge-logo.jpg" alt="EvoEdge" width="1024" height="341" />
+            </a>
+            <span class="brand-sep"> – </span><span class="brand-tagline">Healthcare &amp; Pharma Intelligence</span>
+            <span class="brand-meta">Data Compliance Analytics</span>
+            <h1 class="brand-focus">Fokus: Poractant alfa</h1>
+          </div>
+          <div class="header-actions">
+            <a
+              id="btn-produktinfo"
+              href="https://medikamente.basg.gv.at/documents/1-20927__DOTC_FACH_INFO.pdf"
+              class="header-link"
+              data-social-preview
+              data-social-icon="fachinfo"
+              data-social-label="Produktinformation"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="BASG/AGES Fachinformation Poractant alfa (Curosurf) – Arzneispezialitätenregister"
+              aria-label="Produktinformation: BASG/AGES Fachinformation Poractant alfa öffnen"
+            >Produktinformation</a>
+            <a href="/usecases.html" class="header-link">Use Cases</a>
+            <button type="button" id="btn-logout" class="btn btn-ghost">Abmelden</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <div id="banner" class="banner" hidden></div>
+      <div id="loading-panel" class="loading-panel" hidden>
+        <div class="loading-card" role="status" aria-live="polite">
+          <div class="loading-spinner" aria-hidden="true"></div>
+          <p class="loading-title" id="loading-title">Ärztedaten werden geladen…</p>
+          <p class="loading-copy">
+            Der Austria-weite Abruf über DataMatcherAPI kann 30–60&nbsp;Sekunden dauern.
+            Bitte warten — das ist kein Fehler.
+          </p>
+          <p class="loading-elapsed" id="loading-elapsed">Laufzeit: 0&nbsp;s</p>
+        </div>
+      </div>
+
+      <section class="filters filters-compact" aria-label="Filter">
+        <div class="filters-heading">
+          <h2 class="section-title">Suche &amp; Filter</h2>
+          <p class="focus-note">
+            Standard: <strong>Fokus: Poractant alfa</strong>
+          </p>
+        </div>
+        <form id="filter-form" class="filter-form" autocomplete="off">
+          <div class="filter-row filter-row-compact">
+            <label class="field field-name">
+              <span>Name</span>
+              <input type="search" id="filter-name" name="name" placeholder="Vor- / Nachname" />
+            </label>
+            <label class="field field-evoid">
+              <span>EVOID</span>
+              <input type="search" id="filter-evoid" name="evoid" placeholder="ID" />
+            </label>
+            <div class="chart-wrap chart-wrap-inline" id="chart-wrap">
+              <button
+                type="button"
+                id="chart-toggle"
+                class="chart-toggle"
+                aria-expanded="false"
+                aria-controls="city-chart-body"
+              >
+                <span class="chart-toggle-title">Ranking nach Orten</span>
+                <span class="chart-toggle-hint" id="chart-toggle-hint">Aufklappen</span>
+              </button>
+              <div id="city-chart-body" class="chart-body">
+                <p class="focus-note chart-filter-hint">
+                  Alle Orte nach HCP-Anzahl. Balken anklicken zum Filtern (sortiert nach Nachname).
+                </p>
+                <div class="chart-scroll">
+                  <canvas id="city-chart" height="80" aria-label="Ranking nach Orten – HCP-Anzahl je Ort"></canvas>
+                </div>
+              </div>
+            </div>
+            <label class="field field-city">
+              <span>Ort</span>
+              <input type="search" id="filter-city" name="city" placeholder="z. B. Wien" />
+            </label>
+            <label class="field field-compact" id="field-postal">
+              <span>PLZ</span>
+              <input type="search" id="filter-postal" name="postal" placeholder="PLZ" disabled title="Nicht in den aktuellen Daten verfügbar" />
+            </label>
+            <label class="field field-compact" id="field-gender">
+              <span>Geschlecht</span>
+              <select id="filter-gender" name="gender" disabled title="Nicht in den aktuellen Daten verfügbar">
+                <option value="">–</option>
+              </select>
+            </label>
+          </div>
+          <div class="more-filters" id="more-filters">
+            <button
+              type="button"
+              id="more-filters-toggle"
+              class="more-filters-toggle"
+              aria-expanded="false"
+              aria-controls="more-filters-panel"
+            >
+              <span>Weitere Filter</span>
+              <span class="more-filters-hint" id="more-filters-hint">Aufklappen</span>
+            </button>
+            <div id="more-filters-panel" class="more-filters-panel" hidden>
+              <p class="more-filters-note">
+                Präsenzfilter (ODER): HCP erscheint, wenn mindestens eines der gewählten Signale vorhanden ist.
+              </p>
+              <div class="presence-checks" role="group" aria-label="Präsenzfilter">
+                <label class="presence-check"><input type="checkbox" name="presence" value="linkedin" /> LinkedIn</label>
+                <label class="presence-check"><input type="checkbox" name="presence" value="facebook" /> Facebook</label>
+                <label class="presence-check"><input type="checkbox" name="presence" value="researchgate" /> ResearchGate</label>
+                <label class="presence-check"><input type="checkbox" name="presence" value="x" /> X</label>
+                <label class="presence-check"><input type="checkbox" name="presence" value="orcid" /> ORCID</label>
+                <label class="presence-check"><input type="checkbox" name="presence" value="openalex" /> OpenAlex</label>
+                <label
+                  class="presence-check"
+                  title="Allgemein beeideter und gerichtlich zertifizierter Sachverständiger"
+                ><input type="checkbox" name="presence" value="sv" /> SV</label>
+                <label
+                  class="presence-check"
+                  title="Nur HCPs mit Scopus h-Index größer als 0"
+                ><input type="checkbox" name="presence" value="hindex" /> h-Index</label>
+              </div>
+            </div>
+          </div>
+          <div class="filter-actions">
+            <button type="button" id="btn-reset" class="btn btn-secondary btn-compact">Filter zurücksetzen (Fokus)</button>
+            <p class="meta" id="last-updated">Letzte Aktualisierung: –</p>
+          </div>
+        </form>
+      </section>
+
+      <section class="results" aria-label="Ergebnistabelle">
+        <div class="results-toolbar">
+          <p id="results-summary">Keine Daten geladen.</p>
+          <div class="results-toolbar-actions">
+            <button type="button" id="btn-export-xlsx" class="btn btn-export" title="Aktuelle Trefferliste als XLSX exportieren">
+              <span class="export-icons" aria-hidden="true">
+                <svg class="icon-xlsx" viewBox="0 0 24 24" width="18" height="18" focusable="false">
+                  <rect x="3" y="2" width="18" height="20" rx="2" fill="#1d6f42"></rect>
+                  <path d="M7 7h10M7 11h10M7 15h6" stroke="#fff" stroke-width="1.6" stroke-linecap="round"></path>
+                  <text x="12" y="20" text-anchor="middle" fill="#fff" font-size="5.5" font-family="Arial,sans-serif" font-weight="700">XLS</text>
+                </svg>
+                <svg class="icon-export" viewBox="0 0 24 24" width="18" height="18" focusable="false">
+                  <path d="M12 3v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                  <path d="M8 7l4-4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                  <path d="M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                </svg>
+              </span>
+              <span>Export XLSX</span>
+            </button>
+            <label class="page-size">
+              <span>Zeilen pro Seite</span>
+              <select id="page-size">
+                <option value="25">25</option>
+                <option value="50" selected>50</option>
+                <option value="100">100</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table id="doctors-table">
+            <thead>
+              <tr>
+                <th data-sort="evoid">EVO-ID</th>
+                <th data-sort="title" class="sorted asc">Titel</th>
+                <th data-sort="firstname">Vorname</th>
+                <th data-sort="lastname">Nachname</th>
+                <th data-sort="specialization">Hauptfach</th>
+                <th data-sort="additionalspecialization" id="th-zusatzfach">Zusatzfach</th>
+                <th data-sort="city" id="th-city">Ort</th>
+                <th data-sort="hindex" id="th-hindex" hidden>h-Index</th>
+                <th data-sort="postal" id="th-postal" hidden>Postleitzahl</th>
+              </tr>
+            </thead>
+            <tbody id="doctors-body">
+              <tr>
+                <td colspan="7" class="empty">Daten werden geladen…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <nav class="pagination" aria-label="Seitennavigation">
+          <button type="button" id="page-prev" class="btn btn-secondary" disabled>Zurück</button>
+          <span id="page-info">Seite 1</span>
+          <button type="button" id="page-next" class="btn btn-secondary" disabled>Weiter</button>
+        </nav>
+      </section>
+    </main>
+
+    <div id="doctor-detail" class="doctor-detail" hidden>
+      <div class="doctor-detail-shell">
+        <div class="doctor-detail-toolbar">
+          <button type="button" id="doctor-detail-close" class="btn btn-secondary" aria-label="Details schließen">
+            Schließen
+          </button>
+        </div>
+        <aside
+          class="doctor-detail-panel"
+          role="complementary"
+          aria-labelledby="doctor-detail-title"
+        >
+          <header class="doctor-detail-header">
+            <a id="doctor-detail-photo" class="doctor-detail-photo" hidden target="_blank" rel="noopener noreferrer"></a>
+            <div
+              class="doctor-detail-heading has-source-tip"
+              id="doctor-detail-heading"
+              title="Quelle: ÖÄK"
+              data-tip="Quelle: ÖÄK"
+            >
+              <p class="doctor-detail-kicker">Personendetails</p>
+              <h2 id="doctor-detail-title">–</h2>
+              <p id="doctor-detail-sub" class="doctor-detail-sub"></p>
+            </div>
+          </header>
+          <dl id="doctor-detail-fields" class="doctor-detail-fields"></dl>
+        </aside>
+      </div>
+    </div>
+
+    <!-- Link/profile preview: rightmost, to the right of Detail. -->
+    <div id="social-preview" class="social-preview" hidden>
+      <div class="social-preview-toolbar">
+        <button type="button" id="social-preview-close" class="btn btn-secondary" aria-label="Preview schließen">
+          Schließen
+        </button>
+      </div>
+      <aside
+        class="social-preview-panel"
+        role="complementary"
+        aria-labelledby="social-preview-title"
+      >
+        <div id="social-preview-icon" class="social-preview-icon" aria-hidden="true"></div>
+        <p class="social-preview-kicker">Preview</p>
+        <h2 id="social-preview-title" class="social-preview-title">–</h2>
+        <p id="social-preview-host" class="social-preview-host"></p>
+        <p id="social-preview-url" class="social-preview-url"></p>
+        <div class="social-preview-actions">
+          <a
+            id="social-preview-open"
+            class="btn btn-primary social-preview-open"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            In neuem Tab öffnen
+          </a>
+          <button type="button" id="social-preview-copy" class="btn btn-secondary">
+            Link kopieren
+          </button>
+        </div>
+        <p class="social-preview-note">
+          Externe Profile werden nicht eingebettet.
+        </p>
+      </aside>
+    </div>
+
+    <footer class="site-footer">
+      <p>NeoTarget · © Evolantis IT-Solutions GmbH | EvoEdge - Healthcare &amp; Pharma Intelligence</p>
+      <p class="footer-legal">
+        <a href="/datenquellen.html">Datenquellen und rechtliche Hinweise</a><span class="footer-legal-sep">·</span><a href="/datenschutz.html">Datenschutzerklärung</a>
+      </p>
+    </footer>
+  </body>
+</html>
