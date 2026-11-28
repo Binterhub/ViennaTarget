@@ -1453,6 +1453,27 @@ td.empty {
   color: var(--accent-deep);
 }
 
+.detail-fff-link {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #6b2d5c;
+  text-decoration: none;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.detail-fff-link:hover,
+.detail-fff-link:focus-visible {
+  text-decoration: underline;
+  color: #4a1d3f;
+}
+
+.detail-fff-only {
+  min-width: 2.55rem;
+  padding-top: 0.15rem;
+}
+
 .detail-social-link {
   display: inline-flex;
   align-items: center;

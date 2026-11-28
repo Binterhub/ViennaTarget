@@ -328,7 +328,48 @@ function openAlexProfileUrl(authorId) {
   return id ? `https://openalex.org/authors/${encodeURIComponent(id)}` : '';
 }
 
-function renderSocialIconLink({ href, label, icon, display }) {
+function doctorOrcid(doc) {
+  const picked = pickDoctorField(doc, ['orcid', 'ORCID', 'Orcid']);
+  const raw = text(picked.value).trim();
+  if (!raw) return '';
+  const m = raw.match(/(?:orcid\.org\/)?(\d{4}-\d{4}-\d{4}-\d{3}[\dX])$/i);
+  return m ? m[1].toUpperCase() : '';
+}
+
+async function fetchFffProjects(orcid) {
+  if (!orcid) return [];
+  try {
+    const res = await fetch(`/api/fff?orcid=${encodeURIComponent(orcid)}`, {
+      headers: { Accept: 'application/json' },
+      credentials: 'same-origin',
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data.projects) ? data.projects : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Short FFF labels → FWF Forschungsradar project detail (topic, Dotierung, keywords). */
+function renderFffLinks(projects) {
+  if (!projects || !projects.length) return '';
+  const multi = projects.length > 1;
+  return projects
+    .filter((p) => p && p.url)
+    .map((p) => {
+      const amount =
+        p.amount == null || Number.isNaN(Number(p.amount))
+          ? ''
+          : `Dotierung: €${Number(p.amount).toLocaleString('de-AT')}`;
+      const tip = [p.title, p.program, amount, p.grantId || p.grantDoi].filter(Boolean).join(' · ');
+      const label = multi && (p.grantId || p.grantDoi) ? `FFF ${p.grantId || p.grantDoi}` : 'FFF';
+      return `<a class="detail-fff-link" href="${escapeHtml(p.url)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(tip)}">${escapeHtml(label)}</a>`;
+    })
+    .join('');
+}
+
+function renderSocialIconLink({ href, label, icon, display, fffHtml }) {
   const safeHref = href || '#';
   const safeIcon = icon || 'homepage';
   const sourceLabel = SOCIAL_SOURCE_TIP_BY_ICON[safeIcon] || '';
@@ -337,9 +378,16 @@ function renderSocialIconLink({ href, label, icon, display }) {
   const main = `<a class="detail-social-link${tipClass}" href="${escapeHtml(safeHref)}" data-social-preview data-social-icon="${escapeHtml(safeIcon)}" data-social-label="${escapeHtml(label)}" target="_blank" rel="noopener noreferrer"${tip} aria-label="${escapeHtml(label)}">${socialIconSvg(safeIcon)}<span class="detail-social-sr">${escapeHtml(label)}</span></a>`;
   if (safeIcon !== 'openalex') return main;
   const awardsHref = openAlexAwardsUrl(display || href);
-  if (!awardsHref) return main;
-  // Plain new-tab link (no preview pane) — next line under the OpenAlex icon.
-  return `<span class="detail-social-with-awards">${main}<a class="detail-openalex-awards" href="${escapeHtml(awardsHref)}" target="_blank" rel="noopener noreferrer" title="OpenAlex Awards">Awards</a></span>`;
+  const extras = [];
+  if (awardsHref) {
+    extras.push(
+      `<a class="detail-openalex-awards" href="${escapeHtml(awardsHref)}" target="_blank" rel="noopener noreferrer" title="OpenAlex Awards">Awards</a>`
+    );
+  }
+  if (fffHtml) extras.push(fffHtml);
+  if (!extras.length) return main;
+  // Awards + FFF sit on the next lines under the OpenAlex icon.
+  return `<span class="detail-social-with-awards">${main}${extras.join('')}</span>`;
 }
 
 const SV_TOOLTIP = 'Quelle: BMJ';
@@ -1317,6 +1365,9 @@ async function openDoctorDetail(doc) {
 
   // Resolve a real OpenAlex A-id when the API stored a name (or nothing usable).
   await resolveOpenAlexAuthorId(doc);
+  // FFF / FWF Forschungsradar projects for this ORCID (server proxy).
+  const fffProjects = await fetchFffProjects(doctorOrcid(doc));
+  const fffHtml = renderFffLinks(fffProjects);
 
   const titleParts = [
     pickDoctorField(doc, ['title', 'Title']).value,
@@ -1439,10 +1490,20 @@ async function openDoctorDetail(doc) {
   }
 
   const isSv = doctorHasPresence(doc, 'sv');
-  if (socialLinks.length || isSv) {
+  const hasOpenAlex = socialLinks.some((s) => s.icon === 'openalex');
+  if (socialLinks.length || isSv || fffHtml) {
     const icons = [
-      ...socialLinks.map((s) => renderSocialIconLink(s)),
+      ...socialLinks.map((s) =>
+        renderSocialIconLink({
+          ...s,
+          fffHtml: s.icon === 'openalex' ? fffHtml : '',
+        })
+      ),
       ...(isSv ? [renderSvProfileBadge()] : []),
+      // No OpenAlex icon: still surface FFF beside other profile marks.
+      ...(!hasOpenAlex && fffHtml
+        ? [`<span class="detail-social-with-awards detail-fff-only">${fffHtml}</span>`]
+        : []),
     ].join('');
     rows.push(
       `<div class="detail-socials"><dt>Profile</dt><dd class="detail-social-list">${icons}</dd></div>`

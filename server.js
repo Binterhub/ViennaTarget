@@ -7,6 +7,7 @@ const { config, hasApiCredentials } = require('./src/config');
 const { MemoryCache } = require('./src/cache');
 const { DataMatcherClient } = require('./src/datamatcher');
 const { getMockPayload } = require('./src/fixtures');
+const { findProjectsByOrcid, normalizeOrcid } = require('./src/fwf');
 const {
   isAuthenticated,
   createSessionCookie,
@@ -137,6 +138,44 @@ async function loadDoctors(_opts = {}) {
     refreshPromise = null;
   }
 }
+
+/**
+ * FFF / FWF Forschungsradar lookup by ORCID (server proxy — token never reaches the browser).
+ * GET /api/fff?orcid=0000-0001-5387-6602
+ */
+app.get('/api/fff', apiLimiter, requireAuth, async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  const orcid = normalizeOrcid(req.query && req.query.orcid);
+  if (!orcid) {
+    return res.status(400).json({
+      success: false,
+      orcid: null,
+      projects: [],
+      total: 0,
+      error: 'ORCID fehlt oder ist ungültig.',
+    });
+  }
+  try {
+    const data = await findProjectsByOrcid(orcid);
+    return res.json({
+      success: true,
+      orcid: data.orcid,
+      projects: data.projects,
+      total: data.total,
+      error: null,
+    });
+  } catch (err) {
+    const status =
+      err.code === 'NOT_CONFIGURED' ? 503 : err.code === 'BAD_ORCID' ? 400 : err.status || 502;
+    return res.status(status).json({
+      success: false,
+      orcid,
+      projects: [],
+      total: 0,
+      error: err.message || 'FFF-Abfrage fehlgeschlagen.',
+    });
+  }
+});
 
 app.get('/api/doctors', apiLimiter, requireAuth, async (_req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');

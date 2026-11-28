@@ -29,6 +29,11 @@ const config = {
   sessionSecret: process.env.SESSION_SECRET || DEFAULT_SESSION_SECRET,
   /** When true and API is not configured, serve local fixture doctors for UI demos. */
   useMockData: String(process.env.USE_MOCK_DATA || '') === '1',
+  /**
+   * FWF Open API read token (Forschungsradar / Meilisearch).
+   * Used server-side only for ORCID → funding lookups (FFF badge).
+   */
+  fwfOpenApiToken: process.env.FWF_OPEN_API_TOKEN || '',
 };
 
 function hasApiCredentials() {
