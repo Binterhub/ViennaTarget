@@ -126,8 +126,6 @@ const DETAIL_FIELD_DEFS = [
   { keys: ['externalphoto', 'externalPhoto', 'ExternalPhoto', 'photo', 'image'], label: 'Foto', headerOnly: true },
   { keys: ['vpnr', 'vpNr', 'VpNr', 'VPN R', 'vp_nr'], label: 'VPNR' },
   { keys: ['hindex', 'hIndex', 'HIndex', 'h_index'], label: 'h-Index', sourceTip: 'Scopus' },
-  { keys: ['kasse', 'Kasse'], label: 'Kasse', kind: 'yesno', sourceTip: 'ÖÄK' },
-  { keys: ['wahlarzt', 'WahlArzt', 'wahlarztflag'], label: 'Wahlarzt', kind: 'yesno' },
   {
     keys: ['expertwitness', 'expertWitness', 'ExpertWitness', 'sv', 'SV'],
     label: 'SV',
@@ -136,6 +134,18 @@ const DETAIL_FIELD_DEFS = [
     headerOnly: true,
   },
 ];
+
+/** API keys dropped from person details (never shown as rows or extras). */
+const DETAIL_OMITTED_KEYS = [
+  'kasse',
+  'Kasse',
+  'wahlarzt',
+  'WahlArzt',
+  'wahlarztflag',
+];
+const DETAIL_OMITTED_KEY_SET = new Set(
+  DETAIL_OMITTED_KEYS.map((k) => k.toLocaleLowerCase('en-US'))
+);
 
 function sourceTipText(sourceLabel) {
   return `Quelle: ${sourceLabel}`;
@@ -774,12 +784,6 @@ function doctorHasPresence(doc, kind) {
       const v = fieldNonEmpty(doc, ['openalexid', 'openAlexId', 'OpenAlexId', 'openalex']);
       if (v) return true;
       return doctorUrlMentions(doc, ['openalex.org']);
-    }
-    case 'kasse': {
-      const raw = fieldNonEmpty(doc, ['kasse', 'Kasse']);
-      if (!raw) return false;
-      const n = raw.toLocaleLowerCase('de-AT');
-      return ['yes', 'y', 'true', '1', 'ja', 'j'].includes(n);
     }
     case 'sv': {
       // DataMatcher: expertwitness Yes/No — court-sworn expert witness (Sachverständiger).
@@ -1455,7 +1459,7 @@ async function openDoctorDetail(doc) {
     el.doctorDetailPhoto.innerHTML = '';
   }
 
-  const usedKeys = new Set();
+  const usedKeys = new Set(DETAIL_OMITTED_KEY_SET);
   const rows = [];
   const socialLinks = collectSocialLinksFromDoc(doc);
 
