@@ -377,14 +377,7 @@ function renderFffBlock(projects) {
       return `<a class="detail-fff-line" href="${escapeHtml(p.url)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(tip)}">${body}</a>`;
     })
     .join('');
-  const amountsSummary = list
-    .map((p) => formatFffAmount(p.amount))
-    .filter(Boolean)
-    .join(' · ');
-  const dtTip = amountsSummary
-    ? ` title="Dotierungen: ${escapeHtml(amountsSummary)}"`
-    : '';
-  return `<div class="detail-fff-block"${dtTip}><dt>Forschungsförderung</dt><dd class="detail-fff-list">${lines}</dd></div>`;
+  return `<div class="detail-fff-block"><div class="detail-fff-list">${lines}</div></div>`;
 }
 
 /** Profile icon order: ORCID → OpenAlex (+ Awards) → others. */

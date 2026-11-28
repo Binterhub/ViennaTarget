@@ -1459,17 +1459,10 @@ td.empty {
   border-top: 1px solid var(--border);
 }
 
-.detail-fff-block > dt {
-  color: var(--muted);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
 .detail-fff-list {
   display: grid;
   gap: 0.35rem;
-  margin: 0.2rem 0 0;
+  margin: 0;
 }
 
 .detail-fff-line {
