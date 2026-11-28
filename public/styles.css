@@ -1453,7 +1453,11 @@ td.empty {
   color: var(--accent-deep);
 }
 
-.detail-fff-block {
+/* Full-width under Profile — not squeezed into the label column of the dl grid. */
+.doctor-detail-fields > .detail-fff-block {
+  display: block;
+  grid-column: 1 / -1;
+  border-bottom: none;
   margin-top: 0.15rem;
   padding-top: 0.55rem;
   border-top: 1px solid var(--border);
