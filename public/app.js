@@ -269,10 +269,55 @@ function openAlexAuthorId(value) {
   return bare ? bare[1] : '';
 }
 
+function normalizeOrcid(value) {
+  const raw = text(value).trim();
+  if (!raw) return '';
+  const m = raw.match(/(?:orcid\.org\/)?(\d{4}-\d{4}-\d{4}-\d{3}[\dX])$/i);
+  return m ? m[1].toUpperCase() : '';
+}
+
+/**
+ * Prefer a real OpenAlex A-id. Some API rows store a display name in openalexid;
+ * fall back to ORCID → OpenAlex lookup and cache on the doctor object.
+ */
+async function resolveOpenAlexAuthorId(doc) {
+  if (!doc) return '';
+  if (doc._resolvedOpenAlexId) return doc._resolvedOpenAlexId;
+
+  const picked = pickDoctorField(doc, ['openalexid', 'openAlexId', 'OpenAlexId', 'openalex']);
+  const direct = openAlexAuthorId(picked.value);
+  if (direct) {
+    doc._resolvedOpenAlexId = direct;
+    return direct;
+  }
+
+  const orcid = normalizeOrcid(pickDoctorField(doc, ['orcid', 'ORCID', 'Orcid']).value);
+  if (!orcid) return '';
+
+  try {
+    const res = await fetch(
+      `https://api.openalex.org/authors/${encodeURIComponent(`https://orcid.org/${orcid}`)}`,
+      { headers: { Accept: 'application/json' } }
+    );
+    if (!res.ok) return '';
+    const data = await res.json();
+    const id = openAlexAuthorId(data && data.id);
+    if (id) doc._resolvedOpenAlexId = id;
+    return id || '';
+  } catch {
+    return '';
+  }
+}
+
 /** Official OpenAlex awards tab for an author (Excel HYPERLINK shape). */
 function openAlexAwardsUrl(value) {
   const id = openAlexAuthorId(value);
   return id ? `https://openalex.org/authors/${encodeURIComponent(id)}?tab=awards` : '';
+}
+
+function openAlexProfileUrl(authorId) {
+  const id = openAlexAuthorId(authorId);
+  return id ? `https://openalex.org/authors/${encodeURIComponent(id)}` : '';
 }
 
 function renderSocialIconLink({ href, label, icon, display }) {
@@ -333,8 +378,18 @@ function collectSocialLinksFromDoc(doc) {
     const picked = pickDoctorField(doc, def.keys);
     if (!picked.key) continue;
     const display = text(picked.value).trim();
-    if (!display) continue;
-    const href = hrefForField(def.kind === 'openalex' ? 'openalex' : 'link', picked.value);
+    if (!display && !(def.kind === 'openalex' && doc._resolvedOpenAlexId)) continue;
+
+    if (def.kind === 'openalex') {
+      const authorId = doc._resolvedOpenAlexId || openAlexAuthorId(display);
+      const href = openAlexProfileUrl(authorId);
+      // Skip non-id placeholders (e.g. a display name stored in openalexid).
+      if (!href) continue;
+      mark(href, 'openalex', 'OpenAlex', authorId);
+      continue;
+    }
+
+    const href = hrefForField('link', picked.value);
     if (!href) continue;
     const fromUrl = socialIconFromUrl(href);
     const icon = fromUrl || def.icon || socialIconForKey(picked.key);
@@ -1245,9 +1300,12 @@ function closeDoctorDetail() {
   markOpenDoctorRow();
 }
 
-function openDoctorDetail(doc) {
+async function openDoctorDetail(doc) {
   if (!el.doctorDetail || !doc) return;
   const wasHidden = el.doctorDetail.hidden;
+
+  // Resolve a real OpenAlex A-id when the API stored a name (or nothing usable).
+  await resolveOpenAlexAuthorId(doc);
 
   const titleParts = [
     pickDoctorField(doc, ['title', 'Title']).value,
